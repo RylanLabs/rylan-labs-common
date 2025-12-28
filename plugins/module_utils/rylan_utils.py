@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 RylanLabs utilities for Ansible plugins and modules.
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 UniFi API module for custom UniFi controller interactions.
 
@@ -19,7 +18,6 @@ class UniFiAPI:
 
     def __init__(self) -> None:
         """Initialize UniFi API client."""
-        pass
 
     def query_devices(self) -> list[dict[str, Any]]:
         """Query UniFi controller for managed devices."""
@@ -32,7 +30,6 @@ class UniFiAPI:
 
 def main() -> None:
     """Module entry point."""
-    pass
 
 
 if __name__ == "__main__":

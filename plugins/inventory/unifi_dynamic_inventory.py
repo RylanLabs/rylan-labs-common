@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 UniFi Dynamic Inventory plugin for Ansible.
 
@@ -21,7 +20,6 @@ class InventoryModule:
 
     def __init__(self) -> None:
         """Initialize inventory module."""
-        pass
 
     def parse(
         self,
@@ -30,7 +28,6 @@ class InventoryModule:
         path: str,
     ) -> None:
         """Parse inventory from UniFi controller."""
-        pass
 
     def verify_file(self, path: str) -> bool:
         """Verify inventory file."""
@@ -39,7 +36,6 @@ class InventoryModule:
 
 def main() -> None:
     """Module entry point."""
-    pass
 
 
 if __name__ == "__main__":

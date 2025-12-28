@@ -2,6 +2,6 @@
 # Default variables for carter-identity role
 # Override in playbook or group_vars/host_vars as needed
 
-carter_identity_enabled: false
+carter_identity_enabled: no
 carter_identity_providers: []
-carter_identity_audit_enabled: false
+carter_identity_audit_enabled: no
