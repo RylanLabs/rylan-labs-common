@@ -1,0 +1,153 @@
+# ansible.cfg Template
+
+Use this template in domain repos consuming rylanlabs.common.
+
+## Usage
+
+1. Copy to domain repo root
+2. Customize paths and settings for your environment
+3. Commit to version control
+
+```ini
+[defaults]
+# ────────────────────────────────────────────────────────
+# Collections & Inventory
+# ────────────────────────────────────────────────────────
+
+# Path to rylanlabs.common collection
+collections_paths = ../rylan-labs-common:~/.ansible/collections
+
+# Inventory configuration (point to rylan-inventory)
+inventory = ../rylan-inventory/inventory/production.yml
+
+# ────────────────────────────────────────────────────────
+# Execution Defaults
+# ────────────────────────────────────────────────────────
+
+# Remote user (usually 'ansible' or 'ubuntu')
+remote_user = ansible
+
+# Connection type (ssh recommended for remote)
+# Use 'local' for testing on localhost
+connection = ssh
+
+# Timeout for operations (seconds)
+timeout = 30
+
+# Number of parallel tasks
+forks = 5
+
+# SSH options
+ssh_args = -o ControlMaster=auto -o ControlPersist=60s
+
+# Retry files (optional; disable if not needed)
+retry_files_enabled = false
+
+# ────────────────────────────────────────────────────────
+# Logging & Output
+# ────────────────────────────────────────────────────────
+
+# Ansible execution log
+log_path = .logs/ansible.log
+
+# Callback plugin for output formatting (yaml recommended)
+stdout_callback = yaml
+
+# Display skipped task summary
+display_skipped_hosts = false
+
+# ────────────────────────────────────────────────────────
+# Privilege Escalation
+# ────────────────────────────────────────────────────────
+
+[privilege_escalation]
+become = true
+become_method = sudo
+become_user = root
+
+# Prompt for sudo password if needed
+ask_become_pass = false
+
+# ────────────────────────────────────────────────────────
+# Inventory Plugin Configuration
+# ────────────────────────────────────────────────────────
+
+[inventory]
+# Enable UniFi dynamic inventory plugin from rylanlabs.common
+enable_plugins = rylanlabs.common.unifi_dynamic_inventory
+
+# ────────────────────────────────────────────────────────
+# Module Path (for custom modules)
+# ────────────────────────────────────────────────────────
+
+# Paths searched for custom modules
+# library = ./library:~/.ansible/plugins/modules
+
+# ────────────────────────────────────────────────────────
+# Tags & Limits
+# ────────────────────────────────────────────────────────
+
+# Skip certain tags by default (optional)
+# skip_tags = skip,test
+
+# ────────────────────────────────────────────────────────
+# Security
+# ────────────────────────────────────────────────────────
+
+# Host key checking (disable for CI/CD; enable for production)
+host_key_checking = false
+
+# Vault password file (for encrypted inventory/vars)
+# vault_password_file = ~/.vault_pass
+
+# ────────────────────────────────────────────────────────
+# Performance Tuning
+# ────────────────────────────────────────────────────────
+
+# Gather facts optimization
+gathering = smart
+fact_caching = jsonfile
+fact_caching_connection = .ansible/facts_cache
+fact_caching_timeout = 3600
+
+# Control flow
+force_handlers = true
+```
+
+## Environment-Specific Overrides
+
+Create multiple ansible.cfg files for different environments:
+
+### Development (localhost)
+
+```ini
+[defaults]
+inventory = inventory/localhost.yml
+connection = local
+host_key_checking = false
+```
+
+### Staging
+
+```ini
+[defaults]
+inventory = ../rylan-inventory/inventory/staging.yml
+ssh_args = -o UserKnownHostsFile=~/.ssh/known_hosts_staging
+host_key_checking = true
+```
+
+### Production
+
+```ini
+[defaults]
+inventory = ../rylan-inventory/inventory/production.yml
+ssh_args = -o UserKnownHostsFile=~/.ssh/known_hosts
+host_key_checking = true
+vault_password_file = ~/.vault_pass
+```
+
+Use with: `ansible-playbook -c production playbooks/site.yml`
+
+---
+
+**Reference**: [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)

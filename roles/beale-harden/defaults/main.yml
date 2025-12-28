@@ -1,0 +1,8 @@
+---
+# Default variables for beale-harden role
+# Override in playbook or group_vars/host_vars as needed
+
+beale_harden_enabled: false
+beale_harden_firewall_enabled: true
+beale_harden_rules: []
+beale_harden_nmap_validation: false

@@ -1,0 +1,16 @@
+---
+namespace: rylanlabs
+name: common
+version: 1.0.0
+readme: README.md
+authors:
+  - RylanLabs Team <team@rylanlabs.com>
+description: Reusable Ansible collection for RylanLabs infrastructure automation
+license: MIT
+tags:
+  - infrastructure
+  - hardening
+  - identity
+  - ansible
+  - automation
+dependencies: {}

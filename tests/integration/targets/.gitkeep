@@ -1,0 +1,5 @@
+---
+# Integration test targets
+# ansible-test discovers targets in tests/integration/targets/
+
+---

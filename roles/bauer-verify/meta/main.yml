@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  author: RylanLabs Team
+  namespace: rylanlabs
+  name: common
+  role_name: bauer-verify
+  description: Verification guardian - validates, audits, and ensures compliance
+  company: RylanLabs
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - "22.04"
+        - "24.04"
+  tags:
+    - verification
+    - audit
+    - validation
+    - compliance
+    - loki

@@ -1,0 +1,6 @@
+---
+# Carter Identity Guardian Role
+# Manages Active Directory, RADIUS, and centralized identity services
+# Component: Identity fabric initialization and validation
+
+---

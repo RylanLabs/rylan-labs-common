@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  author: RylanLabs Team
+  namespace: rylanlabs
+  name: common
+  role_name: carter-identity
+  description: Identity guardian - manages AD/RADIUS/centralized identity services
+  company: RylanLabs
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - "22.04"
+        - "24.04"
+  tags:
+    - identity
+    - authentication
+    - ad
+    - radius
