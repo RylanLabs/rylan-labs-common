@@ -19,7 +19,8 @@ EXIT_CODE=0
 
 # 1. YAML Linting
 echo -e "\n${YELLOW}[1/5] Running yamllint...${NC}"
-if yamllint -c .yamllint . --ignore-path .gitignore; then
+# Note: some yamllint versions do not support --ignore-path; use config file instead
+if yamllint -c .yamllint .; then
     echo -e "${GREEN}✓ yamllint passed${NC}"
 else
     echo -e "${RED}✗ yamllint failed${NC}"
