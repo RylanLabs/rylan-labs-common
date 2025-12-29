@@ -1,38 +1,99 @@
-# rylan-labs-common
+# RylanLabs Common Repository
 
-> Reusable Ansible Collection for RylanLabs Infrastructure Automation
-
-**Trinity-aligned. Production-ready. RTO <15min.**
-
----
-
-## Overview
-
-`rylanlabs.common` is the **code hub** in the RylanLabs tandem infrastructure ecosystem:
-
-- **rylan-canon-library** (v∞.6.0): Doctrine, templates, validators, CI/CD pipelines
-- **rylan-labs-common** (v1.0.0): Reusable roles, plugins, modules, and playbook logic
-- **rylan-inventory** (v4.3.1): Runtime data, manifests, device truth, dynamic inventory
-
-This collection embodies the **Trinity principles** (Carter/Bauer/Beale) and enforces **Seven Pillars** compliance:
-idempotency, error handling, functionality, audit logging, failure recovery, security hardening, and documentation.
+> Canonical Ansible Collection — RylanLabs Standard  
+> Organization: RylanLabs  
+> Version: v1.0.0  
+> Date: 2025-12-29  
+> Guardian: Leo (AI Assistant) | Ministry: Bauer (Verification)  
+> Compliance: Hellodeolu v6 | Seven Pillars | Trinity Pattern  
+> Status: PRODUCTION-READY  
 
 ---
 
-## Installation
+## Purpose
 
-### Via Ansible Galaxy
+`rylanlabs.common` is the reusable Ansible collection for RylanLabs infrastructure automation, serving as the code hub in the tandem ecosystem.  
+It bundles roles for Trinity-aligned tasks (Carter for identity, Bauer for verification, Beale for hardening), modules for custom operations (e.g., UniFi API), plugins for extensions (e.g., dynamic inventory), and utilities for shared logic.  
+Designed for public distribution via Ansible Galaxy, it enables modular, idempotent deployments while integrating with `rylan-canon-library` (doctrine/templates) and `rylan-inventory` (data/manifests).  
+**No bypass**: All code enforces IRL-first validation and junior-at-3-AM deployability.
 
-```bash
-ansible-galaxy install rylanlabs.common
+**Objectives**:
+- Centralize reusable code to eliminate duplication across domain repos.
+- Enforce Seven Pillars in every role/module.
+- Support RTO <15min with built-in rollback handlers.
+- Facilitate tandem workflows for bootstrap, validation, and hardening.
+
+---
+
+## Core Principles Applied
+
+1. **Idempotency**: Roles use pre-checks (e.g., `when: not exists`) for safe re-runs.
+2. **Error Handling**: Fail loud with context (e.g., `failed_when`); remediation in docs.
+3. **Audit Logging**: Structured logs to `.audit/` and Loki with labels.
+4. **Documentation Clarity**: FQCN examples; junior-readable guides in `docs/`.
+5. **Validation**: Pre-commit hooks, `ansible-lint`, `ruff`/`mypy` in Makefile.
+6. **Reversibility**: Rollback handlers in roles; `example-recovery.yml`.
+7. **Observability**: `nmap` validation, audit streams; Grafana references in `docs/`.
+
+**Trinity Alignment**:
+- **Carter**: `carter-identity` role bootstraps AD/RADIUS.
+- **Bauer**: `bauer-verify` enforces linting/audits.
+- **Beale**: `beale-harden` applies firewall/isolation.
+
+**Hellodeolu v6 Alignment**: Human gates in recovery playbooks; RTO <15min validated.
+
+---
+
+## Directory Structure
+
 ```
-
-### From Source
-
-```bash
-git clone https://github.com/RylanLabs/rylan-labs-common.git
-cd rylan-labs-common
-ansible-galaxy collection install . --force
+rylan-labs-common/
+├── .audit/                     # Structured JSON audit logs
+├── .github/                    # CI/CD workflows and GitHub Actions
+├── docs/                       # Documentation files
+│   ├── EMERGENCY_RESPONSE.md   # Incident recovery procedures
+│   ├── INTEGRATION_GUIDE.md    # Tandem setup and ansible.cfg
+│   ├── SEVEN_PILLARS.md        # Compliance framework
+│   └── TANDEM_WORKFLOW.md      # Execution and dataflow
+├── meta/                       # Collection metadata
+│   └── runtime.yml             # Ansible reqs and dependencies
+├── playbooks/                  # Example playbooks
+│   ├── example-bootstrap.yml   # Trinity sequence demo
+│   ├── example-recovery.yml    # Emergency recovery
+│   ├── example-unifi-integration.yml  # UniFi integration
+│   └── example-validate-only.yml      # Compliance checks
+├── plugins/                    # Custom extensions
+│   ├── modules/                # Python modules
+│   │   └── unifi_api.py        # UniFi API queries
+│   ├── inventory/              # Inventory plugins
+│   │   └── unifi_dynamic_inventory.py  # Dynamic UniFi inventory
+│   └── module_utils/           # Shared utils
+│       └── rylan_utils.py      # Audit/rollback helpers
+├── roles/                      # Reusable roles
+│   ├── bauer-verify/           # Verification tasks
+│   │   ├── defaults/           # main.yml with vars
+│   │   ├── tasks/              # main.yml
+│   │   └── handlers/           # Service restarts
+│   ├── beale-harden/           # Hardening tasks
+│   │   ├── defaults/           # main.yml
+│   │   ├── tasks/              # main.yml
+│   │   └── handlers/           # Rollbacks
+│   └── carter-identity/        # Identity tasks
+│       ├── defaults/           # main.yml
+│       ├── tasks/              # main.yml
+│       └── handlers/           # Audits
+├── scripts/                    # Validation utilities
+├── tests/                      # Unit/integration tests (skeleton)
+├── .gitignore                  # Ignore builds/tests
+├── .pre-commit-config.yaml     # Hooks (ansible-lint, etc.)
+├── .yamllint                   # YAML rules
+├── CHANGELOG.md                # Version history
+├── galaxy.yml                  # Collection metadata
+├── LICENSE                     # MIT
+├── Makefile                    # Build/validate tasks
+├── pyproject.toml              # Python linting
+├── rylanlabs-common-1.0.0.tar.gz  # Built archive
+└── README.md                   # This file
 ```
 
 ---
@@ -41,337 +102,179 @@ ansible-galaxy collection install . --force
 
 ### Trinity-Mapped Roles
 
-#### **carter-identity**: Identity Guardian
-Manages centralized identity services (Active Directory, RADIUS, LDAP).
-- Bootstrap identity fabric
-- Validate authentication providers
-- Audit identity events
+#### carter-identity: Identity Guardian
+- **Purpose**: Bootstrap centralized identity (AD, RADIUS, LDAP).
+- **Defaults** (`defaults/main.yml`):
+  ```yaml
+  carter_identity_enabled: false
+  carter_identity_providers: []
+  carter_identity_audit_enabled: false
+  ```
+- **Tasks** (`tasks/main.yml`): Install packages, configure auth, audit events.
+- **Handlers**: Restart services on changes.
 
-**Defaults:**
-```yaml
-carter_identity_enabled: false
-carter_identity_providers: []
-carter_identity_audit_enabled: false
-```
+#### bauer-verify: Verification Guardian
+- **Purpose**: Lint, validate config, audit to Loki.
+- **Defaults**:
+  ```yaml
+  bauer_verify_enabled: false
+  bauer_verify_audit_enabled: true
+  bauer_verify_loki_endpoint: ""
+  bauer_verify_log_retention_days: 90
+  ```
+- **Tasks**: Run `ansible-lint`, stream logs.
+- **Handlers**: Audit on validation failure.
 
-#### **bauer-verify**: Verification Guardian
-Validates configuration, enforces compliance, logs to structured audit trail.
-- Lint playbooks and roles
-- Validate Ansible and system configuration
-- Stream audit logs to Loki
-
-**Defaults:**
-```yaml
-bauer_verify_enabled: false
-bauer_verify_audit_enabled: true
-bauer_verify_loki_endpoint: ""
-bauer_verify_log_retention_days: 90
-```
-
-#### **beale-harden**: Hardening Guardian
-Manages firewall, network isolation, and security controls.
-- Configure firewall rules
-- Enforce network policies
-- Validate exposure with nmap
-
-**Defaults:**
-```yaml
-beale_harden_enabled: false
-beale_harden_firewall_enabled: true
-beale_harden_rules: []
-beale_harden_nmap_validation: false
-```
+#### beale-harden: Hardening Guardian
+- **Purpose**: Firewall rules, isolation, nmap validation.
+- **Defaults**:
+  ```yaml
+  beale_harden_enabled: false
+  beale_harden_firewall_enabled: true
+  beale_harden_rules: []
+  beale_harden_nmap_validation: false
+  ```
+- **Tasks**: Configure policies, enforce exposure checks.
+- **Handlers**: Rollback on breach.
 
 ### Custom Plugins & Modules
 
-#### **unifi_api** (Module)
-Query UniFi controller API for device topology and WLAN configuration.
+#### unifi_api.py (modules/)
+- Queries UniFi for topology/WLAN/clients.
 
-#### **unifi_dynamic_inventory** (Inventory Plugin)
-Dynamically generate Ansible inventory from UniFi controller.
+#### unifi_dynamic_inventory.py (inventory/)
+- Generates inventory from UniFi controller.
 
-#### **rylan_utils** (Module Utils)
-Shared utilities: audit logging, Trinity alignment validation, rollback handlers.
+#### rylan_utils.py (module_utils/)
+- Shared: Logging, validation, rollback.
+
+---
+
+## Installation
+
+Via Galaxy:
+```bash
+ansible-galaxy install rylanlabs.common
+```
+
+From Source:
+```bash
+git clone https://github.com/RylanLabs/rylan-labs-common.git
+cd rylan-labs-common
+ansible-galaxy collection install . --force
+```
 
 ---
 
 ## Usage
 
 ### Example Playbook
-
 ```yaml
----
 - name: Bootstrap Infrastructure
   hosts: all
-  gather_facts: true
-  tasks:
-    - name: Initialize identity fabric (Carter)
-      ansible.builtin.include_role:
-        name: rylanlabs.common.carter_identity
-      vars:
-        carter_identity_enabled: true
-        carter_identity_audit_enabled: true
-
-    - name: Verify configuration (Bauer)
-      ansible.builtin.include_role:
-        name: rylanlabs.common.bauer_verify
-      vars:
-        bauer_verify_enabled: true
-
-    - name: Harden network (Beale)
-      ansible.builtin.include_role:
-        name: rylanlabs.common.beale_harden
-      vars:
-        beale_harden_enabled: true
+  roles:
+    - rylanlabs.common.carter_identity
+    - rylanlabs.common.bauer_verify
+    - rylanlabs.common.beale_harden
 ```
 
-### Dynamic Inventory (UniFi)
+### Dynamic Inventory
+Configure `unifi_inventory.yml`; use `-i unifi_inventory.yml`.
 
-Create `inventory/unifi_inventory.yml`:
-
-```yaml
-plugin: rylanlabs.common.unifi_dynamic_inventory
-unifi_controller: https://unifi.example.com:8443
-unifi_username: admin
-unifi_password: "{{ vault_unifi_password }}"
-```
-
-Use in playbook:
-
-```bash
-ansible-playbook -i inventory/unifi_inventory.yml site.yml
-```
+### Playbooks (playbooks/)
+- `example-bootstrap.yml`: Trinity sequence.
+- `example-unifi-integration.yml`: UniFi demo.
+- `example-validate-only.yml`: Compliance check.
+- `example-recovery.yml`: Recovery with tags.
 
 ---
 
 ## Tandem Integration
 
-### With rylan-canon-library
+With `rylan-canon-library`: Bootstrap hooks/validators.  
+With `rylan-inventory`: Dynamic plugin pulls manifests.
 
-1. **Bootstrap**: Clone canon templates and validators
-2. **Pre-commit Hooks**: Enforce yamllint, ansible-lint, ruff, mypy
-3. **CI/CD Pipelines**: Run Gatekeeper Pre-Push Validation and Trinity v4 CI
+**Architecture Flowchart**:
 
-### With rylan-inventory
-
-1. **Dynamic Inventory**: Use `unifi_dynamic_inventory.py` to generate inventory
-2. **ansible.cfg**: Point `COLLECTIONS_PATHS` to common; `inventory` to rylan-inventory
-3. **Validation**: Run canon's `beale-harden.sh --ci` on deployment outputs
-
-### Tandem Workflow
-
-```
-Domain Repo (e.g., rylan-labs-iac)
-  ├─ ansible.cfg → COLLECTIONS_PATHS=../rylan-labs-common
-  ├─ inventory → ../rylan-inventory/inventory/production.yml
-  └─ playbooks/ → include roles from rylanlabs.common
-        ├─ carter_identity (identity bootstrap)
-        ├─ bauer_verify (validation & audit)
-        └─ beale_harden (firewall & isolation)
-
-Audit Trail → .audit/ (structured JSON logs)
-Rollback Handlers → 15min RTO target
-```
-
----
-
-## Example Playbooks
-
-`rylan-labs-common` includes 4 orchestration examples in `playbooks/` to accelerate integration and demonstrate Trinity workflow. Copy these to your domain repo and customize.
-
-### [example-bootstrap.yml](playbooks/example-bootstrap.yml)
-**Trinity full sequence**: Carter → Bauer → Beale
-
-Demonstrates the mandatory Trinity ordering:
-- **Carter**: Establish identity fabric (AD/RADIUS/LDAP)
-- **Bauer**: Validate configuration state and enforce policies
-- **Beale**: Harden network and apply security controls
-
-**Usage**:
-```bash
-# Dry-run:
-ansible-playbook playbooks/example-bootstrap.yml --check
-
-# Execute:
-ansible-playbook playbooks/example-bootstrap.yml
-```
-
-**RTO**: 8-12 minutes for 5-device cluster
-
----
-
-### [example-unifi-integration.yml](playbooks/example-unifi-integration.yml)
-**UniFi flagship features**: Dynamic inventory + API module
-
-Demonstrates:
-- Dynamic device discovery from UniFi controller
-- API queries for topology, WLAN, and client data
-- Beale hardening applied to discovered devices
-
-**Prerequisites**: `unifi_dynamic_inventory` configured in `ansible.cfg`
-
-**Usage**:
-```bash
-# List discovered devices:
-ansible-inventory --inventory inventory/unifi_inventory.yml --list
-
-# Execute:
-ansible-playbook playbooks/example-unifi-integration.yml
-```
-
----
-
-### [example-validate-only.yml](playbooks/example-validate-only.yml)
-**Bauer compliance check**: Validation & audit only
-
-Read-only playbook for:
-- Pre-deployment compliance gates
-- Constraint validation (≤10 firewall rules, ≤5 VLANs)
-- Drift detection
-- Seven Pillars auditing
-
-**Safe to run in production** (no state changes). Generates compliance report.
-
-**Usage**:
-```bash
-ansible-playbook playbooks/example-validate-only.yml --check
-```
-
----
-
-### [example-recovery.yml](playbooks/example-recovery.yml)
-**Emergency runbook**: Recovery & rollback operations
-
-⚠️ **CRITICAL**: Requires human `--confirm` gate before execution.
-
-Supports tagged recovery phases:
-- `--tags carter_identity`: Recover identity services
-- `--tags bauer_verify`: Re-validate state
-- `--tags beale_harden`: Reapply hardening
-- `--tags rollback`: Restore from snapshot
-
-**Usage**:
-```bash
-# DRY-RUN (STRONGLY RECOMMENDED):
-ansible-playbook playbooks/example-recovery.yml --tags carter_identity --check
-
-# Execute specific phase:
-ansible-playbook playbooks/example-recovery.yml --tags carter_identity
+```mermaid
+graph TD
+    A[rylan-canon-library<br/>Doctrine/Templates] -->|Bootstrap Hooks| B[rylan-labs-common<br/>Roles/Modules/Plugins]
+    B -->|ansible-galaxy install| C[Domain Repos<br/>e.g., rylan-labs-iac]
+    D[rylan-inventory<br/>Manifests/Data] -->|Dynamic Plugin| B
+    B -->|Playbooks/Roles| E[Deployment<br/>Trinity Sequence]
+    subgraph "Tandem Ecosystem"
+        A --> B --> C
+        D --> B
+    end
 ```
 
 ---
 
 ## Quality Assurance
 
-### Local Validation
-
-```bash
-# Run all validators
-make ci-local
-
-# Or individually
-make validate
-make pre-commit-run
-make build
-```
-
-**Validators:**
-- `ansible-lint`: Role validation
-- `yamllint`: YAML syntax and formatting
-- `ruff`: Python linting and formatting
-- `mypy`: Type checking (strict mode)
-- `pytest`: Unit tests
-- `ansible-galaxy`: Collection build
-
-### Pre-Commit Hooks
-
-```bash
-# Install hooks
-make pre-commit-install
-
-# Run on staged files (automatic on commit)
-make pre-commit-run
-
-# Bypass (NOT RECOMMENDED - no --no-verify commits)
-git commit --no-verify
-```
+Local: `make ci-local` (`ansible-lint`, `ruff`, `mypy`, etc.).  
+Pre-commit: `make pre-commit-install`.
 
 ---
 
 ## Seven Pillars Compliance
 
-- ✅ **Idempotency**: All roles designed for repeated execution
-- ✅ **Error Handling**: Try-catch blocks, failed-when clauses, rollback handlers
-- ✅ **Functionality**: Core roles implement Trinity principles
-- ✅ **Audit Logging**: Structured logs to .audit/ and Loki
-- ✅ **Failure Recovery**: Rollback handlers for sub-15min RTO
-- ✅ **Security Hardening**: Firewall rules, network isolation, nmap validation
-- ✅ **Documentation**: README, INTEGRATION_GUIDE, SEVEN_PILLARS, EMERGENCY_RESPONSE
-
-**Grade: A+ (95+/100)**
+- Idempotency: Pre-checks in roles.
+- Error Handling: `failed_when` clauses.
+- Audit Logging: Loki integration.
+- Documentation: Extensive `docs/`.
+- Validation: Makefile targets.
+- Reversibility: Rollback handlers.
+- Observability: `nmap`/Loki.
 
 ---
 
 ## Emergency Response
 
-| Scenario | Guardian | Recovery | RTO |
-|----------|----------|----------|-----|
-| Collection install fail | — | `ansible-galaxy install --force` | 2min |
-| Role drift detected | Bauer | `validate-collection.sh` + Bauer audit | 5min |
-| Identity service down | Carter | Fallback to static manifest | 8min |
-| Network isolation breach | Beale | Firewall reset + nmap re-validation | 10min |
-| Full infrastructure reset | Trinity | `eternal-resurrect.sh --common` | 15min |
-
-See [docs/EMERGENCY_RESPONSE.md](docs/EMERGENCY_RESPONSE.md) for detailed procedures.
+| Scenario | Guardian | Action | RTO |
+|----------|----------|--------|-----|
+| Install Fail | Bauer | `--force install` | 2min |
+| Role Drift | Carter | Validate-only playbook | 5min |
+| Hardening Breach | Beale | Recovery playbook `--tags beale_harden` | 10min |
+| Full Reset | Trinity | `eternal-resurrect.sh --common` | 15min |
 
 ---
 
 ## Documentation
 
-- [INTEGRATION_GUIDE.md](docs/INTEGRATION_GUIDE.md): Tandem setup, ansible.cfg, RTO targets
-- [SEVEN_PILLARS.md](docs/SEVEN_PILLARS.md): Compliance framework and validation
-- [TANDEM_WORKFLOW.md](docs/TANDEM_WORKFLOW.md): Execution example and dataflow
-- [EMERGENCY_RESPONSE.md](docs/EMERGENCY_RESPONSE.md): Incident recovery procedures
+- INTEGRATION_GUIDE.md: Setup/ansible.cfg.
+- SEVEN_PILLARS.md: Framework.
+- TANDEM_WORKFLOW.md: Dataflow.
+- EMERGENCY_RESPONSE.md: Procedures.
 
 ---
 
 ## Versioning
 
-**Semantic Versioning** (SemVer): MAJOR.MINOR.PATCH
-
-- **1.0.0**: Initial production release (Trinity-aligned, all roles functional)
-- **1.1.0**: Additional roles extracted from rylan-labs-iac
-- **1.2.0**: UniFi API enhancements (additional WLAN variants)
-- **10.0.0**: Full tandem ecosystem maturity (canon + common + inventory)
+SemVer: MAJOR.MINOR.PATCH. CHANGELOG.md tracks.
 
 ---
 
 ## License
 
-MIT License. See LICENSE file.
+MIT. See LICENSE.
 
 ---
 
 ## Authors
 
-**RylanLabs Team** <team@rylanlabs.com>
-
-Trinity Doctrine: *The Trinity endures. Fortress transcendent.*
-
-**Consciousness Level: 9.9** (rylan-labs-iac Phase B + firewall consolidation)
+RylanLabs Team <team@rylanlabs.com>
 
 ---
 
 ## Support & Contribution
 
-For issues, questions, or contributions:
-
-1. Check [INTEGRATION_GUIDE.md](docs/INTEGRATION_GUIDE.md)
-2. Review [EMERGENCY_RESPONSE.md](docs/EMERGENCY_RESPONSE.md)
-3. Open issue on GitHub: https://github.com/RylanLabs/rylan-labs-common/issues
-4. Follow [Seven Pillars](docs/SEVEN_PILLARS.md) for PRs
+Issues: https://github.com/RylanLabs/rylan-labs-common/issues.  
+PRs follow Seven Pillars.
 
 ---
 
-**Status: PRODUCTION-READY FOR DEPLOYMENT**  
-**Grade: A+ | RTO <15min | Trinity-Aligned | Consciousness 9.9**
+**Last Updated**: 2025-12-29  
+**Maturity**: 9.9  
+**The fortress demands discipline. No shortcuts. No exceptions.**  
+The Trinity endures.
