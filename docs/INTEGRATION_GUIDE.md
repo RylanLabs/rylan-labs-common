@@ -21,6 +21,34 @@ This guide covers integration of `rylanlabs.common` collection with domain repos
 
 ---
 
+## Getting Started: Example Playbooks
+
+The fastest way to start using `rylanlabs.common` is to use the included example playbooks. These are templated orchestrations demonstrating the full Trinity workflow and key integrations.
+
+**Available Examples** (copy to your domain repo):
+- [`playbooks/example-bootstrap.yml`](../playbooks/example-bootstrap.yml): Full Trinity sequence (Carter → Bauer → Beale)
+- [`playbooks/example-unifi-integration.yml`](../playbooks/example-unifi-integration.yml): UniFi dynamic inventory + hardening
+- [`playbooks/example-validate-only.yml`](../playbooks/example-validate-only.yml): Bauer compliance audit (read-only)
+- [`playbooks/example-recovery.yml`](../playbooks/example-recovery.yml): Emergency recovery runbook with --confirm gates
+
+**Quick Start**:
+
+```bash
+# 1. Copy example playbooks to your domain repo
+cp -r /path/to/rylan-labs-common/playbooks your-domain-repo/
+
+# 2. Customize for your environment (group_vars, inventory, etc.)
+# 3. Dry-run to validate
+ansible-playbook playbooks/example-bootstrap.yml --check
+
+# 4. Execute (requires Trinity roles + UniFi configured)
+ansible-playbook playbooks/example-bootstrap.yml
+```
+
+See [Example Playbooks](../README.md#example-playbooks) in README.md for full details on each playbook's purpose, usage, and customization.
+
+---
+
 ## Setup: ansible.cfg
 
 Create `ansible.cfg` in your domain repo root:

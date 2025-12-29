@@ -175,6 +175,92 @@ Rollback Handlers → 15min RTO target
 
 ---
 
+## Example Playbooks
+
+`rylan-labs-common` includes 4 orchestration examples in `playbooks/` to accelerate integration and demonstrate Trinity workflow. Copy these to your domain repo and customize.
+
+### [example-bootstrap.yml](playbooks/example-bootstrap.yml)
+**Trinity full sequence**: Carter → Bauer → Beale
+
+Demonstrates the mandatory Trinity ordering:
+- **Carter**: Establish identity fabric (AD/RADIUS/LDAP)
+- **Bauer**: Validate configuration state and enforce policies
+- **Beale**: Harden network and apply security controls
+
+**Usage**:
+```bash
+# Dry-run:
+ansible-playbook playbooks/example-bootstrap.yml --check
+
+# Execute:
+ansible-playbook playbooks/example-bootstrap.yml
+```
+
+**RTO**: 8-12 minutes for 5-device cluster
+
+---
+
+### [example-unifi-integration.yml](playbooks/example-unifi-integration.yml)
+**UniFi flagship features**: Dynamic inventory + API module
+
+Demonstrates:
+- Dynamic device discovery from UniFi controller
+- API queries for topology, WLAN, and client data
+- Beale hardening applied to discovered devices
+
+**Prerequisites**: `unifi_dynamic_inventory` configured in `ansible.cfg`
+
+**Usage**:
+```bash
+# List discovered devices:
+ansible-inventory --inventory inventory/unifi_inventory.yml --list
+
+# Execute:
+ansible-playbook playbooks/example-unifi-integration.yml
+```
+
+---
+
+### [example-validate-only.yml](playbooks/example-validate-only.yml)
+**Bauer compliance check**: Validation & audit only
+
+Read-only playbook for:
+- Pre-deployment compliance gates
+- Constraint validation (≤10 firewall rules, ≤5 VLANs)
+- Drift detection
+- Seven Pillars auditing
+
+**Safe to run in production** (no state changes). Generates compliance report.
+
+**Usage**:
+```bash
+ansible-playbook playbooks/example-validate-only.yml --check
+```
+
+---
+
+### [example-recovery.yml](playbooks/example-recovery.yml)
+**Emergency runbook**: Recovery & rollback operations
+
+⚠️ **CRITICAL**: Requires human `--confirm` gate before execution.
+
+Supports tagged recovery phases:
+- `--tags carter_identity`: Recover identity services
+- `--tags bauer_verify`: Re-validate state
+- `--tags beale_harden`: Reapply hardening
+- `--tags rollback`: Restore from snapshot
+
+**Usage**:
+```bash
+# DRY-RUN (STRONGLY RECOMMENDED):
+ansible-playbook playbooks/example-recovery.yml --tags carter_identity --check
+
+# Execute specific phase:
+ansible-playbook playbooks/example-recovery.yml --tags carter_identity
+```
+
+---
+
 ## Quality Assurance
 
 ### Local Validation
