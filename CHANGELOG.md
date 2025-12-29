@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-12-29
+
+### Added
+
+- Example playbooks demonstrating Trinity workflows and UniFi integration (playbooks/):
+  - `example-bootstrap.yml` (Carter → Bauer → Beale full sequence)
+  - `example-unifi-integration.yml` (dynamic inventory + UniFi API demo)
+  - `example-validate-only.yml` (Bauer compliance audit — read-only)
+  - `example-recovery.yml` (Emergency recovery with confirmation gate and rollback handlers)
+- Documentation updates:
+  - `README.md`: "Example Playbooks" section
+  - `docs/INTEGRATION_GUIDE.md`: "Getting Started" quick-start and usage notes
+
 ## [1.0.0] - 2025-12-28
 
 ### Added
