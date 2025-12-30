@@ -1,0 +1,224 @@
+---
+# GitHub Actions Workflow: Galaxy Publish
+# Purpose: Publish Ansible collection to Ansible Galaxy
+# Trigger: release (published) OR push tag v*
+# Guardian: Bauer (Verification) | Ministry: Verification
+# Compliance: Seven Pillars ✓ | Trinity ✓ | Hellodeolu v6 ✓
+
+name: Galaxy Publish
+
+on:
+  release:
+    types:
+      - published
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  TIMEOUT_MINUTES: 15
+  COLLECTION_NAMESPACE: rylanlabs
+  COLLECTION_NAME: common
+
+jobs:
+  # Job 1: Validate version alignment
+  validate-version:
+    name: Validate Version
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ env.TIMEOUT_MINUTES }}
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag_version: ${{ steps.tag.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from galaxy.yml
+        id: version
+        run: |
+          VERSION=$(grep "^version:" galaxy.yml | awk '{print $2}')
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Collection version: ${VERSION}"
+
+      - name: Extract version from git tag
+        id: tag
+        run: |
+          TAG="${{ github.ref }}"
+          if [[ $TAG == refs/tags/v* ]]; then
+            TAG_VERSION=${TAG#refs/tags/v}
+            echo "version=${TAG_VERSION}" >> $GITHUB_OUTPUT
+            echo "Tag version: ${TAG_VERSION}"
+          else
+            echo "No version tag detected"
+            echo "version=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate version match
+        run: |
+          GALAXY_VERSION="${{ steps.version.outputs.version }}"
+          TAG_VERSION="${{ steps.tag.outputs.version }}"
+
+          if [ -z "$TAG_VERSION" ]; then
+            echo "No tag version provided (release trigger or manual)"
+            exit 0
+          fi
+
+          if [ "$GALAXY_VERSION" != "$TAG_VERSION" ]; then
+            echo "❌ Version mismatch: galaxy.yml=$GALAXY_VERSION tag=v$TAG_VERSION"
+            exit 1
+          fi
+
+          echo "✓ Version validated: $GALAXY_VERSION"
+
+  # Job 2: Build collection
+  build-collection:
+    name: Build Collection
+    needs: validate-version
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ env.TIMEOUT_MINUTES }}
+    outputs:
+      tarball: ${{ steps.build.outputs.tarball }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install ansible-core
+        run: |
+          pip install --no-cache-dir ansible-core
+
+      - name: Build collection
+        id: build
+        run: |
+          echo "Building collection for publish..."
+          ansible-galaxy collection build --force --output-path ./build/
+          TARBALL=$(ls build/*.tar.gz | head -1)
+          TARBALL_NAME=$(basename "$TARBALL")
+          echo "tarball=${TARBALL_NAME}" >> $GITHUB_OUTPUT
+          [ -f "$TARBALL" ] || (echo "Build failed"; exit 1)
+          echo "✓ Collection built: $TARBALL_NAME"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: collection-publish-build
+          path: build/*.tar.gz
+          retention-days: 7
+
+  # Job 3: Publish to Ansible Galaxy
+  publish-galaxy:
+    name: Publish to Galaxy
+    needs:
+      - validate-version
+      - build-collection
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ env.TIMEOUT_MINUTES }}
+    environment:
+      name: production
+      url: >-
+        https://galaxy.ansible.com/ui/repo/published/
+        ${{ env.COLLECTION_NAMESPACE }}/${{ env.COLLECTION_NAME }}/
+        ${{ needs.validate-version.outputs.version }}/
+    steps:
+      - name: Download collection artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: collection-publish-build
+          path: ./artifacts/
+
+      - name: Publish to Ansible Galaxy
+        run: |
+          TARBALL=$(ls artifacts/*.tar.gz | head -1)
+          echo "Publishing: $TARBALL"
+          echo "Version: ${{ needs.validate-version.outputs.version }}"
+
+          # Install ansible-core for galaxy command
+          pip install --no-cache-dir ansible-core
+
+          # Publish collection
+          ansible-galaxy collection publish "$TARBALL" \
+            --api-key "${{ secrets.GALAXY_API_KEY }}" \
+            --server https://galaxy.ansible.com
+
+          echo "✓ Collection published successfully"
+
+      - name: Verify publication
+        run: |
+          NAMESPACE="${{ env.COLLECTION_NAMESPACE }}"
+          NAME="${{ env.COLLECTION_NAME }}"
+          VERSION="${{ needs.validate-version.outputs.version }}"
+
+          sleep 5  # Allow Galaxy to index
+
+          curl -s "https://galaxy.ansible.com/api/v3/plugin/ansible/content/$NAMESPACE/$NAME/versions/$VERSION/" \
+            | grep -q "\"version\":\"$VERSION\"" && echo "✓ Collection verified on Galaxy" || exit 1
+
+  # Job 4: Create release notes
+  create-release-notes:
+    name: Create Release Notes
+    needs: publish-galaxy
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ env.TIMEOUT_MINUTES }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(grep "^version:" galaxy.yml | awk '{print $2}')
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Extract changelog entry
+        id: changelog
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          # Extract changelog section for this version
+          CHANGELOG=$(sed -n "/^## \[$VERSION\]/,/^## \[/p" CHANGELOG.md | head -n -1)
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Update GitHub release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ steps.version.outputs.version }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: no
+          prerelease: no
+
+  # Summary
+  publish-summary:
+    name: Publish Summary
+    runs-on: ubuntu-latest
+    needs:
+      - validate-version
+      - build-collection
+      - publish-galaxy
+      - create-release-notes
+    if: always()
+    steps:
+      - run: |
+          echo "## ✓ Galaxy Publish Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| validate-version | ${{ needs.validate-version.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| build-collection | ${{ needs.build-collection.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| publish-galaxy | ${{ needs.publish-galaxy.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| create-release-notes | ${{ needs.create-release-notes.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version**: ${{ needs.validate-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tarball**: ${{ needs.build-collection.outputs.tarball }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Galaxy**: https://galaxy.ansible.com/ui/repo/published/" >> $GITHUB_STEP_SUMMARY
+          echo "${{ env.COLLECTION_NAMESPACE }}/${{ env.COLLECTION_NAME }}/" >> $GITHUB_STEP_SUMMARY
