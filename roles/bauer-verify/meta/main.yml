@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   author: RylanLabs Team
-  namespace: rylanlabs
+  namespace: rylanlab
   name: common
   role_name: bauer-verify
   description: Verification guardian - validates, audits, and ensures compliance

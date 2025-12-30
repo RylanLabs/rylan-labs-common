@@ -97,8 +97,8 @@ jobs:
           TARBALL=$(ls artifacts/*.tar.gz | head -1)
           echo "Installing from: $TARBALL"
           ansible-galaxy collection install "$TARBALL" --force
-          ansible-galaxy collection list | grep rylanlabs.common
-          COLLECTION_PATH=$(find ~/.ansible/collections -type d -name "common" -path "*/rylanlabs/*" | head -1)
+          ansible-galaxy collection list | grep rylanlab.common
+          COLLECTION_PATH=$(find ~/.ansible/collections -type d -name "common" -path "*/rylanlab/*" | head -1)
           [ -d "$COLLECTION_PATH/roles" ] || exit 1
           [ -d "$COLLECTION_PATH/plugins" ] || exit 1
           echo "✓ Collection verified"

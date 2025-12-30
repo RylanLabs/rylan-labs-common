@@ -29,7 +29,7 @@
 
   pre_tasks:
     - name: "BAUER: Pre-flight validation (constraint check)"
-      debug:
+      ansible.builtin.debug:
         msg: |
           Bootstrap sequence initiating...
           Timestamp: {{ bootstrap_timestamp }}
@@ -38,7 +38,7 @@
 
     - name: "BAUER: Validate Trinity alignment"
       include_role:
-        name: rylanlabs.common.bauer_verify
+        name: rylanlab.common.bauer_verify
         tasks_from: main.yml
       vars:
         bauer_verify_enabled: yes
@@ -53,7 +53,7 @@
     # Order: FIRST — must precede network hardening
     # ============================================================================
     - name: "CARTER: Establish identity fabric"
-      role: rylanlabs.common.carter_identity
+      role: rylanlab.common.carter_identity
       vars:
         carter_identity_enabled: yes
         carter_identity_audit_enabled: yes
@@ -71,7 +71,7 @@
     # Order: SECOND — validates Carter output, gates Beale execution
     # ============================================================================
     - name: "BAUER: Verify configuration state"
-      role: rylanlabs.common.bauer_verify
+      role: rylanlab.common.bauer_verify
       vars:
         bauer_verify_enabled: yes
         bauer_verify_audit_enabled: yes
@@ -87,7 +87,7 @@
     # Constraints: Max 10 firewall rules, max 5 VLANs
     # ============================================================================
     - name: "BEALE: Harden network and apply security controls"
-      role: rylanlabs.common.beale_harden
+      role: rylanlab.common.beale_harden
       vars:
         beale_harden_enabled: yes
         beale_harden_firewall_enabled: yes

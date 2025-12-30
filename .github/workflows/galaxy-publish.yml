@@ -18,7 +18,7 @@ on:
 
 env:
   TIMEOUT_MINUTES: 15
-  COLLECTION_NAMESPACE: rylanlabs
+  COLLECTION_NAMESPACE: rylanlab
   COLLECTION_NAME: common
 
 jobs:

@@ -97,7 +97,7 @@
     # Tagged: carter_identity
     # ========================================================================
     - name: "CARTER RECOVERY: Restore identity services"
-      role: rylanlabs.common.carter_identity
+      role: rylanlab.common.carter_identity
       tags: [carter_identity]
       vars:
         carter_identity_enabled: yes
@@ -116,7 +116,7 @@
     # Tagged: bauer_verify
     # ========================================================================
     - name: "BAUER RECOVERY: Verify state post-recovery"
-      role: rylanlabs.common.bauer_verify
+      role: rylanlab.common.bauer_verify
       tags: [bauer_verify]
       vars:
         bauer_verify_enabled: yes
@@ -131,7 +131,7 @@
     # Conditional: Only if Bauer validation passes
     # ========================================================================
     - name: "BEALE RECOVERY: Reapply hardening controls"
-      role: rylanlabs.common.beale_harden
+      role: rylanlab.common.beale_harden
       tags: [beale_harden]
       vars:
         beale_harden_enabled: yes
