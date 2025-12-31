@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   author: RylanLabs Team
-  namespace: rylanlabs
+  namespace: rylanlab
   name: common
   role_name: beale-harden
   description: Hardening guardian - manages firewall, isolation, and security

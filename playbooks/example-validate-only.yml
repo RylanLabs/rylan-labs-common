@@ -77,7 +77,7 @@
     # Output: Structured audit log + compliance report
     # ========================================================================
     - name: "BAUER: Compliance validation"
-      role: rylanlabs.common.bauer_verify
+      role: rylanlab.common.bauer_verify
       vars:
         bauer_verify_enabled: yes
         bauer_verify_audit_enabled: yes

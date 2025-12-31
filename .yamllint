@@ -11,4 +11,7 @@ rules:
     allowed-values:
       - "yes"
       - "no"
-  comments-indentation: {}
+      - "true"
+      - "false"
+      - "on"
+      - "off"

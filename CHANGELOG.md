@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2025-12-30
+
+### Added
+
+- **GitHub Actions CI/CD Pipeline** (Trinity-aligned, Seven Pillars enforced):
+  - `pr-validation.yml`: Pull request quality gate (ansible-lint, ruff, mypy, pytest, Seven Pillars validation)
+  - `build-and-artifact.yml`: Collection build + smoke test + 30-day artifact retention
+  - `galaxy-publish.yml`: Galaxy publish with version validation, manual approval gate, release notes automation
+  - `security-scan.yml`: Weekly security scans (bandit, pip-audit, ansible-lint security profile, vault rotation checks)
+- **Validation & Integration Scripts**:
+  - `.github/scripts/validate-seven-pillars.sh`: Comprehensive compliance checker (idempotency, error handling, audit logging, documentation, validation, reversibility, observability)
+  - `.github/scripts/sync-vault-secrets.sh`: Vault-to-GitHub Secrets synchronization (SSH-based, audit-logged)
+- **Audit Infrastructure**:
+  - `.audit/` directory structure: ci-runs, builds, galaxy-publish, security-scans, pillars-validation, vault-syncs
+  - JSON audit logs for all CI operations (RTO <15min, Hellodeolu v6 compliance)
+- **Documentation**:
+  - README.md: CI/CD workflow descriptions, quality badges, integration architecture diagram
+  - Governance metadata: Guardian (Leo), Ministry (Bauer), Compliance (Trinity/Seven Pillars)
+
+### Changed
+
+- README.md: Enhanced with Core Principles section, directory tree, Mermaid tandem ecosystem architecture
+- Package structure: Added `__init__.py` markers to plugins/ subdirectories for test import support
+
+### Security
+
+- GitHub Secrets required: `GALAXY_API_KEY` (Galaxy publish), `VAULT_SSH_KEY` (vault sync)
+- Production environment gate: Manual approval required for Galaxy publish (Hellodeolu v6 safeguard)
+- No-bypass culture: All standards enforced via CI; no manual override allowed
+
 ## [1.0.1] - 2025-12-29
 
 ### Added
