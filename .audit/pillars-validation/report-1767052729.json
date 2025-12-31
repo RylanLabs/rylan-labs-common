@@ -1,0 +1,15 @@
+{
+  "run_id": "local",
+  "timestamp": "2025-12-29T23:58:49Z",
+  "repository": "local",
+  "ref": "HEAD",
+  "sha": "0c44194b95a2ee1eb900b22d5741a5803b4692c4",
+  "roles_validated": [],
+  "summary": {
+    "total_pillars": 0,
+    "passed": 0,
+    "failed": 0,
+    "warnings": 0
+  },
+  "pillars": {}
+}

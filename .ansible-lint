@@ -1,0 +1,25 @@
+---
+# .ansible-lint
+# Ansible Lint Configuration for rylan-labs-common
+# Purpose: Enforce production-grade linting standards
+# Compliance: Seven Pillars ✓ | Trinity ✓
+
+profile: production
+
+exclude_paths:
+  - playbooks/
+  - .github
+  - docs
+  - build
+  - tests/fixtures
+  - roles/*/meta/main.yml
+
+# Don't flag truthy violations (GitHub workflows use 'on:' for triggers)
+skip_list:
+  - yaml[truthy]
+
+warn_list:
+  - experimental
+
+verbosity: 1
+

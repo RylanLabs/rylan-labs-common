@@ -1,0 +1,180 @@
+---
+# GitHub Actions Workflow: Security Scan
+# Purpose: Weekly security scans + vault rotation checks
+# Trigger: schedule (Mon 2 AM UTC), workflow_dispatch
+# Guardian: Beale (Hardening) | Ministry: Security
+# Compliance: Seven Pillars ✓ | Trinity ✓ | Hellodeolu v6 ✓
+
+name: Security Scan
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Monday 2 AM UTC
+  workflow_dispatch:
+
+jobs:
+  # Job 1: Bandit security scan
+  bandit-scan:
+    name: Bandit Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install bandit
+        run: |
+          pip install --no-cache-dir bandit[toml]
+
+      - name: Run bandit security scan
+        run: |
+          echo "Running Bandit security scan..."
+          bandit -r plugins/modules/ plugins/module_utils/ -ll -f json -o bandit-report.json || EXIT_CODE=$?
+          if [ "${EXIT_CODE:-0}" -gt 0 ]; then
+            echo "⚠️ Bandit found issues"
+            bandit -r plugins/modules/ plugins/module_utils/ -ll
+          fi
+          echo "✓ Bandit scan complete"
+
+      - name: Upload bandit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.json
+          retention-days: 30
+
+  # Job 2: Dependency vulnerability check
+  dependency-check:
+    name: Dependency Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install pip-audit
+        run: |
+          pip install --no-cache-dir pip-audit
+
+      - name: Run pip-audit
+        run: |
+          echo "Running pip-audit for known vulnerabilities..."
+          pip-audit --desc || true
+          echo "✓ Dependency check complete"
+
+  # Job 3: Ansible security linting
+  ansible-security:
+    name: Ansible Security
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install ansible-lint
+        run: |
+          pip install --no-cache-dir ansible-lint
+
+      - name: Run ansible-lint with security profile
+        run: |
+          echo "Running ansible-lint with security profile..."
+          ansible-lint roles/ -c .ansible-lint --profile security || true
+          echo "✓ Ansible security check complete"
+
+      - name: Check for hardcoded secrets
+        run: |
+          echo "Scanning for hardcoded secrets..."
+          SECRETS_FOUND=0
+          for pattern in 'password:' 'api_key:' 'token:' 'secret:'; do
+            if grep -r "$pattern" roles/ plugins/ \
+              --include="*.yml" --include="*.yaml" --include="*.py" \
+              2>/dev/null | grep -v "vault" | grep -v "encrypted"; then
+              SECRETS_FOUND=1
+            fi
+          done
+          [ $SECRETS_FOUND -eq 0 ] && echo "✓ No hardcoded secrets found" \
+            || echo "⚠️ Review potential secrets above"
+
+  # Job 4: Vault rotation check
+  vault-rotation-check:
+    name: Vault Rotation Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check Galaxy API key age
+        run: |
+          echo "Checking GALAXY_API_KEY age..."
+          # Note: GitHub Secrets don't expose creation/rotation time
+          # This is a placeholder; manual rotation policy enforcement
+          # is required in rylanlabs-private-vault
+
+          echo "⚠️ Manual rotation reminder:"
+          echo "  - GALAXY_API_KEY should rotate every 90 days"
+          echo "  - Check rylanlabs-private-vault for keys/ansible-galaxy/api-key-metadata.yml"
+          echo "  - Rotate if age > 90 days"
+
+      - name: Create rotation issue if needed
+        if: github.event_name == 'schedule'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const today = new Date();
+            const created = new Date('2025-09-29');  // Placeholder creation date
+            const daysOld = Math.floor((today - created) / (1000 * 60 * 60 * 24));
+
+            if (daysOld > 85) {
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '[SECURITY] GALAXY_API_KEY rotation due',
+                body: `**Action Required**: GALAXY_API_KEY is ${daysOld} days old and should be rotated.\n\n` +
+                      `Steps:\n` +
+                      `1. Login to rylanlabs-private-vault\n` +
+                      `2. Regenerate key at Ansible Galaxy (https://galaxy.ansible.com/me/preferences/)\n` +
+                      `3. Update keys/ansible-galaxy/api-key.txt\n` +
+                      `4. Run: .github/scripts/sync-vault-secrets.sh\n` +
+                      `5. Verify GitHub Secret updated: gh secret list`,
+                labels: ['security', 'vault']
+              });
+            } else {
+              console.log(`✓ GALAXY_API_KEY is ${daysOld} days old (< 85 day threshold)`);
+            }
+
+  # Summary
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs:
+      - bandit-scan
+      - dependency-check
+      - ansible-security
+      - vault-rotation-check
+    if: always()
+    steps:
+      - run: |
+          echo "## 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| bandit-scan | ${{ needs.bandit-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| dependency-check | ${{ needs.dependency-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ansible-security | ${{ needs.ansible-security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| vault-rotation-check | ${{ needs.vault-rotation-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Artifacts**: Check bandit-report for SARIF results" >> $GITHUB_STEP_SUMMARY

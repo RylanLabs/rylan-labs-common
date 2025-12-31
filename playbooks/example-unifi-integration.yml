@@ -47,7 +47,7 @@
     # TASK 1: Query UniFi Topology via API Module
     # ========================================================================
     - name: "UniFi API: Query device topology"
-      rylanlabs.common.unifi_api:
+      rylanlab.common.unifi_api:
         endpoint: /api/s/default/stat/device
         method: GET
       register: unifi_devices_raw
@@ -65,7 +65,7 @@
     # TASK 2: Query WLAN Configuration
     # ========================================================================
     - name: "UniFi API: Query WLAN networks"
-      rylanlabs.common.unifi_api:
+      rylanlab.common.unifi_api:
         endpoint: /api/s/default/rest/wlanconf
         method: GET
       register: unifi_wlans
@@ -85,7 +85,7 @@
     # TASK 3: Query Connected Clients
     # ========================================================================
     - name: "UniFi API: Query connected clients"
-      rylanlabs.common.unifi_api:
+      rylanlab.common.unifi_api:
         endpoint: /api/s/default/stat/sta
         method: GET
       register: unifi_clients
@@ -111,7 +111,7 @@
     # Constraint: Max 10 firewall rules per device
     # ========================================================================
     - name: "BEALE: Harden discovered UniFi devices"
-      role: rylanlabs.common.beale_harden
+      role: rylanlab.common.beale_harden
       vars:
         beale_harden_enabled: yes
         beale_harden_firewall_enabled: yes

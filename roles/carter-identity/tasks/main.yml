@@ -3,4 +3,17 @@
 # Manages Active Directory, RADIUS, and centralized identity services
 # Component: Identity fabric initialization and validation
 
----
+- name: Display Carter role initialization status
+  ansible.builtin.debug:
+    msg: |
+      Carter (Identity Guardian) - Phase 1 Bootstrap
+      ================================================
+      Purpose: Bootstrap centralized identity fabric
+      Providers: AD/RADIUS/LDAP (Phase B implementation)
+      Status: {{ carter_identity_enabled | default(false) | ternary('ENABLED', 'DISABLED') }}
+      Note: Phase 1 (v1.0) is scaffold; Phase B (v1.1+) adds actual provider setup
+  when: carter_identity_enabled | default(false)
+  tags:
+    - carter
+    - identity
+    - bootstrap

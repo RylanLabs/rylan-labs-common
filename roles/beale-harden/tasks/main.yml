@@ -3,4 +3,17 @@
 # Manages firewall, network isolation, and security hardening
 # Component: Hardening fabric and threat isolation
 
----
+- name: Display Beale role initialization status
+  ansible.builtin.debug:
+    msg: |
+      Beale (Hardening Guardian) - Phase 1 Bootstrap
+      ===============================================
+      Purpose: Enforce network isolation and firewall rules
+      Rules: Firewall config, nmap validation (Phase B implementation)
+      Status: {{ beale_harden_enabled | default(false) | ternary('ENABLED', 'DISABLED') }}
+      Note: Phase 1 (v1.0) is scaffold; Phase B (v1.1+) adds actual hardening tasks
+  when: beale_harden_enabled | default(false)
+  tags:
+    - beale
+    - harden
+    - bootstrap
