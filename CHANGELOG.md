@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] - 2026-01-06
+
+### Added
+
+- **Role Documentation**: README.md files for all roles (Galaxy requirement)
+  - `roles/bauer_verify/README.md`: Verification and audit role documentation
+  - `roles/beale_harden/README.md`: Security hardening role documentation
+  - `roles/carter_identity/README.md`: Identity management role documentation
+  - Each README includes: description, requirements, variables, examples, Trinity integration, license
+
+### Documentation
+
+- Role READMEs include Trinity pattern alignment (Carter/Bauer/Beale)
+- Each role documented with requirements, variables, and example playbooks
+- Security features and compliance constraints documented
+- Hellodeolu v6 constraints documented (e.g., max 10 firewall rules)
+
+### Compliance
+
+- **Galaxy Requirement**: Every role now has README.md file
+- **Ansible Standards**: Role documentation follows Ansible Galaxy conventions
+- **Seven Pillars**: Documentation pillar reinforced with comprehensive role guides
+- **Trinity Alignment**: Each role's Trinity role and ministry documented
+
 ## [1.1.3] - 2026-01-06
 
 ### Fixed
