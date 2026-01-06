@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2026-01-06
+
+### Fixed
+
+- **Galaxy Role Naming**: Removed hyphens from role names per Galaxy validation requirements
+  - Changed: `bauer-verify` → `bauer_verify`
+  - Changed: `beale-harden` → `beale_harden`
+  - Changed: `carter-identity` → `carter_identity`
+  - Pattern: Galaxy only accepts `[a-z0-9_]` in role names (no hyphens)
+
+- **Module Documentation**: Added DOCUMENTATION block to unifi_api module
+  - Enables `ansible-doc -t module rylanlab.common.unifi_api` support
+  - Includes OPTIONS, EXAMPLES, RETURN sections per Ansible standards
+  - Galaxy validation now passes for module documentation check
+
+### Changed
+
+- **Playbook Role References**: Updated all playbook role references to use new underscores naming
+- **README.md**: Updated all role name documentation to reflect new naming convention
+- **Trinity Alignment**: Role names now comply with Galaxy standards while maintaining Carter/Bauer/Beale pattern
+
+### Compliance
+
+- **Ansible Galaxy Standards**: All role names and module documentation now compliant
+- **Breaking Change**: Role names changed from hyphens to underscores (update playbooks accordingly)
+- **No Bypass**: All validations enforced before Galaxy publication
+
 ## [1.1.2] - 2026-01-06
 
 ### Fixed

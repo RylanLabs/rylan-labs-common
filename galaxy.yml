@@ -3,14 +3,14 @@
 # Repository: feature/ci-pr-validation branch
 # Purpose: Define Ansible Galaxy metadata for reusable infrastructure collection
 # Alignment: Seven Pillars | Trinity Pattern | Hellodeolu v6 | T3-ETERNAL v∞.3.2
-# Version: 1.1.2 (Galaxy tag validation fix + symlink CI support)
+# Version: 1.1.3 (Role naming + module documentation)
 # Author: Travis (IT Operations Director) | Guardian: Leo (AI Assistant)
 # Date: 2026-01-06
-# Compliance: Production-grade, no-bypass culture, RTO <15min, GitHub template-ready
+# Compliance: Production-grade, no-bypass culture, RTO <15min, Galaxy-compliant
 
 namespace: rylanlab  # Canonical namespace per https://galaxy.ansible.com/ui/namespaces/rylanlab
 name: common  # Collection name: rylanlab.common
-version: 1.1.2  # Semantic version: Patch release for Galaxy tag validation
+version: 1.1.3  # Semantic version: Galaxy compliance release (roles + module docs)
 
 readme: README.md  # Primary documentation entry point
 
