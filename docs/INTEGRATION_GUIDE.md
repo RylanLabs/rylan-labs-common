@@ -26,6 +26,7 @@ This guide covers integration of `rylanlabs.common` collection with domain repos
 The fastest way to start using `rylanlabs.common` is to use the included example playbooks. These are templated orchestrations demonstrating the full Trinity workflow and key integrations.
 
 **Available Examples** (copy to your domain repo):
+
 - [`playbooks/example-bootstrap.yml`](../playbooks/example-bootstrap.yml): Full Trinity sequence (Carter → Bauer → Beale)
 - [`playbooks/example-unifi-integration.yml`](../playbooks/example-unifi-integration.yml): UniFi dynamic inventory + hardening
 - [`playbooks/example-validate-only.yml`](../playbooks/example-validate-only.yml): Bauer compliance audit (read-only)
@@ -46,6 +47,83 @@ ansible-playbook playbooks/example-bootstrap.yml
 ```
 
 See [Example Playbooks](../README.md#example-playbooks) in README.md for full details on each playbook's purpose, usage, and customization.
+
+---
+
+## Symlink Architecture: Shared Configurations
+
+**Overview**: rylan-labs-common integrates `rylan-labs-shared-configs` (Tier 0) via symlinks to eliminate
+duplication of linting, pre-commit, and workflow configurations. This ensures consistent standards
+across all RylanLabs repositories.
+
+### Symlink Setup
+
+The following files are symlinked to `../rylan-labs-shared-configs/`:
+
+| File | Source | Purpose |
+| ---- | ------ | ------- |
+| `.yamllint` | `linting/.yamllint` | YAML linting rules |
+| `pyproject.toml` | `linting/pyproject.toml` | Python (ruff, mypy) config |
+| `.shellcheckrc` | `linting/.shellcheckrc` | Bash linting rules |
+| `.pre-commit-config.yaml` | Pre-commit hooks (repo file, not symlink) | Git hooks for validation |
+
+### Installation
+
+For new repositories using rylan-labs-common as a template:
+
+```bash
+# Clone shared-configs adjacent to your repo
+git clone https://github.com/RylanLabs/rylan-labs-shared-configs.git ../rylan-labs-shared-configs
+
+# Run installer (creates symlinks)
+../rylan-labs-shared-configs/scripts/install-to-repo.sh . ../rylan-labs-shared-configs
+
+# Validate symlinks
+../rylan-labs-shared-configs/scripts/validate-symlinks.sh ../rylan-labs-shared-configs .
+
+# Install pre-commit
+pre-commit install && pre-commit run --all-files
+```
+
+### Reusable Workflows
+
+CI/CD workflows reference shared-configs reusable workflows via `uses:` directive:
+
+```yaml
+jobs:
+  trinity-validate:
+    name: Trinity CI (Shared)
+    uses: RylanLabs/rylan-labs-shared-configs/.github/workflows/reusable-trinity-ci.yml@v1.1.0
+    with:
+      python_version: '3.11'
+      bash_paths: 'scripts'
+      ansible_paths: 'playbooks roles'
+```
+
+**Available Reusables**:
+- `reusable-trinity-ci.yml`: Unified validation (Python, Bash, YAML, Ansible)
+- `reusable-ansible-lint.yml`: Ansible-specific linting
+- `reusable-python-validate.yml`: Python validation
+- `reusable-bash-validate.yml`: Bash validation
+
+### Symlink Maintenance
+
+**Troubleshooting**:
+
+```bash
+# Verify symlinks resolve
+ls -la .yamllint pyproject.toml .shellcheckrc
+
+# Re-validate after updates to shared-configs
+../rylan-labs-shared-configs/scripts/validate-symlinks.sh ../rylan-labs-shared-configs .
+
+# Repair broken symlinks
+rm -f .yamllint pyproject.toml .shellcheckrc
+../rylan-labs-shared-configs/scripts/install-to-repo.sh . ../rylan-labs-shared-configs
+```
+
+**Updates to Shared Configs**: When `rylan-labs-shared-configs` is updated, symlinks automatically
+resolve to the new version. No action needed unless symlinks break.
 
 ---
 
@@ -123,7 +201,7 @@ Set `collections_paths` in `ansible.cfg` and reference FQCN directly:
 - name: Bootstrap infrastructure with Trinity roles
   hosts: all
   gather_facts: true
-  
+
   pre_tasks:
     - name: Validate Trinity alignment
       ansible.builtin.debug:
@@ -316,6 +394,7 @@ ERROR! collection rylanlabs.common not found
 ```
 
 **Solution:**
+
 ```bash
 # Verify installation
 ansible-galaxy collection list | grep rylanlabs
@@ -333,6 +412,7 @@ fatal: [host]: FAILED! => {"msg": "The module unifi_api was not found"}
 ```
 
 **Solution:**
+
 ```bash
 # Check plugins path
 ansible-doc -t module unifi_api
@@ -348,6 +428,7 @@ yamllint............................................FAILED
 ```
 
 **Solution:**
+
 ```bash
 # Run hook individually for details
 yamllint -c .yamllint .
@@ -373,11 +454,11 @@ pre-commit install --install-hooks
 ## References
 
 - **Collection**: [README.md](../README.md)
-- **Canon Library**: https://github.com/RylanLabs/rylan-canon-library
-- **Inventory**: https://github.com/RylanLabs/rylan-inventory
-- **Ansible Docs**: https://docs.ansible.com/ansible/latest/collections/
+- **Canon Library**: <https://github.com/RylanLabs/rylan-canon-library>
+- **Inventory**: <https://github.com/RylanLabs/rylan-inventory>
+- **Ansible Docs**: <https://docs.ansible.com/ansible/latest/collections/>
 
 ---
 
-**Status: PRODUCTION-READY**  
+**Status: PRODUCTION-READY**
 **Grade: A+ | RTO <15min | Trinity-Aligned**

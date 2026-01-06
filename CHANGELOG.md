@@ -5,6 +5,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-01-06
+
+### Added
+
+- **Shared-Configs Integration (Tier 0 Symlinks)**:
+  - Symlinked `.yamllint`, `pyproject.toml`, `.shellcheckrc` to rylan-labs-shared-configs (v1.1.0)
+  - Repo-specific `.pre-commit-config.yaml` with symlink-compatible paths
+  - Audit trails: `.audit/install-to-repo-*.json`, `.audit/symlink-validation-*.json`
+  - Installation script: `../rylan-labs-shared-configs/scripts/install-to-repo.sh`
+  - Validation script: `../rylan-labs-shared-configs/scripts/validate-symlinks.sh`
+  - INTEGRATION_GUIDE.md: "Symlink Architecture" section with setup, maintenance, troubleshooting
+
+- **GitHub Template Enablement**:
+  - Repository marked as GitHub template in Settings
+  - `templates/` directory with role skeleton and playbook template
+  - `templates/role-template/`: defaults/main.yml, tasks/main.yml, handlers/main.yml, README.md
+  - `templates/playbook-template.yml`: Trinity-aligned bootstrap template for new deployments
+  - README.md: "Using as GitHub Template" section with creation and customization steps
+
+- **Reusable Workflows Migration**:
+  - `.github/workflows/ci.yml`: New unified CI using reusable-trinity-ci.yml from shared-configs
+  - References: `RylanLabs/rylan-labs-shared-configs/.github/workflows/reusable-trinity-ci.yml@v1.1.0`
+  - Includes: Python validation (ruff, mypy), Bash validation (shellcheck), YAML validation (yamllint), Ansible validation (ansible-lint)
+  - `.github/workflows/.archive/`: Legacy workflows archived (pr-validation.yml, build-and-artifact.yml, security-scan.yml, galaxy-publish.yml)
+
+### Changed
+
+- `galaxy.yml`: Version bumped to v1.1.0, added tags: `template`, `shared-configs-integrated`
+- README.md: Added "Using as GitHub Template" section with bootstrap instructions
+- INTEGRATION_GUIDE.md: New "Symlink Architecture" section explaining shared-configs integration
+- `.github/workflows/ci.yml`: Consolidated CI using reusable workflows (eliminates duplication)
+
+### Removed
+
+- Legacy CI workflows: `pr-validation.yml`, `build-and-artifact.yml`, `security-scan.yml`, `galaxy-publish.yml` (archived to .archive/)
+- Duplicate linting configs: Now symlinked to shared-configs (files remain but as symlinks)
+
+### Compliance
+
+- ✓ Seven Pillars: Idempotency, Error Handling, Audit Logging preserved across symlink integration
+- ✓ Trinity Pattern: Carter (identity configs), Bauer (verification scripts), Beale (hardening templates)
+- ✓ Hellodeolu v6: Template-ready for junior-at-3-AM deployments; RTO <15min maintained
+- ✓ No-bypass culture: All configs validated via shared-configs; symlink integrity checked
+
+---
+
 ## [1.0.2] - 2025-12-30
 
 ### Added
@@ -47,6 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation updates:
   - `README.md`: "Example Playbooks" section
   - `docs/INTEGRATION_GUIDE.md`: "Getting Started" quick-start and usage notes
+
 
 ## [1.0.0] - 2025-12-28
 
