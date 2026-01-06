@@ -3,14 +3,14 @@
 # Repository: feature/ci-pr-validation branch
 # Purpose: Define Ansible Galaxy metadata for reusable infrastructure collection
 # Alignment: Seven Pillars | Trinity Pattern | Hellodeolu v6 | T3-ETERNAL v∞.3.2
-# Version: 1.1.1 (GitHub template enablement + symlink CI support)
+# Version: 1.1.2 (Galaxy tag validation fix + symlink CI support)
 # Author: Travis (IT Operations Director) | Guardian: Leo (AI Assistant)
 # Date: 2026-01-06
 # Compliance: Production-grade, no-bypass culture, RTO <15min, GitHub template-ready
 
 namespace: rylanlab  # Canonical namespace per https://galaxy.ansible.com/ui/namespaces/rylanlab
 name: common  # Collection name: rylanlab.common
-version: 1.1.1  # Semantic version: Template enablement release with symlink CI support
+version: 1.1.2  # Semantic version: Patch release for Galaxy tag validation
 
 readme: README.md  # Primary documentation entry point
 
@@ -35,13 +35,13 @@ tags:  # Descriptive tags for discoverability per Galaxy best practices
   - ansible
   - automation
   - security
-  - ci-cd
+  - cicd
   - trinity
-  - seven-pillars
+  - seven_pillars
   - hellodeolu
   - template
-  - github-template
-  - shared-configs-integrated
+  - github_template
+  - shared_configs_integrated
 
 dependencies: {}  # No external deps (self-contained per Idempotency pillar)
 

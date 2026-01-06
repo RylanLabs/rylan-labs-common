@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2026-01-06
+
+### Fixed
+
+- **Galaxy Tag Validation**: Removed hyphens from tags to comply with Ansible Galaxy format requirements
+  - Changed: `ci-cd` → `cicd`
+  - Changed: `seven-pillars` → `seven_pillars`
+  - Changed: `github-template` → `github_template`
+  - Changed: `shared-configs-integrated` → `shared_configs_integrated`
+  - Pattern: Galaxy only accepts `[a-z0-9_]` in tags (no hyphens)
+
+- **Galaxy Publish Workflow**: Tags now pass Galaxy validation checks
+  - Enables successful collection publication to Ansible Galaxy
+  - Resolves blocking issue preventing PR #3 merge
+
+### Compliance
+
+- **Ansible Galaxy Standards**: All tags now compliant with Galaxy naming conventions
+- **No Bypass**: Validation enforced before publish attempt
+
 ## [1.1.1] - 2026-01-06
 
 ### Added
