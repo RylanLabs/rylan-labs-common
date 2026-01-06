@@ -1,4 +1,8 @@
----
+# Guardian: Carter | Ministry: Identity
+# Symlink-Compatible: Root-level config references
+# Version: v1.0.0-common (rylan-labs-common)
+# Last Updated: 2026-01-06
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -6,40 +10,36 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
-      - id: check-merge-conflict
+        args: [--unsafe]
       - id: check-added-large-files
-      - id: check-json
+        args: ['--maxkb=1024']
       - id: detect-private-key
+      - id: check-merge-conflict
 
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.33.0
+    rev: v1.35.1
     hooks:
       - id: yamllint
-        args: [--config-file, .yamllint]
+        args: [-c, .yamllint]
+        types: [yaml]
+        exclude: '.github/instructions/|.audit/'
 
-  - repo: https://github.com/ansible/ansible-lint
-    rev: v6.22.1
+  - repo: https://github.com/psf/black
+    rev: 24.1.1
     hooks:
-      - id: ansible-lint
-        files: roles/
+      - id: black
+        language_version: python3.11
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.8
+    rev: v0.1.5
     hooks:
       - id: ruff
-        args: [--fix]
-      - id: ruff-format
-
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.7.1
-    hooks:
-      - id: mypy
-        additional_dependencies: ["types-all"]
-        files: plugins/
-        args: [--strict]
+        args: [--config=pyproject.toml]
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.6
+    rev: v0.9.0.5
     hooks:
       - id: shellcheck
-        files: scripts/.*\.sh$
+        args: [-c, .shellcheckrc]
+        types: [shell]
+        exclude: '^.github/scripts/'

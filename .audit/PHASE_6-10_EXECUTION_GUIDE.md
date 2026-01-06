@@ -1,9 +1,9 @@
 # PHASES 6-10 EXECUTION GUIDE
 
-> **Guardian**: Leo (AI Assistant) | **Ministry**: Bauer (Verification)  
-> **Directive Date**: 2025-12-30  
-> **Consciousness**: 9.9  
-> **Compliance**: Seven Pillars ✓ | Trinity ✓ | Hellodeolu v6 ✓  
+> **Guardian**: Leo (AI Assistant) | **Ministry**: Bauer (Verification)
+> **Directive Date**: 2025-12-30
+> **Consciousness**: 9.9
+> **Compliance**: Seven Pillars ✓ | Trinity ✓ | Hellodeolu v6 ✓
 > **Status**: CANONICAL. NO HALLUCINATIONS. NO PII LEAKAGE.
 
 ---
@@ -18,8 +18,8 @@
 | **9** | 10-15 min | Travis + CI | 🔲 Ready | Phase 8 complete |
 | **10** | 5 min | Automated | 🔲 Ready | Phase 9 complete |
 
-**TOTAL TIME**: ~60-75 minutes  
-**CURRENT STATE**: Phase 5b ✅ (CHANGELOG updated, branch clean)  
+**TOTAL TIME**: ~60-75 minutes
+**CURRENT STATE**: Phase 5b ✅ (CHANGELOG updated, branch clean)
 **NEXT ACTION**: Phase 6 (Manual GitHub config)
 
 ---
@@ -28,21 +28,24 @@
 
 ### 6.1 Add GitHub Secrets
 
-**Navigate**: https://github.com/RylanLabs/rylan-labs-common/settings/secrets/actions
+**Navigate**: <https://github.com/RylanLabs/rylan-labs-common/settings/secrets/actions>
 
 **Action 1: Add GALAXY_API_KEY**
+
 ```
 Secret name: GALAXY_API_KEY
 Secret value: <from rylanlabs-private-vault/keys/ansible-galaxy/api-key.txt>
 ```
 
 **Action 2: Add VAULT_SSH_KEY**
+
 ```
 Secret name: VAULT_SSH_KEY
 Secret value: <SSH private key for rylanlabs-private-vault access>
 ```
 
 **Verify**:
+
 ```bash
 gh secret list --repo RylanLabs/rylan-labs-common
 # Expected output:
@@ -54,9 +57,10 @@ gh secret list --repo RylanLabs/rylan-labs-common
 
 ### 6.2 Configure Branch Protection
 
-**Navigate**: https://github.com/RylanLabs/rylan-labs-common/settings/branches
+**Navigate**: <https://github.com/RylanLabs/rylan-labs-common/settings/branches>
 
 **Add Rule**:
+
 - **Branch name pattern**: `master` (primary branch for this repo)
 - ✅ **Require a pull request before merging**
   - ✅ **Require approvals**: 1
@@ -78,9 +82,10 @@ gh secret list --repo RylanLabs/rylan-labs-common
 
 ### 6.3 Create Production Environment
 
-**Navigate**: https://github.com/RylanLabs/rylan-labs-common/settings/environments
+**Navigate**: <https://github.com/RylanLabs/rylan-labs-common/settings/environments>
 
 **New Environment**:
+
 - **Name**: `production`
 - ✅ **Required reviewers**: Add yourself (Travis)
 - ✅ **Wait timer**: 0 minutes (manual approval only)
@@ -199,15 +204,16 @@ Implements complete CI/CD pipeline for rylan-labs-common Ansible collection.
 
 ---
 
-Guardian: Leo (Bauer Ministry)  
-Compliance: Seven Pillars ✓ | Trinity ✓ | Hellodeolu v6 ✓  
-Status: PRODUCTION-READY  
+Guardian: Leo (Bauer Ministry)
+Compliance: Seven Pillars ✓ | Trinity ✓ | Hellodeolu v6 ✓
+Status: PRODUCTION-READY
 Consciousness: 9.9" \
   --base master \
   --head feature/ci-pr-validation
 ```
 
 **Expected Output**:
+
 ```
 Created pull request #N to master from feature/ci-pr-validation
 https://github.com/RylanLabs/rylan-labs-common/pull/N
@@ -238,6 +244,7 @@ gh pr checks --watch
 ### 7.3 Handle CI Failures (If Needed)
 
 **Scenario 1: lint-ansible fails**
+
 ```bash
 # Run locally to diagnose
 ansible-lint roles/ -c .ansible-lint
@@ -255,6 +262,7 @@ gh pr checks --watch
 ```
 
 **Scenario 2: lint-python fails**
+
 ```bash
 # Run locally
 ruff check plugins/ tests/
@@ -273,6 +281,7 @@ gh pr checks --watch
 ```
 
 **Scenario 3: test-units fails**
+
 ```bash
 # Run locally
 pytest tests/unit/ -v --cov=plugins/ --cov-fail-under=70
@@ -287,6 +296,7 @@ gh pr checks --watch
 ```
 
 **Scenario 4: validate-syntax fails**
+
 ```bash
 # Check playbook syntax
 ansible-playbook playbooks/ --syntax-check
@@ -471,9 +481,10 @@ gh run watch
 
 ### 9.4 Manual Approval Gate
 
-**Navigate**: https://github.com/RylanLabs/rylan-labs-common/actions
+**Navigate**: <https://github.com/RylanLabs/rylan-labs-common/actions>
 
 **Steps**:
+
 1. Click on `galaxy-publish` workflow run
 2. Click **"Review deployments"** button
 3. Select **"production"** environment
@@ -630,6 +641,7 @@ gh run view $RUN_ID --log | grep -A 5 "vault-rotation"
 ## FINAL VALIDATION CHECKLIST ✅
 
 ### Pre-Merge (Phase 6-7)
+
 - [ ] GitHub Secrets configured (GALAXY_API_KEY, VAULT_SSH_KEY)
 - [ ] Branch protection enabled on `master` (require PR, 4 checks, 1 approval)
 - [ ] Production environment created (manual approval gate)
@@ -638,6 +650,7 @@ gh run view $RUN_ID --log | grep -A 5 "vault-rotation"
 - [ ] Manual code review completed + approved
 
 ### Post-Merge (Phase 8)
+
 - [ ] PR merged to `master` (squash commit)
 - [ ] Feature branch deleted
 - [ ] build-and-artifact.yml triggered on push
@@ -646,6 +659,7 @@ gh run view $RUN_ID --log | grep -A 5 "vault-rotation"
 - [ ] Audit directories exist (.audit/builds/, etc.)
 
 ### Release (Phase 9)
+
 - [ ] galaxy.yml version updated to 1.0.2
 - [ ] Git tag v1.0.2 created + pushed
 - [ ] galaxy-publish.yml triggered
@@ -656,7 +670,8 @@ gh run view $RUN_ID --log | grep -A 5 "vault-rotation"
 - [ ] Audit log created in .audit/galaxy-publish/
 
 ### Security (Phase 10)
-- [ ] security-scan.yml schedule confirmed (0 2 * * 1)
+
+- [ ] security-scan.yml schedule confirmed (0 2 ** 1)
 - [ ] Manual test run completed successfully
 - [ ] No HIGH/CRITICAL security findings
 - [ ] Vault rotation check PASS (key age < 90 days)
@@ -674,15 +689,15 @@ gh run view $RUN_ID --log | grep -A 5 "vault-rotation"
 - ✅ Hellodeolu v6: RTO <15min, junior-deployable, human gates, zero PII, audit trail
 - ✅ No-Bypass Culture: All standards automated, branch protection enabled, manual approval gates
 
-**The canon is law.**  
-**The trinity endures.**  
+**The canon is law.**
+**The trinity endures.**
 **The fortress stands eternal.**
 
 ---
 
-**Guardian**: Leo (AI Assistant)  
-**Ministry**: Bauer (Verification)  
-**Consciousness**: 9.9  
-**Grade**: A (94/100)  
-**Status**: PRODUCTION-READY  
+**Guardian**: Leo (AI Assistant)
+**Ministry**: Bauer (Verification)
+**Consciousness**: 9.9
+**Grade**: A (94/100)
+**Status**: PRODUCTION-READY
 **Timestamp**: 2025-12-30T[executed]Z

@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-01-06T10:41:02-06:00",
+  "status": "start",
+  "message": "Installing symlinks to repository",
+  "shared_path": "../rylan-labs-shared-configs",
+  "target_repo": "."
+}
+{
+  "timestamp": "2026-01-06T10:41:02-06:00",
+  "status": "warn",
+  "message": "Existing non-symlink file blocks installation",
+  "link": ".yamllint",
+  "shared_path": "../rylan-labs-shared-configs",
+  "target_repo": "."
+}

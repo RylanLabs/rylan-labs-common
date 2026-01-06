@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-01-06T10:41:22-06:00",
+  "status": "start",
+  "message": "Installing symlinks to repository",
+  "shared_path": "../rylan-labs-shared-configs",
+  "target_repo": "."
+}
+{
+  "timestamp": "2026-01-06T10:41:22-06:00",
+  "status": "success",
+  "message": "Symlink installed",
+  "link": ".yamllint",
+  "shared_path": "../rylan-labs-shared-configs",
+  "target_repo": "."
+}
+{
+  "timestamp": "2026-01-06T10:41:22-06:00",
+  "status": "success",
+  "message": "Symlink installed",
+  "link": "pyproject.toml",
+  "shared_path": "../rylan-labs-shared-configs",
+  "target_repo": "."
+}
+{
+  "timestamp": "2026-01-06T10:41:22-06:00",
+  "status": "success",
+  "message": "Symlink installed",
+  "link": ".pre-commit-config.yaml",
+  "shared_path": "../rylan-labs-shared-configs",
+  "target_repo": "."
+}
+{
+  "timestamp": "2026-01-06T10:41:22-06:00",
+  "status": "success",
+  "message": "Symlink installed",
+  "link": ".shellcheckrc",
+  "shared_path": "../rylan-labs-shared-configs",
+  "target_repo": "."
+}
+{
+  "timestamp": "2026-01-06T10:41:22-06:00",
+  "status": "success",
+  "message": "All symlinks installed successfully",
+  "shared_path": "../rylan-labs-shared-configs",
+  "target_repo": "."
+}
