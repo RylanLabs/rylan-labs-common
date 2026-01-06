@@ -5,6 +5,112 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] - 2026-01-06
+
+### Added
+
+- **Role Documentation**: README.md files for all roles (Galaxy requirement)
+  - `roles/bauer_verify/README.md`: Verification and audit role documentation
+  - `roles/beale_harden/README.md`: Security hardening role documentation
+  - `roles/carter_identity/README.md`: Identity management role documentation
+  - Each README includes: description, requirements, variables, examples, Trinity integration, license
+
+### Documentation
+
+- Role READMEs include Trinity pattern alignment (Carter/Bauer/Beale)
+- Each role documented with requirements, variables, and example playbooks
+- Security features and compliance constraints documented
+- Hellodeolu v6 constraints documented (e.g., max 10 firewall rules)
+
+### Compliance
+
+- **Galaxy Requirement**: Every role now has README.md file
+- **Ansible Standards**: Role documentation follows Ansible Galaxy conventions
+- **Seven Pillars**: Documentation pillar reinforced with comprehensive role guides
+- **Trinity Alignment**: Each role's Trinity role and ministry documented
+
+## [1.1.3] - 2026-01-06
+
+### Fixed
+
+- **Galaxy Role Naming**: Removed hyphens from role names per Galaxy validation requirements
+  - Changed: `bauer-verify` → `bauer_verify`
+  - Changed: `beale-harden` → `beale_harden`
+  - Changed: `carter-identity` → `carter_identity`
+  - Pattern: Galaxy only accepts `[a-z0-9_]` in role names (no hyphens)
+
+- **Module Documentation**: Added DOCUMENTATION block to unifi_api module
+  - Enables `ansible-doc -t module rylanlab.common.unifi_api` support
+  - Includes OPTIONS, EXAMPLES, RETURN sections per Ansible standards
+  - Galaxy validation now passes for module documentation check
+
+### Changed
+
+- **Playbook Role References**: Updated all playbook role references to use new underscores naming
+- **README.md**: Updated all role name documentation to reflect new naming convention
+- **Trinity Alignment**: Role names now comply with Galaxy standards while maintaining Carter/Bauer/Beale pattern
+
+### Compliance
+
+- **Ansible Galaxy Standards**: All role names and module documentation now compliant
+- **Breaking Change**: Role names changed from hyphens to underscores (update playbooks accordingly)
+- **No Bypass**: All validations enforced before Galaxy publication
+
+## [1.1.2] - 2026-01-06
+
+### Fixed
+
+- **Galaxy Tag Validation**: Removed hyphens from tags to comply with Ansible Galaxy format requirements
+  - Changed: `ci-cd` → `cicd`
+  - Changed: `seven-pillars` → `seven_pillars`
+  - Changed: `github-template` → `github_template`
+  - Changed: `shared-configs-integrated` → `shared_configs_integrated`
+  - Pattern: Galaxy only accepts `[a-z0-9_]` in tags (no hyphens)
+
+- **Galaxy Publish Workflow**: Tags now pass Galaxy validation checks
+  - Enables successful collection publication to Ansible Galaxy
+  - Resolves blocking issue preventing PR #3 merge
+
+### Compliance
+
+- **Ansible Galaxy Standards**: All tags now compliant with Galaxy naming conventions
+- **No Bypass**: Validation enforced before publish attempt
+
+## [1.1.1] - 2026-01-06
+
+### Added
+
+- **GitHub Template Repository**: Repository enabled as GitHub template in Settings
+  - `templates/role-template/`: Skeleton Ansible role structure for new roles
+  - `templates/playbook-template.yml`: Trinity-aligned playbook bootstrap template
+  - README.md "Using as GitHub Template" section with `gh repo create` instructions
+  - Galaxy.yml tagged with `template` and `github-template` for discoverability
+
+- **Symlink CI Support**: Configuration for GitHub Actions symlink resolution
+  - `.github/workflows/ci.yml` includes symlink validation job (if symlinks present)
+  - Documentation for symlink-to-regular-file conversion for CI compatibility
+  - Audit trail: symlink resolution strategy and path resolution verification
+
+### Fixed
+
+- Symlink path resolution in GitHub Actions environment
+  - Config files (.yamllint, pyproject.toml) now regular files for CI compatibility
+  - Pre-commit hooks updated to reference root-level config files
+  - Symlinks optional for consumers: recommend `install-to-repo.sh` post-clone for local development
+
+### Documentation
+
+- Updated `docs/INTEGRATION_GUIDE.md` with "Symlink Architecture" section
+- Template creation validated: Test repo created successfully
+- Confirms template structure is complete and cloneable
+- Downstream repos (iac, network-iac) can now use as bootstrap template
+
+### Compliance
+
+- **Seven Pillars**: Idempotency, Audit Logging, Documentation
+- **Trinity Pattern**: Template includes Carter, Bauer, Beale role references
+- **Hellodeolu v6**: Template RTO <15min, junior-deployable bootstrap instructions
+
 ## [1.0.2] - 2025-12-30
 
 ### Added
