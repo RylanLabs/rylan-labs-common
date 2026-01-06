@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Any
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: unifi_api
 short_description: Interact with UniFi Controller API
@@ -66,9 +66,9 @@ notes:
   - Supports UniFi Network Application API v1
   - Passwords are not logged due to no_log setting
   - Trinity compliance: Audit logging available via Bauer pattern
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Login to UniFi Controller
   rylanlab.common.unifi_api:
     controller_url: https://192.168.1.1:8443
@@ -100,9 +100,9 @@ EXAMPLES = r'''
     password: "{{ unifi_admin_password }}"
     action: query_wlan_config
     site: default
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 data:
   description: API response data containing requested information
   returned: always
@@ -123,7 +123,7 @@ msg:
   returned: always
   type: str
   sample: "Successfully authenticated to UniFi Controller"
-'''
+"""
 
 
 class UniFiAPI:
