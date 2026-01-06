@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-01-06
+
+### Added
+
+- **GitHub Template Repository**: Repository enabled as GitHub template in Settings
+  - `templates/role-template/`: Skeleton Ansible role structure for new roles
+  - `templates/playbook-template.yml`: Trinity-aligned playbook bootstrap template
+  - README.md "Using as GitHub Template" section with `gh repo create` instructions
+  - Galaxy.yml tagged with `template` and `github-template` for discoverability
+
+- **Symlink CI Support**: Configuration for GitHub Actions symlink resolution
+  - `.github/workflows/ci.yml` includes symlink validation job (if symlinks present)
+  - Documentation for symlink-to-regular-file conversion for CI compatibility
+  - Audit trail: symlink resolution strategy and path resolution verification
+
+### Fixed
+
+- Symlink path resolution in GitHub Actions environment
+  - Config files (.yamllint, pyproject.toml) now regular files for CI compatibility
+  - Pre-commit hooks updated to reference root-level config files
+  - Symlinks optional for consumers: recommend `install-to-repo.sh` post-clone for local development
+
+### Documentation
+
+- Updated `docs/INTEGRATION_GUIDE.md` with "Symlink Architecture" section
+- Template creation validated: Test repo created successfully
+- Confirms template structure is complete and cloneable
+- Downstream repos (iac, network-iac) can now use as bootstrap template
+
+### Compliance
+
+- **Seven Pillars**: Idempotency, Audit Logging, Documentation
+- **Trinity Pattern**: Template includes Carter, Bauer, Beale role references
+- **Hellodeolu v6**: Template RTO <15min, junior-deployable bootstrap instructions
+
 ## [1.0.2] - 2025-12-30
 
 ### Added
