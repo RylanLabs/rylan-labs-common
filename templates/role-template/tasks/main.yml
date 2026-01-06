@@ -1,0 +1,29 @@
+---
+# Main tasks for role-template
+# Purpose: Bootstrap template - replace with actual role tasks
+# Guardian: Bauer (Verification) | Compliance: Idempotency, Error Handling
+
+- name: Display role information
+  debug:
+    msg: "Executing {{ role_name }} v{{ role_version }}"
+  tags:
+    - always
+
+- name: Validate Trinity alignment
+  assert:
+    that:
+      - role_name is defined
+      - role_version is defined
+    fail_msg: "Role template validation failed"
+  tags:
+    - validate
+
+- name: Log role execution
+  debug:
+    msg: "{{ role_name }} completed successfully"
+  tags:
+    - always
+
+# Add your role tasks here
+# Follow Seven Pillars: Idempotency, Error Handling, Functionality,
+# Audit Logging, Failure Recovery, Security Hardening, Documentation

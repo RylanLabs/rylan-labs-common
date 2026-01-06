@@ -1,0 +1,22 @@
+---
+# Handlers for role-template
+# Purpose: Define reactive handlers for role tasks
+# Guardian: Beale (Hardening) | Compliance: Failure Recovery
+
+# Template handlers - customize as needed
+- name: Handle role error
+  debug:
+    msg: "Error occurred in {{ role_name }}"
+  listen: "role-template-error"
+  tags:
+    - handlers
+
+- name: Restart service
+  debug:
+    msg: "Service restart handler (customize as needed)"
+  listen: "restart-service"
+  tags:
+    - handlers
+
+# Add your handlers here
+# Follow Seven Pillars: Failure Recovery, Audit Logging

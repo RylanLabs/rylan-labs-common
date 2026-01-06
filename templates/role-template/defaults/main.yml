@@ -1,0 +1,21 @@
+---
+# Defaults for role-template
+# Purpose: Template defaults - customize per deployment
+# Guardian: Carter (Identity) | Compliance: Seven Pillars
+# Line limit: 140 (YAML)
+
+# Role metadata
+role_name: "role-template"
+role_version: "1.0.0"
+role_description: "Template Ansible role for RylanLabs projects"
+
+# Common configuration (customize as needed)
+enabled: true
+log_level: info
+
+# Trinity alignment check (validates Carter/Bauer/Beale presence)
+trinity_check: true
+
+# Audit configuration
+audit_enabled: true
+audit_path: "/var/log/ansible-audit"
