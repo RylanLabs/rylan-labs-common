@@ -36,9 +36,9 @@ Designed for public distribution via Ansible Galaxy, it enables modular, idempot
 7. **Observability**: `nmap` validation, audit streams; Grafana references in `docs/`.
 
 **Trinity Alignment**:
-- **Carter**: `carter-identity` role bootstraps AD/RADIUS.
-- **Bauer**: `bauer-verify` enforces linting/audits.
-- **Beale**: `beale-harden` applies firewall/isolation.
+- **Carter**: `carter_identity` role bootstraps AD/RADIUS.
+- **Bauer**: `bauer_verify` enforces linting/audits.
+- **Beale**: `beale_harden` applies firewall/isolation.
 
 **Hellodeolu v6 Alignment**: Human gates in recovery playbooks; RTO <15min validated.
 
@@ -70,15 +70,15 @@ rylan-labs-common/
 │   └── module_utils/           # Shared utils
 │       └── rylan_utils.py      # Audit/rollback helpers
 ├── roles/                      # Reusable roles
-│   ├── bauer-verify/           # Verification tasks
+│   ├── bauer_verify/           # Verification tasks
 │   │   ├── defaults/           # main.yml with vars
 │   │   ├── tasks/              # main.yml
 │   │   └── handlers/           # Service restarts
-│   ├── beale-harden/           # Hardening tasks
+│   ├── beale_harden/           # Hardening tasks
 │   │   ├── defaults/           # main.yml
 │   │   ├── tasks/              # main.yml
 │   │   └── handlers/           # Rollbacks
-│   └── carter-identity/        # Identity tasks
+│   └── carter_identity/        # Identity tasks
 │       ├── defaults/           # main.yml
 │       ├── tasks/              # main.yml
 │       └── handlers/           # Audits
@@ -102,7 +102,7 @@ rylan-labs-common/
 
 ### Trinity-Mapped Roles
 
-#### carter-identity: Identity Guardian
+#### carter_identity: Identity Guardian
 - **Purpose**: Bootstrap centralized identity (AD, RADIUS, LDAP).
 - **Defaults** (`defaults/main.yml`):
   ```yaml
@@ -113,7 +113,7 @@ rylan-labs-common/
 - **Tasks** (`tasks/main.yml`): Install packages, configure auth, audit events.
 - **Handlers**: Restart services on changes.
 
-#### bauer-verify: Verification Guardian
+#### bauer_verify: Verification Guardian
 - **Purpose**: Lint, validate config, audit to Loki.
 - **Defaults**:
   ```yaml
@@ -125,7 +125,7 @@ rylan-labs-common/
 - **Tasks**: Run `ansible-lint`, stream logs.
 - **Handlers**: Audit on validation failure.
 
-#### beale-harden: Hardening Guardian
+#### beale_harden: Hardening Guardian
 - **Purpose**: Firewall rules, isolation, nmap validation.
 - **Defaults**:
   ```yaml
