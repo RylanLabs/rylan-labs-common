@@ -1,0 +1,1 @@
+../../rylan-labs-shared-configs/scripts/validate-bash.sh

@@ -1,17 +1,1 @@
----
-extends: default
-rules:
-  line-length:
-    max: 140
-  comments:
-    min-spaces-from-content: 2
-  indentation:
-    spaces: 2
-  truthy:
-    allowed-values:
-      - "yes"
-      - "no"
-      - "true"
-      - "false"
-      - "on"
-      - "off"
+../rylan-labs-shared-configs/.yamllint
