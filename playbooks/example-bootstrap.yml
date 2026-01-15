@@ -71,8 +71,8 @@
       role: rylanlab.common.hardening_management
       vars:
         hardening_management_enabled: yes
-        firewall_rules: []  # Load from group_vars/host_vars
-        vlan_configs: []
+        hardening_management_firewall_rules: []  # Load from group_vars/host_vars
+        hardening_management_vlan_configs: []
 
   post_tasks:
     - name: Generate bootstrap summary

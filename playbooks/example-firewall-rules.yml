@@ -11,7 +11,7 @@
     unifi_pass: "password"
 
     # Example firewall hardening policy
-    firewall_rules:
+    hardening_management_firewall_rules:
       - name: "Block IoT to Management"
         ruleset: "LAN_IN"
         action: "drop"
@@ -35,7 +35,7 @@
     - name: 2. PROCESS - Validate Constraints (Production Standards)
       ansible.builtin.set_fact:
         rule_count: "{{ current_rules.data | length }}"
-      failed_when: (rule_count | int + firewall_rules | length) > 10
+      failed_when: (rule_count | int + hardening_management_firewall_rules | length) > 10
       vars:
         msg: "CONSTRAINT VIOLATION: Future rule count exceeds limit of 10"
 
@@ -46,7 +46,7 @@
         password: "{{ unifi_pass }}"
         action: create_firewall_rule
         rule_data: "{{ item }}"
-      loop: "{{ firewall_rules }}"
+      loop: "{{ hardening_management_firewall_rules }}"
       register: firewall_results
       changed_when: firewall_results.changed | default(true)
 
@@ -62,7 +62,7 @@
     - name: 5. COMPLIANCE - Verify Rule Coverage
       ansible.builtin.assert:
         that:
-          - (ansible_check_mode) or (final_audit.data | length >= firewall_rules | length)
+          - (ansible_check_mode) or (final_audit.data | length >= hardening_management_firewall_rules | length)
         fail_msg: "Firewall deployment gap detected"
         success_msg: "Fortress hardening verified"
 

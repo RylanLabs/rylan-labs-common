@@ -2,8 +2,8 @@
 # Production Ansible Collection
 
 > Production-Grade Infrastructure-as-Code — RylanLabs Common
-> Version: v1.2.0-alpha
-> Status: PUBLIC PREVIEW
+> Version: v1.2.1
+> Status: Release Candidate (v1.2.1) — see branch `release/v1.2.1-final`
 
 ---
 
@@ -90,7 +90,7 @@ rylan-labs-common/
 ├── LICENSE                     # MIT
 ├── Makefile                    # Build/validate tasks
 ├── pyproject.toml              # Python linting
-├── rylanlabs-common-1.0.0.tar.gz  # Built archive
+├── rylanlab-common-1.2.1.tar.gz  # Built archive (v1.2.1)
 └── README.md                   # This file
 ```bash
 
@@ -134,8 +134,8 @@ rylan-labs-common/
 
   ```yaml
   hardening_management_enabled: false
-  firewall_rules: []
-  vlan_configs: []
+  hardening_management_firewall_rules: []
+  hardening_management_vlan_configs: []
   ```
 
 - **Tasks**: Configure security policies and enforce infrastructure isolation.
@@ -170,6 +170,8 @@ From Source:
 git clone https://github.com/RylanLabs/rylan-labs-common.git
 cd rylan-labs-common
 ansible-galaxy collection install . --force
+# Or install the packaged tarball directly (from repo root):
+# ansible-galaxy collection install rylanlab-common-1.2.1.tar.gz --force
 ```bash
 
 ---
@@ -337,5 +339,5 @@ PRs follow Seven Pillars.
 ---
 
 **Last Updated**: 2026-01-15
-**Status**: Alpha Release
+**Status**: Release Candidate (v1.2.1) — PR branch `release/v1.2.1-final`
 **Infrastructure-as-Code requires discipline. All changes must be validated.**

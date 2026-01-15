@@ -13,8 +13,8 @@ hardening_management_enabled: false
 # HARDENING POLICIES
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-firewall_rules: []
-vlan_configs: []
+hardening_management_firewall_rules: []
+hardening_management_vlan_configs: []
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # CONSTRAINTS

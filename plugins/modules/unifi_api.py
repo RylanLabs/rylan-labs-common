@@ -234,7 +234,9 @@ class UniFiConstraintValidator:
         results: dict[str, Any] = {}
 
         try:
-            results["firewall"] = UniFiConstraintValidator.validate_firewall_rules(controller_state.get("firewall_rules", []))
+            results["firewall"] = UniFiConstraintValidator.validate_firewall_rules(
+                controller_state.get("hardening_management_firewall_rules", controller_state.get("firewall_rules", []))
+            )
         except UniFiConstraintError as e:
             results["firewall"] = {"valid": False, "error": str(e), "compliant": False}
 
@@ -801,7 +803,7 @@ def main() -> None:
         elif action == "validate_constraints":
             rules = client.get_firewall_rules()
             networks = client.get_networks()
-            val = UniFiConstraintValidator.validate_all({"firewall_rules": rules, "networks": networks})
+            val = UniFiConstraintValidator.validate_all({"hardening_management_firewall_rules": rules, "networks": networks})
             if any(not v.get("valid", True) for v in val.values()):
                 module.fail_json(msg="Constraint violations detected", validation=val, audit_log=client.audit_log)
             module.exit_json(changed=False, validation=val, audit_log=client.audit_log)
