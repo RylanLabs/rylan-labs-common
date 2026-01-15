@@ -51,15 +51,15 @@ jobs:
       - name: Run yamllint
         run: |
           echo "Running yamllint on YAML files..."
-          # Use absolute path to config; fail with diagnostic if missing
+          # Use absolute path to config; if missing, run yamllint with a minimal default config inline
           if [ -f "$GITHUB_WORKSPACE/.yamllint" ]; then
             yamllint -c "$GITHUB_WORKSPACE/.yamllint" "$GITHUB_WORKSPACE"
             echo "✓ yamllint passed"
           else
-            echo "⚠️ .yamllint not found at $GITHUB_WORKSPACE/.yamllint — falling back to default rules"
+            echo "⚠️ .yamllint not found at $GITHUB_WORKSPACE/.yamllint — using inline default rules"
             echo "Listing repo root for debugging:"
             ls -la "$GITHUB_WORKSPACE" || true
-            yamllint . || true
+            yamllint -d '{extends: default}' "$GITHUB_WORKSPACE" || true
           fi
 
       - name: Run ansible-lint on roles
@@ -106,14 +106,14 @@ jobs:
           echo "Running ruff check (no cache)..."
           # On some runners ruff cache creation can fail; disable cache to avoid E902
           # Exclude repository helper scripts from ruff scan to avoid runner IO edge-cases
-          ruff check . --config pyproject.toml --no-cache --exclude scripts
+          ruff check . --config pyproject.toml --no-cache --exclude "scripts/**"
           echo "✓ ruff check passed (no cache)"
 
       - name: Run ruff format check
         run: |
           echo "Running ruff format check (no cache)..."
           # Exclude repository helper scripts from ruff format check
-          ruff format . --check --config pyproject.toml --no-cache --exclude scripts
+          ruff format . --check --config pyproject.toml --no-cache --exclude "scripts/**"
           echo "✓ ruff format check passed (no cache)"
 
       - name: Run mypy with strict mode
