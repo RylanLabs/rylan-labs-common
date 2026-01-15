@@ -9,7 +9,7 @@
     site: "{{ unifi_site | default('default') }}"
     action: create_firewall_rule
     rule_data: "{{ item }}"
-    simulation_mode: "{{ unifi_simulation_mode | default(true) }}"
+    simulation_mode: "{{ hardening_management_unifi_simulation_mode | default(true) }}"
   loop: "{{ hardening_firewall_plan }}"
   register: hardening_apply_results
   tags: [hardening, apply]
@@ -21,6 +21,6 @@
     site: "{{ unifi_site | default('default') }}"
     action: create_network
     network_data: "{{ item }}"
-    simulation_mode: "{{ unifi_simulation_mode | default(true) }}"
+    simulation_mode: "{{ hardening_management_unifi_simulation_mode | default(true) }}"
   loop: "{{ hardening_vlan_plan }}"
   tags: [hardening, apply]

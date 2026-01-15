@@ -15,7 +15,7 @@ unifi_site: "default"
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Default to simulation mode to prevent unauthorized production changes
-unifi_simulation_mode: true
+hardening_management_unifi_simulation_mode: true
 
 # Guardian overall status
 identity_management_enabled: false

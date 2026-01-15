@@ -8,7 +8,7 @@
     mode: '0644'
   delegate_to: localhost
   become: false
-  when: not (unifi_simulation_mode | default(true))
+  when: not (hardening_management_unifi_simulation_mode | default(true))
   tags: [hardening, audit]
 
 - name: "[REPORT] Display summary"
@@ -16,7 +16,7 @@
     msg: |
       Hardening Hardening Summary
       =======================
-      Status: {{ 'SIMULATION' if (unifi_simulation_mode | default(true)) else 'PRODUCTION' }}
+      Status: {{ 'SIMULATION' if (hardening_management_unifi_simulation_mode | default(true)) else 'PRODUCTION' }}
       Changes Made: {{ hardening_apply_results.results | selectattr('changed', 'equalto', true) | list | length }}
       Constraints Validated: YES
   tags: [hardening, report]
