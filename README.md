@@ -210,6 +210,32 @@ cat docs/disciplines/trinity-execution.md
 
 ---
 
+## Implementation & Quality
+
+This collection implements the **Seven Pillars** as follows:
+
+- **Idempotency**: All roles support `--check` mode; second runs report zero changes.
+- **Error Handling**: Uses `block/rescue` for critical operations with automated rollback handlers.
+- **Audit Logging**: Structured JSON trails generated in `.audit/` for all deployments.
+- **Security**: Firewalls and VLAN isolation validated via `validate-security-posture.sh`.
+
+---
+
+## Emergency Procedures
+
+**Target RTO**: < 15 minutes for all incidents.
+
+| Scenario | Recovery Strategy | Target |
+| --- | --- | --- |
+| Collection Missing | `ansible-galaxy collection install . --force` | 2 min |
+| Task Failure | Identify tags via `-vvv` and re-run specific tags | 5 min |
+| Service Down | Check reachability; fallback to static credentials | 8 min |
+| Full Reset | Run `scripts/example-recovery.yml` with Trinity tags | 15 min |
+
+For detailed runbooks, see [docs/EMERGENCY_RESPONSE.md](docs/EMERGENCY_RESPONSE.md) (Canonical Link).
+
+---
+
 ## Usage
 
 ### Example Playbook

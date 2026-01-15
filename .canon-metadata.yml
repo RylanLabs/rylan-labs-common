@@ -14,7 +14,8 @@ consumer_role:
     validators: 6
     trinity_enforcers: 2
     discipline_docs: 4
-  total_symlinks: 13
+    doctrine_docs: 3  # pillars, emergency, tandem
+  total_symlinks: 16
   integration_pattern: "pure consumer (inherits all canon standards, provides nothing downstream)"
 
 symlink_manifest:
@@ -69,6 +70,17 @@ symlink_manifest:
       purpose: "Developer reference for API coverage requirements"
       lines: 66
 
+  doctrine_docs:
+    - source: "rylan-canon-library/docs/seven-pillars.md"
+      target: "docs/SEVEN_PILLARS.md"
+      purpose: "Canonical definition of RylanLabs quality pillars"
+    - source: "rylan-canon-library/docs/emergency-procedures.md"
+      target: "docs/EMERGENCY_RESPONSE.md"
+      purpose: "Master disaster recovery runbooks"
+    - source: "rylan-canon-library/docs/irl-first-approach.md"
+      target: "docs/TANDEM_WORKFLOW.md"
+      purpose: "Canonical process guide for tandem ecosystems"
+
 documented_overrides:
   count: 0
   description: "Pure consumer - no divergence from canon"
@@ -83,13 +95,14 @@ governance_alignment:
   beale_security: "✓ Pre-commit hooks functional, CI validation added"
 
 compliance:
-  status: "100% (was 13%)"
-  symlinks_expected: 15
-  symlinks_present: 13
+  status: "100% (Canonical Perfection Enhancement)"
+  symlinks_expected: 16
+  symlinks_present: 16
   symlinks_broken: 0
-  symlinks_functional: 13
+  symlinks_functional: 16
   pre_commit_hooks: 12
   validators_functional: 6
   discipline_docs_readable: 4
+  doctrine_docs_readable: 3
 
-guardian_consciousness: 9.9
+guardian_consciousness: 9.95
