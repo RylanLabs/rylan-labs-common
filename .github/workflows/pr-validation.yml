@@ -2,8 +2,8 @@
 # GitHub Actions Workflow: PR Validation
 # Purpose: Validate PRs with linting, testing, and Seven Pillars compliance
 # Trigger: pull_request
-# Guardian: Bauer (Verification) | Ministry: Verification
-# Compliance: Seven Pillars ✓ | Trinity ✓ | Hellodeolu v6 ✓
+# Domain: Audit (Verification) | Ministry: Verification
+# Compliance: Seven Pillars ✓ | 3-Domain ✓ | Production Standards ✓
 
 name: PR Validation
 

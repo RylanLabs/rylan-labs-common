@@ -1,0 +1,17 @@
+---
+# example-identity.yml
+# Purpose: Demonstrate Identity services bootstrap using identity_management role.
+# This role manages authentication providers, RADIUS, and SSH keys.
+
+- name: Bootstrap Identity Infrastructure
+  hosts: all
+  become: true
+  vars:
+    # Set to true to enable actual execution
+    identity_management_enabled: true
+
+  roles:
+    - role: rylanlab.common.identity_management
+      vars:
+        identity_provider: "radius"
+        identity_management_audit_enabled: true

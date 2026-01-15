@@ -2,8 +2,8 @@
 # GitHub Actions Workflow: Galaxy Publish
 # Purpose: Publish Ansible collection to Ansible Galaxy
 # Trigger: release (published) OR push tag v*
-# Guardian: Bauer (Verification) | Ministry: Verification
-# Compliance: Seven Pillars ✓ | Trinity ✓ | Hellodeolu v6 ✓
+# Domain: Audit (Verification) | Ministry: Verification
+# Compliance: Seven Pillars ✓ | 3-Domain ✓ | Production Standards ✓
 
 name: Galaxy Publish
 

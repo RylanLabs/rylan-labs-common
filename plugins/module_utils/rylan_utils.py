@@ -18,14 +18,14 @@ def format_audit_log(action: str, details: dict[str, Any]) -> dict[str, Any]:
     return {"action": action, "details": details}
 
 
-def validate_trinity_alignment(
+def validate_three_domain_alignment(
     component: str,
 ) -> bool:
-    """Validate Trinity (Carter/Bauer/Beale) alignment."""
+    """Validate 3-Domain (Identity/Audit/Hardening) alignment."""
     valid_components = {
-        "carter-identity",
-        "bauer-verify",
-        "beale-harden",
+        "identity-management",
+        "infrastructure-verify",
+        "hardening-management",
     }
     return component in valid_components
 

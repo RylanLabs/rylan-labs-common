@@ -11,8 +11,8 @@ defined in `rylan-canon-library`. This integration establishes:
 
 - Zero drift via symlinks to canonical linting and validators
 - Pre-commit hooks that validate code before commit
-- Guardian alignment: Carter, Bauer, Beale patterns enforced
-- Local access to Trinity, security, vault, and API disciplines
+- Guardian alignment: Identity, Audit, Hardening patterns enforced
+- Local access to 3-Domain, security, vault, and API disciplines
 
 ---
 
@@ -40,21 +40,21 @@ Invoked by pre-commit hooks to validate code.
 | `scripts/validate-ansible.sh` | shared-configs | Ansible |
 | `scripts/validate-python.sh` | shared-configs | Python |
 | `scripts/validate-yaml.sh` | shared-configs | YAML |
-| `scripts/playbook-structure-linter.py` | shared-configs | Trinity validation |
+| `scripts/playbook-structure-linter.py` | shared-configs | 3-Domain validation |
 | `scripts/validate-security-posture.sh` | shared-configs | Security audit |
 
 **Impact**: Pre-commit hooks now functional. Immediate validation feedback.
 
-### Trinity Enforcers (2 symlinks)
+### 3-Domain Enforcers (2 symlinks)
 
-Enforce the sacred Trinity pattern and security requirements.
+Enforce the sacred 3-Domain pattern and security requirements.
 
 | Enforcer | Source | Requirement |
 | --- | --- | --- |
-| `playbook-structure-linter.py` | shared-configs | 7-task Trinity structure |
-| `validate-security-posture.sh` | shared-configs | Hellodeolu v6 compliance |
+| `playbook-structure-linter.py` | shared-configs | 7-task 3-Domain structure |
+| `validate-security-posture.sh` | shared-configs | Production Standards compliance |
 
-**Impact**: Playbooks must follow Trinity. Prevents ad-hoc tasks.
+**Impact**: Playbooks must follow 3-Domain. Prevents ad-hoc tasks.
 
 ### Discipline Docs (4 symlinks)
 
@@ -62,7 +62,7 @@ Developer reference material for standards and best practices.
 
 | Document | Lines | Purpose |
 | --- | --- | --- |
-| `trinity-execution.md` | 335 | Trinity pattern execution |
+| `three_domain-execution.md` | 335 | 3-Domain pattern execution |
 | `security-posture-discipline.md` | 56 | Security hardening |
 | `ansible-vault-discipline.md` | 75 | Secrets management |
 | `api-coverage-discipline.md` | 66 | API coverage requirements |
@@ -76,7 +76,7 @@ Developer reference material for standards and best practices.
 ```text
 rylan-labs-common (Pure Consumer)
     ├─ Inherits from rylan-canon-library
-    │   └─ Discipline docs (trinity, security, vault, api)
+    │   └─ Discipline docs (three_domain, security, vault, api)
     │
     ├─ Inherits from rylan-labs-shared-configs
     │   ├─ Linting configs
@@ -102,7 +102,7 @@ This is a **pure consumer architecture**:
 git clone https://github.com/RylanLabs/rylan-labs-common.git
 cd rylan-labs-common
 pre-commit install
-cat docs/disciplines/trinity-execution.md
+cat docs/disciplines/three_domain-execution.md
 ```
 
 ### Commit Workflow
@@ -117,7 +117,7 @@ git commit -m "feat(playbook): Add my-playbook"
 # ✓ Bash validation
 # ✓ Ansible validation
 # ✓ Python validation
-# ✓ Trinity structure
+# ✓ 3-Domain structure
 # ✓ Security posture
 ```
 
@@ -161,9 +161,9 @@ git commit -m "chore: Sync canon symlinks to latest"
 
 ```bash
 find . -type l -exec test ! -e {} \; -print
-ls -la ../rylan-canon-library/docs/trinity-execution.md
-ln -sf ../../../rylan-canon-library/docs/trinity-execution.md \
-  docs/disciplines/trinity-execution.md
+ls -la ../rylan-canon-library/docs/three_domain-execution.md
+ln -sf ../../../rylan-canon-library/docs/three_domain-execution.md \
+  docs/disciplines/three_domain-execution.md
 ```
 
 ### Pre-Commit Failures
@@ -177,8 +177,8 @@ pre-commit run --all-files --verbose
 ### Symlinks Not Working
 
 ```bash
-cd docs/disciplines && ls -la trinity-execution.md
-head trinity-execution.md
+cd docs/disciplines && ls -la three_domain-execution.md
+head three_domain-execution.md
 cd ~/repos && git clone https://github.com/RylanLabs/rylan-canon-library.git
 ```
 

@@ -1,0 +1,8 @@
+---
+# Default variables for infrastructure verification role
+# Override in playbook or group_vars/host_vars as needed
+
+infrastructure_verify_enabled: no
+infrastructure_verify_audit_enabled: yes
+infrastructure_loki_endpoint: ""
+infrastructure_log_retention_days: 90

@@ -1,0 +1,11 @@
+---
+- name: Converge hardening_management role
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: "Include hardening_management"
+      ansible.builtin.include_role:
+        name: "hardening_management"
+      vars:
+        hardening_management_enabled: true
+        hardening_management_simulation_mode: true

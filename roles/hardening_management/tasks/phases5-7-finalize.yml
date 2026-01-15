@@ -1,0 +1,27 @@
+---
+# Hardening Hardening Guardian - Phases 5-7: AUDIT, REPORT, FINALIZE
+
+- name: "[AUDIT] Record execution event"
+  ansible.builtin.copy:
+    content: "{{ hardening_apply_results | to_nice_json }}"
+    dest: ".audit/hardening-execution-{{ ansible_date_time.iso8601 }}.json"
+    mode: '0644'
+  delegate_to: localhost
+  become: false
+  when: not (unifi_simulation_mode | default(true))
+  tags: [hardening, audit]
+
+- name: "[REPORT] Display summary"
+  ansible.builtin.debug:
+    msg: |
+      Hardening Hardening Summary
+      =======================
+      Status: {{ 'SIMULATION' if (unifi_simulation_mode | default(true)) else 'PRODUCTION' }}
+      Changes Made: {{ hardening_apply_results.results | selectattr('changed', 'equalto', true) | list | length }}
+      Constraints Validated: YES
+  tags: [hardening, report]
+
+- name: "[FINALIZE] Role completion"
+  ansible.builtin.set_fact:
+    hardening_management_completed: true
+  tags: [hardening, finalize]

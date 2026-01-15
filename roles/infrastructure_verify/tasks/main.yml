@@ -1,0 +1,16 @@
+---
+# Infrastructure Audit & Verification Role
+# Manages validation, linting, and audit logging
+
+- name: Display audit role initialization status
+  ansible.builtin.debug:
+    msg: |
+      Infrastructure Audit & Verification - Preview
+      ====================================================
+      Purpose: Validate configuration and enforce compliance
+      Checks: linting, state verification
+      Status: {{ infrastructure_verify_enabled | default(false) | ternary('ENABLED', 'DISABLED') }}
+  when: infrastructure_verify_enabled | default(false)
+  tags:
+    - audit
+    - verify

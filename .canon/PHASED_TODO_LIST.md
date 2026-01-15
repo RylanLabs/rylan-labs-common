@@ -1,9 +1,10 @@
+<!-- markdownlint-disable MD013 MD024 MD001 MD029 MD040 MD025 -->
 # Canon Integration Phased TODO List
 
-> **Status**: READY FOR EXECUTION  
-> **Target Duration**: 4.5 hours (6 phases)  
-> **Execution Date**: 2026-01-14  
-> **Authority**: canon-manifest.yaml v2.0.0  
+> **Status**: READY FOR EXECUTION
+> **Target Duration**: 4.5 hours (6 phases)
+> **Execution Date**: 2026-01-14
+> **Authority**: canon-manifest.yaml v2.0.0
 > **Source**: Tier 0 Research Complete (822 lines analyzed)
 
 ---
@@ -14,7 +15,7 @@
 |-------|-------|----------|-------|--------|
 | 1 | Big 3 Blockers | 60 min | 2 | ⏳ Ready |
 | 2 | Next 4 Validators | 60 min | 2 | ⏳ Ready |
-| 3 | Trinity Enforcers | 45 min | 2 | ⏳ Ready |
+| 3 | 3-Domain Enforcers | 45 min | 2 | ⏳ Ready |
 | 4 | Documentation | 30 min | 2 | ⏳ Ready |
 | 5 | Metadata & CI | 45 min | 4 | ⏳ Ready |
 | 6 | Validation & Commit | 30 min | 5 | ⏳ Ready |
@@ -24,7 +25,7 @@
 
 ## 🎯 EXECUTION FLOW
 
-```
+```bash
 Phase 1 (60 min)
     ↓ [Symlinks created]
 Phase 2 (60 min)
@@ -37,21 +38,22 @@ Phase 5 (45 min)
     ↓ [Integration metadata created]
 Phase 6 (30 min) → ✅ COMPLETE
     [Validation, Commit, Tag, Push]
-```
+```bash
 
 ---
 
 ## PHASE 1: THE BIG 3 BLOCKERS (60 min)
 
-**Objective**: Symlink core linting configs to prevent local divergence  
-**Impact**: Stops docs/YAML from diverging; enables pre-commit hooks  
-**Governance**: Bauer (consistency enforcement)
+**Objective**: Symlink core linting configs to prevent local divergence
+**Impact**: Stops docs/YAML from diverging; enables pre-commit hooks
+**Governance**: Verification Domain (consistency enforcement)
 
 ### ✅ TODO 1.1: Create Big 3 Blocker Symlinks
 
 **Description**: Create symlinks for .markdownlint.json, .yamllint, .pre-commit-config.yaml
 
 **Commands**:
+
 ```bash
 cd ~/repos/rylan-labs-common
 
@@ -66,16 +68,18 @@ ln -sf ../rylanlabs-shared-configs/pre-commit/.pre-commit-config.yaml .pre-commi
 
 # Verify symlinks created
 ls -la .markdownlint.json .yamllint .pre-commit-config.yaml
-```
+```bash
 
 **Expected Output**:
-```
+
+```bash
 lrwxrwxrwx  ... .markdownlint.json -> ../rylanlabs-shared-configs/linting/.markdownlint.json
 lrwxrwxrwx  ... .yamllint -> ../rylanlabs-shared-configs/linting/.yamllint
 lrwxrwxrwx  ... .pre-commit-config.yaml -> ../rylanlabs-shared-configs/pre-commit/.pre-commit-config.yaml
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] All 3 symlinks created
 - [ ] All symlinks use relative paths (not absolute)
 - [ ] No broken links (`find . -type l -exec test ! -e {} \; -print`)
@@ -90,6 +94,7 @@ lrwxrwxrwx  ... .pre-commit-config.yaml -> ../rylanlabs-shared-configs/pre-commi
 **Description**: Verify linting configs work and pre-commit hooks installable
 
 **Commands**:
+
 ```bash
 cd ~/repos/rylan-labs-common
 
@@ -108,17 +113,19 @@ pre-commit install
 # Verify hooks installed
 ls -la .git/hooks/pre-commit
 # Expected: File exists and is executable
-```
+```bash
 
 **Expected Output**:
-```
+
+```bash
 ✓ README.md passes markdown linting
 ✓ All YAML files pass linting with 160-char line length
 ✓ pre-commit installed at .git/hooks/pre-commit
 ✓ All hooks configured in .pre-commit-config.yaml
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] Markdown linting passes (or violations are known)
 - [ ] YAML linting passes (or violations are known)
 - [ ] Pre-commit hooks installed successfully
@@ -130,15 +137,16 @@ ls -la .git/hooks/pre-commit
 
 ## PHASE 2: THE NEXT 4 VALIDATORS (60 min)
 
-**Objective**: Symlink validation scripts that pre-commit hooks call  
-**Impact**: Pre-commit hooks now functional; local validation mirrors CI  
-**Governance**: Bauer (validation enforcement)
+**Objective**: Symlink validation scripts that pre-commit hooks call
+**Impact**: Pre-commit hooks now functional; local validation mirrors CI
+**Governance**: Verification Domain (validation enforcement)
 
 ### ✅ TODO 2.1: Create 4 Validator Script Symlinks
 
 **Description**: Create symlinks for validate-bash.sh, validate-ansible.sh, validate-python.sh, validate-yaml.sh
 
 **Commands**:
+
 ```bash
 cd ~/repos/rylan-labs-common
 mkdir -p scripts
@@ -157,17 +165,19 @@ ln -sf ../../rylanlabs-shared-configs/scripts/validate-yaml.sh scripts/validate-
 
 # Verify symlinks created
 ls -la scripts/validate-*.sh
-```
+```bash
 
 **Expected Output**:
-```
+
+```bash
 lrwxrwxrwx  ... validate-bash.sh -> ../../rylanlabs-shared-configs/scripts/validate-bash.sh
 lrwxrwxrwx  ... validate-ansible.sh -> ../../rylanlabs-shared-configs/scripts/validate-ansible.sh
 lrwxrwxrwx  ... validate-python.sh -> ../../rylanlabs-shared-configs/scripts/validate-python.sh
 lrwxrwxrwx  ... validate-yaml.sh -> ../../rylanlabs-shared-configs/scripts/validate-yaml.sh
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] All 4 symlinks created
 - [ ] All symlinks use relative paths
 - [ ] No broken links
@@ -182,6 +192,7 @@ lrwxrwxrwx  ... validate-yaml.sh -> ../../rylanlabs-shared-configs/scripts/valid
 **Description**: Run each validator manually to verify they work
 
 **Commands**:
+
 ```bash
 cd ~/repos/rylan-labs-common
 
@@ -204,18 +215,20 @@ cd ~/repos/rylan-labs-common
 # Test pre-commit integration (full run)
 pre-commit run --all-files
 # Expected: All hooks pass
-```
+```bash
 
 **Expected Output**:
-```
+
+```bash
 ✓ Bash validation: All shell scripts pass
 ✓ Ansible validation: All playbooks/roles pass ansible-lint
 ✓ Python validation: All modules pass ruff/mypy/bandit
 ✓ YAML validation: All YAML files pass yamllint
 ✓ Pre-commit: All 10+ hooks pass
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] validate-bash.sh runs successfully
 - [ ] validate-ansible.sh runs successfully
 - [ ] validate-python.sh runs successfully
@@ -228,15 +241,16 @@ pre-commit run --all-files
 
 ## PHASE 3: THE TRINITY ENFORCERS (45 min)
 
-**Objective**: Symlink Trinity pattern enforcement scripts  
-**Impact**: Playbooks must follow 7-task Trinity; security posture validated  
-**Governance**: Bauer (pattern enforcement)
+**Objective**: Symlink 3-Domain pattern enforcement scripts
+**Impact**: Playbooks must follow 7-task 3-Domain; security posture validated
+**Governance**: Verification Domain (pattern enforcement)
 
-### ✅ TODO 3.1: Create Trinity Enforcer Symlinks
+### ✅ TODO 3.1: Create 3-Domain Enforcer Symlinks
 
 **Description**: Create symlinks for playbook-structure-linter.py and validate-security-posture.sh
 
 **Commands**:
+
 ```bash
 cd ~/repos/rylan-labs-common/scripts
 
@@ -248,15 +262,17 @@ ln -sf ../../rylanlabs-shared-configs/scripts/validate-security-posture.sh valid
 
 # Verify symlinks created
 ls -la playbook-structure-linter.py validate-security-posture.sh
-```
+```bash
 
 **Expected Output**:
-```
+
+```bash
 lrwxrwxrwx  ... playbook-structure-linter.py -> ../../rylanlabs-shared-configs/scripts/playbook-structure-linter.py
 lrwxrwxrwx  ... validate-security-posture.sh -> ../../rylanlabs-shared-configs/scripts/validate-security-posture.sh
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] Both symlinks created
 - [ ] Symlinks use relative paths
 - [ ] No broken links
@@ -268,15 +284,16 @@ lrwxrwxrwx  ... validate-security-posture.sh -> ../../rylanlabs-shared-configs/s
 
 ### ✅ TODO 3.2: Test Playbook Linting
 
-**Description**: Test Trinity structure validation on example playbooks
+**Description**: Test 3-Domain structure validation on example playbooks
 
 **Commands**:
+
 ```bash
 cd ~/repos/rylan-labs-common
 
 # Test playbook structure linting
 ./scripts/playbook-structure-linter.py playbooks/*.yml
-# Expected: Reports Trinity compliance (7 tasks per playbook)
+# Expected: Reports 3-Domain compliance (7 tasks per playbook)
 
 # Test security posture validation (if applicable)
 # ./scripts/validate-security-posture.sh --input inventory/network_scheme.yml
@@ -285,20 +302,22 @@ cd ~/repos/rylan-labs-common
 # Verify pre-commit integration
 pre-commit run --all-files
 # Expected: playbook-structure-linter runs automatically
-```
+```bash
 
 **Expected Output**:
-```
+
+```bash
 ✓ Playbook structure validation:
-  - example-bootstrap.yml: 7-task Trinity compliance ✓
-  - example-recovery.yml: 7-task Trinity compliance ✓
-  - example-unifi-integration.yml: 7-task Trinity compliance ✓
-  - example-validate-only.yml: 7-task Trinity compliance ✓
-```
+  - example-bootstrap.yml: 7-task 3-Domain compliance ✓
+  - example-recovery.yml: 7-task 3-Domain compliance ✓
+  - example-unifi-integration.yml: 7-task 3-Domain compliance ✓
+  - example-validate-only.yml: 7-task 3-Domain compliance ✓
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] playbook-structure-linter.py runs successfully
-- [ ] Validates all playbooks for Trinity compliance
+- [ ] Validates all playbooks for 3-Domain compliance
 - [ ] Reports on GATHER→PROCESS→APPLY→VERIFY→AUDIT→REPORT→FINALIZE tasks
 
 **Rollback**: `rm scripts/playbook-structure-linter.py scripts/validate-security-posture.sh`
@@ -307,23 +326,24 @@ pre-commit run --all-files
 
 ## PHASE 4: THE DOCUMENTATION (30 min)
 
-**Objective**: Symlink discipline documentation for developer reference  
-**Impact**: Developers have local access to Trinity, hardening, vault, API-coverage docs  
-**Governance**: Carter (identity/education)
+**Objective**: Symlink discipline documentation for developer reference
+**Impact**: Developers have local access to 3-Domain, hardening, vault, API-coverage docs
+**Governance**: Identity Domain (identity/education)
 
 ### ✅ TODO 4.1: Create docs/disciplines/ & Symlink Docs
 
 **Description**: Create docs/disciplines directory and symlink 4 discipline documents
 
 **Commands**:
+
 ```bash
 cd ~/repos/rylan-labs-common
 
 # Create docs/disciplines directory
 mkdir -p docs/disciplines
 
-# Create trinity-execution.md symlink
-ln -sf ../../../rylan-canon-library/docs/trinity-execution.md docs/disciplines/trinity-execution.md
+# Create three_domain-execution.md symlink
+ln -sf ../../../rylan-canon-library/docs/three_domain-execution.md docs/disciplines/three_domain-execution.md
 
 # Create security-posture-discipline.md symlink
 ln -sf ../../../rylan-canon-library/docs/security-posture-discipline.md docs/disciplines/security-posture-discipline.md
@@ -336,17 +356,19 @@ ln -sf ../../../rylan-canon-library/docs/api-coverage-discipline.md docs/discipl
 
 # Verify symlinks created
 ls -la docs/disciplines/
-```
+```bash
 
 **Expected Output**:
-```
-lrwxrwxrwx  ... trinity-execution.md -> ../../../rylan-canon-library/docs/trinity-execution.md
+
+```bash
+lrwxrwxrwx  ... three_domain-execution.md -> ../../../rylan-canon-library/docs/three_domain-execution.md
 lrwxrwxrwx  ... security-posture-discipline.md -> ../../../rylan-canon-library/docs/security-posture-discipline.md
 lrwxrwxrwx  ... ansible-vault-discipline.md -> ../../../rylan-canon-library/docs/ansible-vault-discipline.md
 lrwxrwxrwx  ... api-coverage-discipline.md -> ../../../rylan-canon-library/docs/api-coverage-discipline.md
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] docs/disciplines/ directory created
 - [ ] All 4 symlinks created
 - [ ] Symlinks use relative paths
@@ -361,11 +383,12 @@ lrwxrwxrwx  ... api-coverage-discipline.md -> ../../../rylan-canon-library/docs/
 **Description**: Test that discipline documents are accessible and readable
 
 **Commands**:
+
 ```bash
 cd ~/repos/rylan-labs-common
 
-# Test trinity-execution.md
-head -20 docs/disciplines/trinity-execution.md
+# Test three_domain-execution.md
+head -20 docs/disciplines/three_domain-execution.md
 # Expected: Shows canon documentation content
 
 # Test security-posture-discipline.md
@@ -379,18 +402,20 @@ find docs/disciplines/ -type l -exec test ! -e {} \; -print
 # Count total lines
 wc -l docs/disciplines/*.md
 # Expected: Shows line count for each discipline doc
-```
+```bash
 
 **Expected Output**:
-```
-✓ trinity-execution.md: Readable (800+ lines)
+
+```bash
+✓ three_domain-execution.md: Readable (800+ lines)
 ✓ security-posture-discipline.md: Readable (400+ lines)
 ✓ ansible-vault-discipline.md: Readable (300+ lines)
 ✓ api-coverage-discipline.md: Readable (250+ lines)
 ✓ No broken links detected
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] All 4 discipline docs are readable
 - [ ] No broken symlinks
 - [ ] Content is from canonical source
@@ -401,15 +426,16 @@ wc -l docs/disciplines/*.md
 
 ## PHASE 5: METADATA & CI (45 min)
 
-**Objective**: Document integration and add CI validation  
-**Impact**: Integration tracked; CI includes drift detection; developers understand architecture  
-**Governance**: Bauer (auditing/verification)
+**Objective**: Document integration and add CI validation
+**Impact**: Integration tracked; CI includes drift detection; developers understand architecture
+**Governance**: Verification Domain (auditing/verification)
 
 ### ✅ TODO 5.1: Create .canon-metadata.yml
 
 **Description**: Create metadata file tracking canon integration
 
 **Commands**:
+
 ```bash
 cat > ~/repos/rylan-labs-common/.canon-metadata.yml << 'EOF'
 ---
@@ -424,7 +450,7 @@ consumer_role:
   symlinks:
     linting_configs: 3       # .markdownlint.json, .yamllint, .pre-commit-config.yaml
     validators: 6            # validate-*.sh, playbook-structure-linter.py
-    disciplines: 4           # trinity, security, vault, api-coverage
+    disciplines: 4           # three_domain, security, vault, api-coverage
   total: 13
 
 symlink_sources:
@@ -440,18 +466,20 @@ EOF
 
 # Verify file created
 cat ~/.canon-metadata.yml
-```
+```bash
 
 **Expected Output**:
-```
+
+```bash
 ---
 canon_version: "2.0.0"
 integration_date: "2026-01-14"
 repository_role: "consumer"
 ...
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] .canon-metadata.yml created in repo root
 - [ ] YAML syntax valid (`yamllint .canon-metadata.yml`)
 - [ ] Contains all required fields
@@ -466,6 +494,7 @@ repository_role: "consumer"
 **Description**: Create comprehensive integration architecture documentation
 
 **Commands**:
+
 ```bash
 cat > ~/repos/rylan-labs-common/docs/CANON-INTEGRATION.md << 'EOF'
 # Canon Integration Architecture
@@ -495,7 +524,7 @@ Unlike `rylanlabs-shared-configs` (which has dual role), this repo:
 - `scripts/validate-security-posture.sh` → shared-configs/scripts/
 
 ### Disciplines (4)
-- `docs/disciplines/trinity-execution.md` → canon/docs/
+- `docs/disciplines/three_domain-execution.md` → canon/docs/
 - `docs/disciplines/security-posture-discipline.md` → canon/docs/
 - `docs/disciplines/ansible-vault-discipline.md` → canon/docs/
 - `docs/disciplines/api-coverage-discipline.md` → canon/docs/
@@ -510,32 +539,39 @@ cd ~/repos/rylan-labs-common
 # Symlinks now point to latest versions
 git add docs/disciplines/ scripts/ .markdownlint.json .yamllint .pre-commit-config.yaml
 git commit -m "chore: Sync canon symlinks to v2.0.0"
-```
+```bash
 
 ## Troubleshooting
 
 ### Broken Symlink
+
 ```bash
 find . -type l -exec test ! -e {} \; -print
 ln -sf ../rylanlabs-shared-configs/linting/.yamllint .yamllint
-```
+```bash
 
 ### Pre-Commit Hook Failures
+
 ```bash
 pre-commit uninstall
 pre-commit install
 pre-commit run --all-files
-```
+```bash
+
 EOF
 
 # Verify file created
+
 wc -l ~/repos/rylan-labs-common/docs/CANON-INTEGRATION.md
-```
+
+```bash
 
 **Expected Output**:
-```
+```bash
+
 100+ lines in docs/CANON-INTEGRATION.md
-```
+
+```bash
 
 **Acceptance Criteria**:
 - [ ] docs/CANON-INTEGRATION.md created
@@ -565,18 +601,18 @@ cat >> /tmp/audit_job.yml << 'EOF'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        
+
       - name: Clone Canon Library
         run: |
           git clone --depth 1 \
             https://github.com/RylanLabs/rylan-canon-library.git \
             /tmp/canon
-            
+
       - name: Detect Drift
         run: |
           cd /tmp/canon
           ./scripts/audit-canon.sh $GITHUB_WORKSPACE
-          
+
       - name: Report Drift
         if: failure()
         run: |
@@ -588,9 +624,10 @@ EOF
 # Note: Manual editing required in VS Code for proper YAML insertion
 # File: .github/workflows/galaxy-publish.yml
 # Insert audit_job.yml content BEFORE build-collection job
-```
+```bash
 
 **Expected Output**:
+
 ```yaml
 jobs:
   audit-canon-drift:
@@ -600,9 +637,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
       # ... rest of job
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] .github/workflows/galaxy-publish.yml modified
 - [ ] audit-canon-drift job added
 - [ ] YAML syntax valid
@@ -617,6 +655,7 @@ jobs:
 **Description**: Add Canon Integration section to README
 
 **Commands**:
+
 ```bash
 # Add to README.md after relevant section:
 
@@ -628,7 +667,7 @@ This collection is integrated with [rylan-canon-library](https://github.com/Ryla
 
 **What This Means:**
 - Linting configs synchronized with org standards
-- Pre-commit hooks enforce Trinity patterns
+- Pre-commit hooks enforce 3-Domain patterns
 - Validators run locally before CI
 - Disciplines documented in `docs/disciplines/`
 
@@ -641,19 +680,23 @@ pre-commit install
 make lint  # Runs all validators
 
 # Read disciplines
-cat docs/disciplines/trinity-execution.md
-```
+cat docs/disciplines/three_domain-execution.md
+```bash
 
 **For Maintainers:**
+
 - See `docs/CANON-INTEGRATION.md` for architecture
 - See `.canon-metadata.yml` for symlink manifest
 - Symlinks auto-update when canon/shared-configs update
 EOF
 
 # Note: Manual editing required in VS Code
+
 # File: README.md
+
 # Add canon-section.md content in appropriate location
-```
+
+```bash
 
 **Expected Output**:
 ```markdown
@@ -661,9 +704,10 @@ EOF
 
 This collection is integrated with rylan-canon-library v2.0.0.
 ...
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] README.md updated
 - [ ] Canon Integration section added
 - [ ] Developer instructions clear
@@ -675,15 +719,16 @@ This collection is integrated with rylan-canon-library v2.0.0.
 
 ## PHASE 6: VALIDATION & COMMIT (30 min)
 
-**Objective**: Verify all symlinks, test pre-commit, commit integration  
-**Impact**: Zero drift; all changes tracked; ready for Galaxy publish  
-**Governance**: Carter (bootstrap/verification)
+**Objective**: Verify all symlinks, test pre-commit, commit integration
+**Impact**: Zero drift; all changes tracked; ready for Galaxy publish
+**Governance**: Identity Domain (bootstrap/verification)
 
 ### ✅ TODO 6.1: Verify All 13 Symlinks Valid
 
 **Description**: Comprehensive check that all 13 symlinks exist and resolve correctly
 
 **Commands**:
+
 ```bash
 cd ~/repos/rylan-labs-common
 
@@ -716,7 +761,7 @@ for link in \
   scripts/validate-yaml.sh \
   scripts/playbook-structure-linter.py \
   scripts/validate-security-posture.sh \
-  docs/disciplines/trinity-execution.md \
+  docs/disciplines/three_domain-execution.md \
   docs/disciplines/security-posture-discipline.md \
   docs/disciplines/ansible-vault-discipline.md \
   docs/disciplines/api-coverage-discipline.md; do
@@ -727,10 +772,11 @@ for link in \
     exit 1
   fi
 done
-```
+```bash
 
 **Expected Output**:
-```
+
+```bash
 ✓ All symlinks valid (0 broken links)
 ✓ .markdownlint.json
 ✓ .yamllint
@@ -741,13 +787,14 @@ done
 ✓ scripts/validate-yaml.sh
 ✓ scripts/playbook-structure-linter.py
 ✓ scripts/validate-security-posture.sh
-✓ docs/disciplines/trinity-execution.md
+✓ docs/disciplines/three_domain-execution.md
 ✓ docs/disciplines/security-posture-discipline.md
 ✓ docs/disciplines/ansible-vault-discipline.md
 ✓ docs/disciplines/api-coverage-discipline.md
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] 13/13 symlinks exist
 - [ ] 0 broken links
 - [ ] All symlinks use relative paths
@@ -762,6 +809,7 @@ done
 **Description**: Install and run pre-commit hooks for full validation
 
 **Commands**:
+
 ```bash
 cd ~/repos/rylan-labs-common
 
@@ -774,10 +822,11 @@ pre-commit run --all-files
 
 # Expected: All hooks pass
 # If failures, fix violations and re-run
-```
+```bash
 
 **Expected Output**:
-```
+
+```bash
 Trim Trailing Whitespace...........................................Passed
 Fix End of File Fixer................................................Passed
 Check Yaml.........................................................Passed
@@ -790,9 +839,10 @@ validate-python.sh..................................................Passed
 validate-yaml.sh....................................................Passed
 playbook-structure-linter.py........................................Passed
 validate-security-posture.sh........................................Passed
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] Pre-commit hooks installed
 - [ ] All hooks pass (or violations are known/fixed)
 - [ ] Pre-commit version >= 2.0.0
@@ -806,6 +856,7 @@ validate-security-posture.sh........................................Passed
 **Description**: Run audit-canon.sh to verify zero drift from canon
 
 **Commands**:
+
 ```bash
 cd ~/repos/rylan-canon-library
 
@@ -818,10 +869,11 @@ cd ~/repos/rylan-canon-library
 # ✓ Documented overrides: 0 (pure consumer)
 # ✓ Checksum validation: 0 drift detected
 # Grade: A+ (100/100)
-```
+```bash
 
 **Expected Output**:
-```
+
+```bash
 Auditing: /home/egx570/repos/rylan-labs-common
 ✓ Manifest compliance: 13/13 sacred files present
 ✓ Symlink integrity: 13/13 links valid
@@ -829,9 +881,10 @@ Auditing: /home/egx570/repos/rylan-labs-common
 ✓ Checksum validation: 0 drift detected
 Grade: A+ (100/100)
 Canonical status: PERFECT ALIGNMENT
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] Canon audit runs successfully
 - [ ] 100/100 score
 - [ ] 0 drift detected
@@ -846,6 +899,7 @@ Canonical status: PERFECT ALIGNMENT
 **Description**: Stage all changes and create comprehensive commit
 
 **Commands**:
+
 ```bash
 cd ~/repos/rylan-labs-common
 
@@ -884,14 +938,14 @@ Phase 2: The Next 4 Validators (validation scripts)
   ✓ Symlinked validate-yaml.sh → shared-configs
   ✓ Pre-commit hooks now functional
 
-Phase 3: The Trinity Enforcers (pattern enforcement)
+Phase 3: The 3-Domain Enforcers (pattern enforcement)
   ✓ Symlinked playbook-structure-linter.py → shared-configs
   ✓ Symlinked validate-security-posture.sh → shared-configs
-  ✓ Enforces 7-task Trinity workflow
-  ✓ Validates Hellodeolu v6 compliance
+  ✓ Enforces 7-task 3-Domain workflow
+  ✓ Validates Production Standards v6 compliance
 
 Phase 4: The Documentation (discipline docs)
-  ✓ Symlinked trinity-execution.md → canon
+  ✓ Symlinked three_domain-execution.md → canon
   ✓ Symlinked security-posture-discipline.md → canon
   ✓ Symlinked ansible-vault-discipline.md → canon
   ✓ Symlinked api-coverage-discipline.md → canon
@@ -918,28 +972,30 @@ Integration Details:
   Compliance: 100% (was 13%)
 
 Guardian Alignment:
-  ✓ Carter (Identity): 13/13 symlinks valid, relative paths
-  ✓ Bauer (Auditing): Zero drift, full audit trail
-  ✓ Beale (Security): Pre-commit + CI dual validation
+  ✓ Identity Domain (Identity): 13/13 symlinks valid, relative paths
+  ✓ Verification Domain (Auditing): Zero drift, full audit trail
+  ✓ Hardening Domain (Security): Pre-commit + CI dual validation
 
 Tags: canon-integration, tier-1, zero-drift, ansible-galaxy"
-```
+```bash
 
 **Expected Output**:
-```
+
+```bash
 [master abc1234] feat(canon): Integrate with canon library v2.0.0
  15 files changed, 850 insertions(+), 25 deletions(-)
  create mode 100644 .canon-metadata.yml
  create mode 100644 docs/CANON-INTEGRATION.md
- create mode 120000 docs/disciplines/trinity-execution.md
+ create mode 120000 docs/disciplines/three_domain-execution.md
  create mode 120000 docs/disciplines/security-posture-discipline.md
  create mode 120000 docs/disciplines/ansible-vault-discipline.md
  create mode 120000 docs/disciplines/api-coverage-discipline.md
  create mode 120000 scripts/validate-bash.sh
  ...
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] All changes staged
 - [ ] Commit message comprehensive (6 phases documented)
 - [ ] Commit created successfully
@@ -954,6 +1010,7 @@ Tags: canon-integration, tier-1, zero-drift, ansible-galaxy"
 **Description**: Create release tag and push to origin
 
 **Commands**:
+
 ```bash
 cd ~/repos/rylan-labs-common
 
@@ -968,7 +1025,7 @@ Tier 1 Ansible Galaxy collection integration complete.
 - Pre-commit hooks functional
 - 100% canon compliance (was 13%)
 
-Guardian aligned: Carter (Identity), Bauer (Auditing), Beale (Security)
+Guardian aligned: Identity Domain (Identity), Verification Domain (Auditing), Hardening Domain (Security)
 Consciousness: 9.9"
 
 # Verify tag created
@@ -985,19 +1042,21 @@ gh run watch
 # Verify pushed
 git log --oneline -5
 # Expected: Shows new commit with tag
-```
+```bash
 
 **Expected Output**:
-```
+
+```bash
 ✓ Tag created: v1.1.5-canon-integrated
 ✓ Pushed to origin/main
 ✓ CI pipeline running...
   - audit-canon-drift: ✓ PASS
   - build-collection: ✓ PASS
   - publish-to-galaxy: ✓ PASS
-```
+```bash
 
 **Acceptance Criteria**:
+
 - [ ] Tag created: v1.1.5-canon-integrated
 - [ ] Pushed to origin/main
 - [ ] CI audit-canon-drift job passes
@@ -1011,6 +1070,7 @@ git log --oneline -5
 ## 📊 FINAL SUCCESS CRITERIA
 
 ### Completion Checklist
+
 - [ ] Phase 1: 3 linting symlinks created & tested
 - [ ] Phase 2: 4 validator symlinks created & tested
 - [ ] Phase 3: 2 enforcer symlinks created & tested
@@ -1019,6 +1079,7 @@ git log --oneline -5
 - [ ] Phase 6: All changes staged, committed, tagged, pushed
 
 ### Compliance Metrics
+
 - [ ] **Before**: 13% (2/15 symlinks)
 - [ ] **After**: 100% (13/13 required symlinks)
 - [ ] **Drift**: 0 detected by audit-canon.sh
@@ -1026,15 +1087,16 @@ git log --oneline -5
 - [ ] **CI Status**: All jobs GREEN
 
 ### Guardian Alignment
-- [ ] **Carter**: Identity verified (13/13 symlinks, relative paths)
-- [ ] **Bauer**: Auditing complete (zero drift, full audit trail)
-- [ ] **Beale**: Security enforced (pre-commit + CI dual validation)
+
+- [ ] **Identity Domain**: Identity verified (13/13 symlinks, relative paths)
+- [ ] **Verification Domain**: Auditing complete (zero drift, full audit trail)
+- [ ] **Hardening Domain**: Security enforced (pre-commit + CI dual validation)
 
 ---
 
 ## 🎯 TOTAL WORK SUMMARY
 
-```
+```bash
 Total Todos: 17
 Total Duration: 4.5 hours
 Total Symlinks: 13
@@ -1042,7 +1104,7 @@ Phases: 6
 
 Breakdown:
 - Phase 1 (60 min): 2 todos | 3 symlinks
-- Phase 2 (60 min): 2 todos | 6 symlinks  
+- Phase 2 (60 min): 2 todos | 6 symlinks
 - Phase 3 (45 min): 2 todos | 2 symlinks
 - Phase 4 (30 min): 2 todos | 4 symlinks
 - Phase 5 (45 min): 4 todos | 0 symlinks (metadata)
@@ -1054,7 +1116,7 @@ Overall Impact:
   Documentation: Local access to 4 disciplines
   CI/CD: Drift detection added
   Developer Experience: Pre-commit hooks functional
-```
+```bash
 
 ---
 
@@ -1067,6 +1129,6 @@ Overall Impact:
 
 ---
 
-**Status**: READY FOR EXECUTION ✅  
-**Target**: 4.5 hour completion  
+**Status**: READY FOR EXECUTION ✅
+**Target**: 4.5 hour completion
 **Estimated Finish**: ~5:00 PM today (2026-01-14)

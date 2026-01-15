@@ -1,17 +1,17 @@
 # Canonical Symlink Implementation Roadmap
 
-> **Status**: RESEARCH COMPLETE — Ready for phased implementation  
-> **Date**: 2026-01-14  
-> **Authority**: canon-manifest.yaml v1.0.0  
+> **Status**: RESEARCH COMPLETE — Ready for phased implementation
+> **Date**: 2026-01-14
+> **Authority**: canon-manifest.yaml v1.0.0
 > **Source**: rylan-canon-library (Tier 0) + rylan-labs-shared-configs (Tier 0.5)
 
 ---
 
 ## Phase 1: BLOCKERS (ASAP — Prevents local divergence)
 
-**Duration**: 1-2 hours  
-**Impact**: Stops linting rule divergence immediately  
-**Governance**: Bauer (consistency enforcement)
+**Duration**: 1-2 hours
+**Impact**: Stops linting rule divergence immediately
+**Governance**: Verification Domain (consistency enforcement)
 
 ### 1.1 → `.markdownlint.json`
 
@@ -24,13 +24,14 @@ ln -sf /home/egx570/repos/rylan-canon-library/.markdownlint.json \
 **Why**: Enforces MD022, MD031, MD060 compliance across all `.md` files
 
 **Evidence**: Repository has 5+ markdown files:
+
 - README.md
 - CHANGELOG.md
 - docs/SEVEN_PILLARS.md
 - docs/EMERGENCY_RESPONSE.md
 - docs/INTEGRATION_GUIDE.md
 
-**Governance**: Bauer (consistency via pre-commit hook)
+**Governance**: Verification Domain (consistency via pre-commit hook)
 
 **Immutable**: YES (never edit locally)
 
@@ -45,12 +46,13 @@ ln -sf /home/egx570/repos/rylan-canon-library/.yamllint \
 **Why**: Enforces vault segregation patterns and YAML file naming
 
 **Evidence**: 50+ YAML files across:
+
 - roles/*/defaults/*.yml
 - roles/*/vars/*.yml
 - roles/*/tasks/*.yml
 - playbooks/*.yml
 
-**Governance**: Bauer (vault pattern segregation via pre-commit hook)
+**Governance**: Verification Domain (vault pattern segregation via pre-commit hook)
 
 **Immutable**: YES (never edit locally)
 
@@ -67,7 +69,7 @@ cp /home/egx570/repos/rylan-canon-library/templates/pre-commit-config.yaml.templ
 
 **Why**: Framework for ruff, mypy, ansible-lint, shellcheck
 
-**Governance**: Carter (standards) + Bauer (enforcement)
+**Governance**: Identity Domain (standards) + Verification Domain (enforcement)
 
 **Immutable**: NO (customizable but should track canonical version)
 
@@ -75,9 +77,9 @@ cp /home/egx570/repos/rylan-canon-library/templates/pre-commit-config.yaml.templ
 
 ## Phase 2: VALIDATORS (This Week — Enable CI/pre-commit)
 
-**Duration**: 1-2 hours  
-**Impact**: Automates code quality checks in every commit  
-**Governance**: Bauer (validation enforcement)
+**Duration**: 1-2 hours
+**Impact**: Automates code quality checks in every commit
+**Governance**: Verification Domain (validation enforcement)
 
 ### 2.1 → `scripts/validate-bash.sh`
 
@@ -86,9 +88,9 @@ ln -sf /home/egx570/repos/rylan-canon-library/scripts/validate-bash.sh \
        /home/egx570/repos/rylan-labs-common/scripts/validate-bash.sh
 ```
 
-**Why**: Enforces shfmt + shellcheck for shell scripts  
-**Evidence**: playbooks/* contain embedded bash scripts  
-**Governance**: Beale (security scripts must be portable)  
+**Why**: Enforces shfmt + shellcheck for shell scripts
+**Evidence**: playbooks/* contain embedded bash scripts
+**Governance**: Hardening Domain (security scripts must be portable)
 **Immutable**: YES
 
 ### 2.2 → `scripts/validate-ansible.sh`
@@ -98,9 +100,9 @@ ln -sf /home/egx570/repos/rylan-canon-library/scripts/validate-ansible.sh \
        /home/egx570/repos/rylan-labs-common/scripts/validate-ansible.sh
 ```
 
-**Why**: Enforces ansible-lint validation  
-**Evidence**: galaxy.yml indicates Ansible collection  
-**Governance**: Bauer (ansible-lint CI enforcement)  
+**Why**: Enforces ansible-lint validation
+**Evidence**: galaxy.yml indicates Ansible collection
+**Governance**: Verification Domain (ansible-lint CI enforcement)
 **Immutable**: YES
 
 ### 2.3 → `scripts/validate-python.sh`
@@ -110,13 +112,14 @@ ln -sf /home/egx570/repos/rylan-canon-library/scripts/validate-python.sh \
        /home/egx570/repos/rylan-labs-common/scripts/validate-python.sh
 ```
 
-**Why**: Enforces ruff + mypy + bandit for Python code  
+**Why**: Enforces ruff + mypy + bandit for Python code
 **Evidence**:
+
 - plugins/modules/*.py
 - plugins/module_utils/*.py
 - tests/unit/*.py
 
-**Governance**: Bauer (type safety + test coverage)  
+**Governance**: Verification Domain (type safety + test coverage)
 **Immutable**: YES
 
 ### 2.4 → `scripts/validate-yaml.sh`
@@ -126,18 +129,18 @@ ln -sf /home/egx570/repos/rylan-canon-library/scripts/validate-yaml.sh \
        /home/egx570/repos/rylan-labs-common/scripts/validate-yaml.sh
 ```
 
-**Why**: Enforces yamllint validation across all YAML  
-**Evidence**: 50+ YAML files (roles, defaults, vars, playbooks)  
-**Governance**: Bauer (yamllint enforcement)  
+**Why**: Enforces yamllint validation across all YAML
+**Evidence**: 50+ YAML files (roles, defaults, vars, playbooks)
+**Governance**: Verification Domain (yamllint enforcement)
 **Immutable**: YES
 
 ---
 
 ## Phase 3: TRINITY ENFORCERS (This Sprint — Enforce structure)
 
-**Duration**: 1-2 hours  
-**Impact**: Validates playbook structure and security posture  
-**Governance**: Bauer + Beale
+**Duration**: 1-2 hours
+**Impact**: Validates playbook structure and security posture
+**Governance**: Verification Domain + Hardening Domain
 
 ### 3.1 → `scripts/playbook-structure-linter.py`
 
@@ -146,15 +149,16 @@ ln -sf /home/egx570/repos/rylan-canon-library/scripts/playbook-structure-linter.
        /home/egx570/repos/rylan-labs-common/scripts/playbook-structure-linter.py
 ```
 
-**Why**: Enforces 7-task Trinity workflow (GATHER→PROCESS→APPLY→VERIFY→AUDIT→REPORT→FINALIZE)
+**Why**: Enforces 7-task 3-Domain workflow (GATHER→PROCESS→APPLY→VERIFY→AUDIT→REPORT→FINALIZE)
 
 **Evidence**:
+
 - playbooks/example-bootstrap.yml
 - playbooks/example-recovery.yml
 - playbooks/example-unifi-integration.yml
 - playbooks/example-validate-only.yml
 
-**Governance**: Bauer (Trinity structure enforcement)  
+**Governance**: Verification Domain (3-Domain structure enforcement)
 **Immutable**: YES
 
 ### 3.2 → `scripts/validate-security-posture.sh`
@@ -166,28 +170,28 @@ ln -sf /home/egx570/repos/rylan-canon-library/scripts/validate-security-posture.
 
 **Why**: Validates hardening rules (deny-all defaults, guest isolation)
 
-**Evidence**: roles/beale_harden/ implements hardening
+**Evidence**: roles/hardening_harden/ implements hardening
 
-**Governance**: Beale (hardening enforcement)  
+**Governance**: Hardening Domain (hardening enforcement)
 **Immutable**: YES
 
 ---
 
 ## Phase 4: DOCUMENTATION (Next Sprint — Educate developers)
 
-**Duration**: 30 minutes  
-**Impact**: Developers have source-of-truth references  
-**Governance**: Carter (identity/education)
+**Duration**: 30 minutes
+**Impact**: Developers have source-of-truth references
+**Governance**: Identity Domain (identity/education)
 
-### 4.1 → `docs/trinity-execution.md`
+### 4.1 → `docs/three_domain-execution.md`
 
 ```bash
-ln -sf /home/egx570/repos/rylan-canon-library/docs/trinity-execution.md \
-       /home/egx570/repos/rylan-labs-common/docs/trinity-execution.md
+ln -sf /home/egx570/repos/rylan-canon-library/docs/three_domain-execution.md \
+       /home/egx570/repos/rylan-labs-common/docs/three_domain-execution.md
 ```
 
-**Why**: Documents 7-task Trinity pattern  
-**Governance**: Carter (standards education)  
+**Why**: Documents 7-task 3-Domain pattern
+**Governance**: Identity Domain (standards education)
 **Immutable**: YES
 
 ### 4.2 → `docs/security-posture-discipline.md`
@@ -197,8 +201,8 @@ ln -sf /home/egx570/repos/rylan-canon-library/docs/security-posture-discipline.m
        /home/egx570/repos/rylan-labs-common/docs/security-posture-discipline.md
 ```
 
-**Why**: Documents hardening discipline for beale_harden role  
-**Governance**: Beale (hardening patterns)  
+**Why**: Documents hardening discipline for hardening_harden role
+**Governance**: Hardening Domain (hardening patterns)
 **Immutable**: YES
 
 ### 4.3 → `docs/ansible-vault-discipline.md`
@@ -208,8 +212,8 @@ ln -sf /home/egx570/repos/rylan-canon-library/docs/ansible-vault-discipline.md \
        /home/egx570/repos/rylan-labs-common/docs/ansible-vault-discipline.md
 ```
 
-**Why**: Documents vault patterns for carter_identity role  
-**Governance**: Carter (identity/vault governance)  
+**Why**: Documents vault patterns for identity_identity role
+**Governance**: Identity Domain (identity/vault governance)
 **Immutable**: YES
 
 ### 4.4 → `docs/api-coverage-discipline.md`
@@ -219,8 +223,8 @@ ln -sf /home/egx570/repos/rylan-canon-library/docs/api-coverage-discipline.md \
        /home/egx570/repos/rylan-labs-common/docs/api-coverage-discipline.md
 ```
 
-**Why**: Documents API endpoint coverage tracking for UniFi module  
-**Governance**: Bauer (API coverage for DR)  
+**Why**: Documents API endpoint coverage tracking for UniFi module
+**Governance**: Verification Domain (API coverage for DR)
 **Immutable**: YES
 
 ---
@@ -236,7 +240,7 @@ ln -sf /home/egx570/repos/rylan-canon-library/scripts/track-endpoint-coverage.py
        /home/egx570/repos/rylan-labs-common/scripts/track-endpoint-coverage.py
 ```
 
-**When**: When .audit/api/coverage.json tracking is enabled  
+**When**: When .audit/api/coverage.json tracking is enabled
 **Evidence**: plugins/modules/unifi_api.py uses UniFi endpoints
 
 ### 5.2 → `scripts/validate-rotation-readiness.sh`
@@ -309,10 +313,10 @@ git commit -m "feat(canon): symlink validation scripts (Phase 2 VALIDATORS)"
 
 # Phase 3
 git add scripts/playbook-structure-linter.py scripts/validate-security-posture.sh
-git commit -m "feat(canon): symlink Trinity & security enforcers (Phase 3)"
+git commit -m "feat(canon): symlink 3-Domain & security enforcers (Phase 3)"
 
 # Phase 4
-git add docs/trinity-execution.md docs/*-discipline.md
+git add docs/three_domain-execution.md docs/*-discipline.md
 git commit -m "feat(canon): symlink canonical documentation (Phase 4)"
 ```
 

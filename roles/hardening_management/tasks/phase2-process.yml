@@ -1,0 +1,20 @@
+---
+# Hardening Hardening Guardian - Phase 2: PROCESS
+# Purpose: Validate constraints (Production Standards) before applying changes
+
+- name: "[PROCESS] Validate Production Standards constraints"
+  unifi_api:
+    host: "{{ unifi_controller_host }}"
+    api_key: "{{ unifi_api_key }}"
+    site: "{{ unifi_site | default('default') }}"
+    action: validate_constraints
+    simulation_mode: true
+  register: hardening_constraints
+  failed_when: not hardening_constraints.validation.firewall.compliant or not hardening_constraints.validation.vlans.compliant
+  tags: [hardening, process]
+
+- name: "[PROCESS] Calculate required changes"
+  ansible.builtin.set_fact:
+    hardening_firewall_plan: "{{ hardening_firewall_rules | default([]) }}"
+    hardening_vlan_plan: "{{ hardening_vlan_configs | default([]) }}"
+  tags: [hardening, process]

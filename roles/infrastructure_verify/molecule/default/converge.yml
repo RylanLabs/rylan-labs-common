@@ -1,0 +1,11 @@
+---
+- name: Converge infrastructure_verify role
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: "Include infrastructure_verify"
+      ansible.builtin.include_role:
+        name: "infrastructure_verify"
+      vars:
+        infrastructure_verify_enabled: true
+        infrastructure_verify_audit_enabled: true
