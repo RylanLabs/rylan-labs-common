@@ -18,7 +18,6 @@ exclude = [
   "build",
   "dist",
   "scripts",
-  "plugins/module_utils/unifi_endpoints.py",
 ]
 
 [tool.ruff.lint]
