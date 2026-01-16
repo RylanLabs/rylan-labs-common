@@ -1,0 +1,16 @@
+---
+# example-verify.yml
+# Purpose: Demonstrate infrastructure auditing and state verification using infrastructure_verify.
+# This role ensures compliance, performs health checks, and logs events.
+
+- name: Infrastructure Audit & Verification
+  hosts: all
+  vars:
+    # Set to true to enable actual execution
+    audit_verification_enabled: true
+
+  roles:
+    - role: rylanlab.common.infrastructure_verify
+      vars:
+        audit_level: "comprehensive"
+        audit_log_retention_days: 30

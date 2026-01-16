@@ -1,0 +1,1 @@
+../../../rylan-canon-library/docs/ansible-vault-discipline.md

@@ -1,0 +1,7 @@
+---
+# Default variables for identity & authentication management role
+# Override in playbook or group_vars/host_vars as needed
+
+identity_management_enabled: no
+identity_providers: []
+identity_management_audit_enabled: no

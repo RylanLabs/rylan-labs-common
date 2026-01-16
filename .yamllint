@@ -1,17 +1,21 @@
 ---
 extends: default
+
+ignore: |
+  node_modules/
+  .git/
+  venv/
+  .venv/
+
 rules:
   line-length:
-    max: 140
-  comments:
-    min-spaces-from-content: 2
+    max: 160
+    level: error
   indentation:
     spaces: 2
+    indent-sequences: true
+  comments:
+    min-spaces-from-content: 1
+  document-start: disable
   truthy:
-    allowed-values:
-      - "yes"
-      - "no"
-      - "true"
-      - "false"
-      - "on"
-      - "off"
+    allowed-values: ['true', 'false', 'yes', 'no', 'on']

@@ -1,47 +1,35 @@
----
-# Canonical galaxy.yml for RylanLabs/rylan-labs-common
-# Repository: feature/ci-pr-validation branch
+# Canonical galaxy.yml for RylanLabs Common Collection
 # Purpose: Define Ansible Galaxy metadata for reusable infrastructure collection
-# Alignment: Seven Pillars | Trinity Pattern | Hellodeolu v6 | T3-ETERNAL v∞.3.2
-# Version: 1.1.4 (Role README files for Galaxy compliance)
-# Author: Travis (IT Operations Director) | Guardian: Leo (AI Assistant)
-# Date: 2026-01-06
-# Compliance: Production-grade, no-bypass culture, RTO <15min, Galaxy-ready
+# Alignment: Seven Pillars (Idempotency, Error Handling, Audit Logging, etc.)
+# License: GPL-3.0-or-later
 
-namespace: rylanlab  # Canonical namespace per https://galaxy.ansible.com/ui/namespaces/rylanlab
-name: common  # Collection name: rylanlab.common
-version: 1.1.4  # Semantic version: Galaxy compliance release (role documentation)
+namespace: rylanlab
+name: common
+version: 1.2.1
 
 readme: README.md  # Primary documentation entry point
 
 authors:  # Attribution per Documentation Clarity pillar
-  - RylanLabs Team <team@rylanlabs.com>
-  - Travis (IT Operations Director)  # Primary maintainer
-  - Leo (AI Assistant)  # Architecture validation
+  - RylanLabs <contact@rylanlabs.com>
 
 description: |
-  Reusable Ansible collection for RylanLabs infrastructure automation.
-  Implements Trinity patterns (Carter/Bauer/Beale) for identity, verification, and hardening.
-  Aligned to Seven Pillars for production-grade idempotent operations.
+  Production-grade Ansible collection for infrastructure automation.
+  Includes modular roles for identity, verification, and hardening,
+  plus hardened UniFi API modules specializing in UniFi OS 3.x+ CSRF handling.
 
 license:  # Permissive licensing for internal/external reuse
-  - MIT
+  - GPL-3.0-or-later
 
 tags:  # Descriptive tags for discoverability per Galaxy best practices
   - infrastructure
   - hardening
   - identity
   - verification
-  - ansible
+  - networking
+  - unifi
   - automation
   - security
-  - cicd
-  - trinity
-  - seven_pillars
-  - hellodeolu
-  - template
-  - github_template
-  - shared_configs_integrated
+  - best-practices
 
 dependencies: {}  # No external deps (self-contained per Idempotency pillar)
 

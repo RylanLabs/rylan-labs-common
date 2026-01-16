@@ -2,8 +2,8 @@
 # GitHub Actions Workflow: Security Scan
 # Purpose: Weekly security scans + vault rotation checks
 # Trigger: schedule (Mon 2 AM UTC), workflow_dispatch
-# Guardian: Beale (Hardening) | Ministry: Security
-# Compliance: Seven Pillars ✓ | Trinity ✓ | Hellodeolu v6 ✓
+# Domain: Hardening (Hardening) | Ministry: Security
+# Compliance: Seven Pillars ✓ | 3-Domain ✓ | Production Standards ✓
 
 name: Security Scan
 

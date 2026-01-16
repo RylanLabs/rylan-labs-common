@@ -1,8 +1,0 @@
----
-# Default variables for bauer-verify role
-# Override in playbook or group_vars/host_vars as needed
-
-bauer_verify_enabled: no
-bauer_verify_audit_enabled: yes
-bauer_verify_loki_endpoint: ""
-bauer_verify_log_retention_days: 90

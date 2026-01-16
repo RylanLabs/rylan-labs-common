@@ -1,0 +1,26 @@
+---
+# Hardening Hardening Guardian - Phase 3: APPLY
+# Purpose: Apply firewall and isolation policies
+
+- name: "[APPLY] Synchronize firewall rules"
+  unifi_api:
+    host: "{{ unifi_controller_host }}"
+    api_key: "{{ unifi_api_key }}"
+    site: "{{ unifi_site | default('default') }}"
+    action: create_firewall_rule
+    rule_data: "{{ item }}"
+    simulation_mode: "{{ hardening_management_unifi_simulation_mode | default(true) }}"
+  loop: "{{ hardening_firewall_plan }}"
+  register: hardening_apply_results
+  tags: [hardening, apply]
+
+- name: "[APPLY] Synchronize VLAN isolation"
+  unifi_api:
+    host: "{{ unifi_controller_host }}"
+    api_key: "{{ unifi_api_key }}"
+    site: "{{ unifi_site | default('default') }}"
+    action: create_network
+    network_data: "{{ item }}"
+    simulation_mode: "{{ hardening_management_unifi_simulation_mode | default(true) }}"
+  loop: "{{ hardening_vlan_plan }}"
+  tags: [hardening, apply]

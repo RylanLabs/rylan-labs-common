@@ -1,0 +1,16 @@
+---
+# Identity & Authentication Management Role
+# Manages centralized identity services
+
+- name: Display identity role initialization status
+  ansible.builtin.debug:
+    msg: |
+      Identity & Authentication Management - Preview
+      ================================================
+      Purpose: Bootstrap centralized identity fabric
+      Providers: RADIUS, LDAP, SSH Keys
+      Status: {{ identity_management_enabled | default(false) | ternary('ENABLED', 'DISABLED') }}
+  when: identity_management_enabled | default(false)
+  tags:
+    - identity
+    - bootstrap

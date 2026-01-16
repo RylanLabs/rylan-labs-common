@@ -1,0 +1,21 @@
+---
+# Hardening Hardening Guardian - Phase 1: GATHER
+# Purpose: Retrieve current state of firewall and networks
+
+- name: "[GATHER] Fetch current firewall rules"
+  unifi_api:
+    host: "{{ unifi_controller_host }}"
+    api_key: "{{ unifi_api_key }}"
+    site: "{{ unifi_site | default('default') }}"
+    action: get_firewall_rules
+  register: hardening_current_firewall
+  tags: [hardening, gather]
+
+- name: "[GATHER] Fetch current networks (VLANs)"
+  unifi_api:
+    host: "{{ unifi_controller_host }}"
+    api_key: "{{ unifi_api_key }}"
+    site: "{{ unifi_site | default('default') }}"
+    action: get_networks
+  register: hardening_current_networks
+  tags: [hardening, gather]

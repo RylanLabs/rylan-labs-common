@@ -1,0 +1,11 @@
+---
+- name: Converge identity_management role
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: "Include identity_management"
+      ansible.builtin.include_role:
+        name: "identity_management"
+      vars:
+        identity_management_enabled: true
+        identity_management_audit_enabled: true

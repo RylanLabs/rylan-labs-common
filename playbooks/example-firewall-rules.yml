@@ -1,0 +1,74 @@
+---
+- name: Hardening Domain Pattern - Hardening Network via Firewall Rules
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    # Use simulation mode by default for safety in example
+    unifi_simulation_mode: true
+    unifi_host: "https://unifi.local:443"
+    unifi_user: "admin"
+    unifi_pass: "password"
+
+    # Example firewall hardening policy
+    hardening_management_firewall_rules:
+      - name: "Block IoT to Management"
+        ruleset: "LAN_IN"
+        action: "drop"
+        src_vlan: 20
+        dst_vlan: 1
+      - name: "Isolate Guest Network"
+        ruleset: "GUEST_IN"
+        action: "drop"
+        dst_vlan: 1
+
+  tasks:
+    - name: 1. GATHER - Fetch Existing Firewall Rules (Idempotency Check)
+      rylanlab.common.unifi_api:
+        host: "{{ unifi_host }}"
+        username: "{{ unifi_user }}"
+        password: "{{ unifi_pass }}"
+        action: get_firewall_rules
+      register: current_rules
+      failed_when: current_rules.failed | default(false)
+
+    - name: 2. PROCESS - Validate Constraints (Production Standards)
+      ansible.builtin.set_fact:
+        rule_count: "{{ current_rules.data | length }}"
+      failed_when: (rule_count | int + hardening_management_firewall_rules | length) > 10
+      vars:
+        msg: "CONSTRAINT VIOLATION: Future rule count exceeds limit of 10"
+
+    - name: 3. HARDENING - Deploy Firewall Rules
+      rylanlab.common.unifi_api:
+        host: "{{ unifi_host }}"
+        username: "{{ unifi_user }}"
+        password: "{{ unifi_pass }}"
+        action: create_firewall_rule
+        rule_data: "{{ item }}"
+      loop: "{{ hardening_management_firewall_rules }}"
+      register: firewall_results
+      changed_when: firewall_results.changed | default(true)
+
+    - name: 4. VERIFICATION - Audit Hardening State
+      rylanlab.common.unifi_api:
+        host: "{{ unifi_host }}"
+        username: "{{ unifi_user }}"
+        password: "{{ unifi_pass }}"
+        action: get_firewall_rules
+      register: final_audit
+      failed_when: final_audit.failed | default(false)
+
+    - name: 5. COMPLIANCE - Verify Rule Coverage
+      ansible.builtin.assert:
+        that:
+          - (ansible_check_mode) or (final_audit.data | length >= hardening_management_firewall_rules | length)
+        fail_msg: "Firewall deployment gap detected"
+        success_msg: "Fortress hardening verified"
+
+    - name: 6. REPORT - Final State JSON (Audit Logging)
+      ansible.builtin.copy:
+        content: "{{ final_audit.data | to_nice_json }}"
+        dest: ".audit/firewall-harden-{{ ansible_date_time.iso8601 }}.json"
+        mode: '0644'
+      delegate_to: localhost

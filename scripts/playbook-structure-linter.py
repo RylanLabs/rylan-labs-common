@@ -1,0 +1,1 @@
+../../rylan-labs-shared-configs/scripts/playbook-structure-linter.py

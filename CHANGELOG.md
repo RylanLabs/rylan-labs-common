@@ -5,38 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-01-15
+
+### Added (1.2.1) (1.2.1)
+
+- **Sanitized Network Playbooks**: Ported production-ready playbooks from `rylan-labs-network-iac`.
+  - `playbooks/example-vlan-bootstrap.yml`: Automated VLAN infrastructure setup.
+  - `playbooks/example-firewall-rules.yml`: Production-grade firewall hardening rules.
+- **Terminology Alignment**: Final migration of all remaining internal names ("Carter/Bauer/Beale")
+  to the public domains: Identity / Verification / Hardening.
+- **Audit Logging**: Standardized `.audit/` logging path across all example playbooks.
+
 ## [1.1.4] - 2026-01-06
 
-### Added
+### Added (1.1.4)
 
 - **Role Documentation**: README.md files for all roles (Galaxy requirement)
-  - `roles/bauer_verify/README.md`: Verification and audit role documentation
-  - `roles/beale_harden/README.md`: Security hardening role documentation
-  - `roles/carter_identity/README.md`: Identity management role documentation
-  - Each README includes: description, requirements, variables, examples, Trinity integration, license
+  - `roles/infrastructure_verify/README.md`: Verification and audit role documentation
+  - `roles/hardening_management/README.md`: Security hardening role documentation
+  - `roles/identity_management/README.md`: Identity management role documentation
+  - Each README includes: description, requirements, variables, examples, 3-Domain integration, license
 
-### Documentation
+### Documentation (1.1.4)
 
-- Role READMEs include Trinity pattern alignment (Carter/Bauer/Beale)
+- Role READMEs include 3-Domain pattern alignment (Identity Domain/Verification Domain/Hardening Domain)
 - Each role documented with requirements, variables, and example playbooks
 - Security features and compliance constraints documented
-- Hellodeolu v6 constraints documented (e.g., max 10 firewall rules)
+- Production Standards v6 constraints documented (e.g., max 10 firewall rules)
 
-### Compliance
+### Compliance (1.1.4)
 
 - **Galaxy Requirement**: Every role now has README.md file
 - **Ansible Standards**: Role documentation follows Ansible Galaxy conventions
 - **Seven Pillars**: Documentation pillar reinforced with comprehensive role guides
-- **Trinity Alignment**: Each role's Trinity role and ministry documented
+- **3-Domain Alignment**: Each role's 3-Domain role and ministry documented
 
 ## [1.1.3] - 2026-01-06
 
-### Fixed
+### Fixed (1.1.3)
 
 - **Galaxy Role Naming**: Removed hyphens from role names per Galaxy validation requirements
-  - Changed: `bauer-verify` → `bauer_verify`
-  - Changed: `beale-harden` → `beale_harden`
-  - Changed: `carter-identity` → `carter_identity`
+  - Changed: `audit-verify` → `infrastructure_verify`
+  - Changed: `hardening-harden` → `hardening_management`
+  - Changed: `identity-identity` → `identity_management`
   - Pattern: Galaxy only accepts `[a-z0-9_]` in role names (no hyphens)
 
 - **Module Documentation**: Added DOCUMENTATION block to unifi_api module
@@ -44,13 +55,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Includes OPTIONS, EXAMPLES, RETURN sections per Ansible standards
   - Galaxy validation now passes for module documentation check
 
-### Changed
+### Changed (1.1.3)
 
 - **Playbook Role References**: Updated all playbook role references to use new underscores naming
 - **README.md**: Updated all role name documentation to reflect new naming convention
-- **Trinity Alignment**: Role names now comply with Galaxy standards while maintaining Carter/Bauer/Beale pattern
+- **3-Domain Alignment**: Role names now comply with Galaxy standards while maintaining Identity Domain/Verification
+Domain/Hardening Domain pattern
 
-### Compliance
+### Compliance (1.1.3)
 
 - **Ansible Galaxy Standards**: All role names and module documentation now compliant
 - **Breaking Change**: Role names changed from hyphens to underscores (update playbooks accordingly)
@@ -58,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.2] - 2026-01-06
 
-### Fixed
+### Fixed (1.1.2)
 
 - **Galaxy Tag Validation**: Removed hyphens from tags to comply with Ansible Galaxy format requirements
   - Changed: `ci-cd` → `cicd`
@@ -71,18 +83,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enables successful collection publication to Ansible Galaxy
   - Resolves blocking issue preventing PR #3 merge
 
-### Compliance
+### Compliance (1.1.2)
 
 - **Ansible Galaxy Standards**: All tags now compliant with Galaxy naming conventions
 - **No Bypass**: Validation enforced before publish attempt
 
 ## [1.1.1] - 2026-01-06
 
-### Added
+### Added (1.1.1)
 
 - **GitHub Template Repository**: Repository enabled as GitHub template in Settings
   - `templates/role-template/`: Skeleton Ansible role structure for new roles
-  - `templates/playbook-template.yml`: Trinity-aligned playbook bootstrap template
+  - `templates/playbook-template.yml`: 3-Domain-aligned playbook bootstrap template
   - README.md "Using as GitHub Template" section with `gh repo create` instructions
   - Galaxy.yml tagged with `template` and `github-template` for discoverability
 
@@ -91,64 +103,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Documentation for symlink-to-regular-file conversion for CI compatibility
   - Audit trail: symlink resolution strategy and path resolution verification
 
-### Fixed
+### Fixed (1.1.1)
 
 - Symlink path resolution in GitHub Actions environment
   - Config files (.yamllint, pyproject.toml) now regular files for CI compatibility
   - Pre-commit hooks updated to reference root-level config files
   - Symlinks optional for consumers: recommend `install-to-repo.sh` post-clone for local development
 
-### Documentation
+### Documentation (1.1.1)
 
 - Updated `docs/INTEGRATION_GUIDE.md` with "Symlink Architecture" section
 - Template creation validated: Test repo created successfully
 - Confirms template structure is complete and cloneable
 - Downstream repos (iac, network-iac) can now use as bootstrap template
 
-### Compliance
+### Compliance (1.1.1)
 
 - **Seven Pillars**: Idempotency, Audit Logging, Documentation
-- **Trinity Pattern**: Template includes Carter, Bauer, Beale role references
-- **Hellodeolu v6**: Template RTO <15min, junior-deployable bootstrap instructions
+- **3-Domain Pattern**: Template includes Identity Domain, Verification Domain, Hardening Domain role references
+- **Production Standards v6**: Template RTO <15min, junior-deployable bootstrap instructions
 
 ## [1.0.2] - 2025-12-30
 
-### Added
+### Added (1.0.2)
 
-- **GitHub Actions CI/CD Pipeline** (Trinity-aligned, Seven Pillars enforced):
+- **GitHub Actions CI/CD Pipeline** (3-Domain-aligned, Seven Pillars enforced):
   - `pr-validation.yml`: Pull request quality gate (ansible-lint, ruff, mypy, pytest, Seven Pillars validation)
   - `build-and-artifact.yml`: Collection build + smoke test + 30-day artifact retention
   - `galaxy-publish.yml`: Galaxy publish with version validation, manual approval gate, release notes automation
   - `security-scan.yml`: Weekly security scans (bandit, pip-audit, ansible-lint security profile, vault rotation checks)
 - **Validation & Integration Scripts**:
-  - `.github/scripts/validate-seven-pillars.sh`: Comprehensive compliance checker (idempotency, error handling, audit logging, documentation, validation, reversibility, observability)
+  - `.github/scripts/validate-seven-pillars.sh`: Comprehensive compliance checker (idempotency, error handling, audit
+logging, documentation, validation, reversibility, observability)
   - `.github/scripts/sync-vault-secrets.sh`: Vault-to-GitHub Secrets synchronization (SSH-based, audit-logged)
 - **Audit Infrastructure**:
   - `.audit/` directory structure: ci-runs, builds, galaxy-publish, security-scans, pillars-validation, vault-syncs
-  - JSON audit logs for all CI operations (RTO <15min, Hellodeolu v6 compliance)
+  - JSON audit logs for all CI operations (RTO <15min, Production Standards v6 compliance)
 - **Documentation**:
   - README.md: CI/CD workflow descriptions, quality badges, integration architecture diagram
-  - Governance metadata: Guardian (Leo), Ministry (Bauer), Compliance (Trinity/Seven Pillars)
+  - Governance metadata: Guardian (Leo), Ministry (Verification Domain), Compliance (3-Domain/Seven Pillars)
 
-### Changed
+### Changed (1.0.2)
 
 - README.md: Enhanced with Core Principles section, directory tree, Mermaid tandem ecosystem architecture
 - Package structure: Added `__init__.py` markers to plugins/ subdirectories for test import support
 
-### Security
+### Security (1.0.2)
 
 - GitHub Secrets required: `GALAXY_API_KEY` (Galaxy publish), `VAULT_SSH_KEY` (vault sync)
-- Production environment gate: Manual approval required for Galaxy publish (Hellodeolu v6 safeguard)
+- Production environment gate: Manual approval required for Galaxy publish (Production Standards v6 safeguard)
 - No-bypass culture: All standards enforced via CI; no manual override allowed
 
 ## [1.0.1] - 2025-12-29
 
-### Added
+### Added (1.0.1)
 
-- Example playbooks demonstrating Trinity workflows and UniFi integration (playbooks/):
-  - `example-bootstrap.yml` (Carter → Bauer → Beale full sequence)
+- Example playbooks demonstrating 3-Domain workflows and UniFi integration (playbooks/):
+  - `example-bootstrap.yml` (Identity Domain → Verification Domain → Hardening Domain full sequence)
   - `example-unifi-integration.yml` (dynamic inventory + UniFi API demo)
-  - `example-validate-only.yml` (Bauer compliance audit — read-only)
+  - `example-validate-only.yml` (Verification Domain compliance audit — read-only)
   - `example-recovery.yml` (Emergency recovery with confirmation gate and rollback handlers)
 - Documentation updates:
   - `README.md`: "Example Playbooks" section
@@ -156,13 +169,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2025-12-28
 
-### Added
+### Added (1.0.0)
 
 - Initial production release of rylanlabs.common Ansible collection
 - **Roles**:
-  - `carter-identity`: Identity guardian (AD/RADIUS/LDAP)
-  - `bauer-verify`: Verification guardian (validation/audit)
-  - `beale-harden`: Hardening guardian (firewall/isolation)
+  - `identity-identity`: Identity guardian (AD/RADIUS/LDAP)
+  - `audit-verify`: Verification guardian (validation/audit)
+  - `hardening-harden`: Hardening guardian (firewall/isolation)
 - **Plugins**:
   - `unifi_api`: UniFi controller API access
   - `unifi_dynamic_inventory`: Dynamic inventory from UniFi
@@ -179,25 +192,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - TANDEM_WORKFLOW.md (execution example)
   - EMERGENCY_RESPONSE.md (incident recovery)
 - **Compliance**:
-  - Seven Pillars: idempotency, error handling, functionality, audit logging, failure recovery, security hardening, documentation
-  - Trinity alignment: Carter/Bauer/Beale principles
+  - Seven Pillars: idempotency, error handling, functionality, audit logging, failure recovery, security hardening,
+documentation
+  - 3-Domain alignment: Identity Domain/Verification Domain/Hardening Domain principles
   - Grade A+ (95+/100)
 
-### Fixed
+### Fixed (1.0.0)
 
 - N/A (initial release)
 
-### Deprecated
+### Deprecated (1.0.0)
 
 - N/A (initial release)
 
-### Removed
+### Removed (1.0.0)
 
 - N/A (initial release)
 
-### Security
+### Security (1.0.0)
 
-- Firewall validation via beale-harden role
+- Firewall validation via hardening-harden role
 - Network isolation enforcement
 - Audit logging to structured trail and Loki
 - No secrets, no data, no doctrine (code only)
@@ -210,4 +224,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **1.2.0**: UniFi API enhancements (additional WLAN variants)
 - **1.3.0**: Whitaker red-team integration
 - **2.0.0**: Full multi-cloud support (AWS, Azure, GCP)
-- **10.0.0**: Trinity ecosystem maturity (canon + common + inventory unified)
+- **10.0.0**: 3-Domain ecosystem maturity (canon + common + inventory unified)
