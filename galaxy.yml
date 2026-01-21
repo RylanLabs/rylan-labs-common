@@ -38,6 +38,19 @@ documentation: https://github.com/RylanLabs/rylan-labs-common/blob/main/README.m
 homepage: https://github.com/RylanLabs/rylan-labs-common  # Project home
 issues: https://github.com/RylanLabs/rylan-labs-common/issues  # Bug tracking & audit trail
 
+build_ignore:
+  - "*.tar.gz"
+  - ".git"
+  - ".github"
+  - ".idea"
+  - ".vscode"
+  - ".venv"
+  - ".pytest_cache"
+  - "__pycache__"
+  - "*.pyc"
+  - "Makefile"
+  - "pyproject.toml"
+
 # End of Metadata
 # Validation: ansible-galaxy collection build --force (pre-publish check)
 # No Bypass: This file must pass yaml-lint and semantic validation pre-commit
