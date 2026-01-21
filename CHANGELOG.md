@@ -5,16 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.1] - 2026-01-15
+## [1.2.1] - 2026-01-21
 
-### Added (1.2.1) (1.2.1)
+### Added
 
 - **Sanitized Network Playbooks**: Ported production-ready playbooks from `rylan-labs-network-iac`.
   - `playbooks/example-vlan-bootstrap.yml`: Automated VLAN infrastructure setup.
   - `playbooks/example-firewall-rules.yml`: Production-grade firewall hardening rules.
-- **Terminology Alignment**: Final migration of all remaining internal names ("Carter/Bauer/Beale")
-  to the public domains: Identity / Verification / Hardening.
-- **Audit Logging**: Standardized `.audit/` logging path across all example playbooks.
+- **Variable Namespace Alignment**: Unified `unifi_controller_*` variables with `rylanlabs-private-vault` (Option A).
+- **Hardening Enhancements**: Added explicit `simulation_mode` support to `unifi_api` module and roles.
+- **Galaxy Readiness**: Implemented `build_ignore` and tag sanitization for reliable publishing.
+
+### Fixed
+
+- **API Param Mismatch**: Added missing `site` and `simulation_mode` to `unifi_api.py` `argument_spec`.
+- **Doc Collision**: Removed redundant `DOCUMENTATION` block to prevent `ansible-doc` failures and improve clarity.
+- **Payload Optimization**: Reduced collection size from 38MB to 1.4MB by excluding build artifacts.
 
 ## [1.1.4] - 2026-01-06
 

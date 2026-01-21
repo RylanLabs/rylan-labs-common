@@ -29,7 +29,7 @@ tags:  # Descriptive tags for discoverability per Galaxy best practices
   - unifi
   - automation
   - security
-  - best-practices
+  - bestpractices
 
 dependencies: {}  # No external deps (self-contained per Idempotency pillar)
 
