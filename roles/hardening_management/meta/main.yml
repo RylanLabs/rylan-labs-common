@@ -1,19 +1,12 @@
 ---
 galaxy_info:
   author: RylanLabs Team
-  namespace: rylanlab
-  name: common
   role_name: hardening_management
   description: Hardening guardian - manages firewall, isolation, and security
   company: RylanLabs
-  license: MIT
+  license: GPL-3.0-or-later
   min_ansible_version: "2.14"
-  platforms:
-    - name: Ubuntu
-      versions:
-        - "22.04"
-        - "24.04"
-  tags:
+  galaxy_tags:
     - hardening
     - firewall
     - security
