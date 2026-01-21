@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **CI/CD Infrastructure**: Replaced all broken symlinks (`scripts/`, `docs/`, root) with physical files to ensure
+  GitHub Actions CI/CD compatibility and Ansible Galaxy build success.
 - **Playbook Authentication**: Standardized all example playbooks to use `unifi_api_key` and environment
   variable lookups.
 - **Linting & Code Quality**: Resolved all `yamllint` trailing-space issues and enforced 120-char line limits
