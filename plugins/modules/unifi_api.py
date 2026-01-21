@@ -252,119 +252,6 @@ class UniFiConstraintValidator:
 # UNIFI CLIENT (Identity + Verification)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-DOCUMENTATION = r"""
----
-module: unifi_api
-short_description: Interact with UniFi Controller API
-version_added: "1.0.0"
-description:
-  - Manage UniFi network devices via Controller API
-  - Supports authentication, device queries, and network configuration
-  - Trinity-aligned (Carter/Bauer/Beale) for audit and validation
-  - Integrated with rylan-labs-iac infrastructure automation
-options:
-  controller_url:
-    description: UniFi Controller URL (e.g., https://192.168.1.1:8443)
-    required: true
-    type: str
-  username:
-    description: UniFi Controller admin username
-    required: true
-    type: str
-  password:
-    description: UniFi Controller admin password
-    required: true
-    type: str
-    no_log: true
-  site:
-    description: UniFi site name for multi-site deployments
-    required: false
-    type: str
-    default: default
-  verify_ssl:
-    description: Verify SSL certificates (set to false for self-signed certs)
-    required: false
-    type: bool
-    default: true
-  action:
-    description: API action to perform
-    required: true
-    type: str
-    choices:
-      - login
-      - list_devices
-      - get_device
-      - update_device
-      - query_wlan_config
-author:
-  - RylanLabs (@RylanLabs)
-requirements:
-  - requests>=2.31.0
-  - urllib3>=2.0.0
-notes:
-  - Requires UniFi Controller v6.0.0 or higher
-  - Supports UniFi Network Application API v1
-  - Passwords are not logged due to no_log setting
-  - Trinity compliance: Audit logging available via Bauer pattern
-"""
-
-EXAMPLES = r"""
-- name: Login to UniFi Controller
-  rylanlab.common.unifi_api:
-    controller_url: https://192.168.1.1:8443
-    username: admin
-    password: "{{ unifi_admin_password }}"
-    verify_ssl: false
-    action: login
-
-- name: List all managed devices
-  rylanlab.common.unifi_api:
-    controller_url: https://192.168.1.1:8443
-    username: admin
-    password: "{{ unifi_admin_password }}"
-    action: list_devices
-    site: default
-
-- name: Get specific device configuration
-  rylanlab.common.unifi_api:
-    controller_url: https://192.168.1.1:8443
-    username: admin
-    password: "{{ unifi_admin_password }}"
-    action: get_device
-    site: default
-
-- name: Query WLAN configuration
-  rylanlab.common.unifi_api:
-    controller_url: https://192.168.1.1:8443
-    username: admin
-    password: "{{ unifi_admin_password }}"
-    action: query_wlan_config
-    site: default
-"""
-
-RETURN = r"""
-data:
-  description: API response data containing requested information
-  returned: always
-  type: dict
-  sample: {"devices": [{"name": "AP-01", "ip": "192.168.1.10", "status": "online"}]}
-changed:
-  description: Whether any changes were made by the action
-  returned: always
-  type: bool
-  sample: false
-failed:
-  description: Whether the action failed
-  returned: always
-  type: bool
-  sample: false
-msg:
-  description: Human-readable status message
-  returned: always
-  type: str
-  sample: "Successfully authenticated to UniFi Controller"
-"""
-
 
 class UniFiAPI:
     """Dual-auth UniFi API client (API key + JWT/CSRF).
@@ -383,6 +270,8 @@ class UniFiAPI:
         api_key: str | None = None,
         username: str | None = None,
         password: str | None = None,
+        site: str = "default",
+        simulation_mode: bool | None = None,
     ) -> None:
         """Initialize client with auth preference detection."""
         self.host = host
@@ -396,7 +285,7 @@ class UniFiAPI:
         self.auth_base = f"https://{host}:{port}/api/auth"
 
         # Site identifiers
-        self.site_id = "default"
+        self.site_id = site
         self.site_uuid: str | None = None
 
         # Auth state
@@ -412,8 +301,11 @@ class UniFiAPI:
         self.ssl_ctx.check_hostname = False
         self.ssl_ctx.verify_mode = ssl.CERT_NONE
 
-        # Simulation mode detection
-        self.simulation_mode = os.environ.get("UNIFI_SIMULATION", "false").lower() == "true"
+        # Simulation mode detection (param > ENV > default)
+        if simulation_mode is not None:
+            self.simulation_mode = simulation_mode
+        else:
+            self.simulation_mode = os.environ.get("UNIFI_SIMULATION", "false").lower() == "true"
 
         # Create HTTPS handler with SSL context
         https_handler = urllib.request.HTTPSHandler(context=self.ssl_ctx)
@@ -748,6 +640,8 @@ def main() -> None:
             "api_key": {"type": "str", "no_log": True},
             "username": {"type": "str"},
             "password": {"type": "str", "no_log": True},
+            "site": {"type": "str", "default": "default"},
+            "simulation_mode": {"type": "bool"},
             "action": {
                 "type": "str",
                 "required": True,
@@ -782,6 +676,8 @@ def main() -> None:
             module.params["api_key"],
             module.params["username"],
             module.params["password"],
+            module.params["site"],
+            module.params["simulation_mode"],
         )
 
         action = module.params["action"]
