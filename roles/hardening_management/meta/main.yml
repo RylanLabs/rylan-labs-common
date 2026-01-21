@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: RylanLabs Team
+  role_name: hardening_management
+  description: Hardening guardian - manages firewall, isolation, and security
+  company: RylanLabs
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.14"
+  galaxy_tags:
+    - hardening
+    - firewall
+    - security
+    - isolation
+    - nmap

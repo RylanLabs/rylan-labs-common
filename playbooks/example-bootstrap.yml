@@ -1,16 +1,12 @@
 ---
 # example-bootstrap.yml
-# Trinity Bootstrap Example — Full End-to-End Orchestration
+# Infrastructure Bootstrap Example — Full End-to-End Orchestration
 #
-# This playbook demonstrates the mandatory Trinity sequence:
-# Carter → Bauer → Beale
+# This playbook demonstrates the recommended boot sequence:
+# Identity → Verification → Hardening
 #
-# Estimated RTO: 8-12 minutes for 5-device cluster
+# Estimated Execution Time: 8-12 minutes for a standard environment
 # Modes: Supports --check for dry-run validation
-#
-# NOTE: This is an example template for domain repos to copy and customize.
-# Roles are referenced by FQCN but not bundled; skip ansible-lint role checks.
-# See README.md for usage instructions.
 #
 # Usage:
 #   # Dry-run:
@@ -18,107 +14,89 @@
 #
 #   # Execute:
 #   ansible-playbook playbooks/example-bootstrap.yml
-# yamllint disable-line rule:truthy
-# ansible-lint: disable=syntax-check
 
-- name: Trinity Bootstrap Example
+- name: Infrastructure Bootstrap Example
   hosts: all
   gather_facts: yes
   vars:
     bootstrap_timestamp: "{{ ansible_date_time.iso8601 }}"
 
   pre_tasks:
-    - name: "BAUER: Pre-flight validation (constraint check)"
+    - name: Pre-flight validation
       ansible.builtin.debug:
         msg: |
           Bootstrap sequence initiating...
           Timestamp: {{ bootstrap_timestamp }}
-          Cluster size: {{ groups['all'] | length }} nodes
+          Target nodes: {{ groups['all'] | length }}
           Mode: {% if ansible_check_mode %}CHECK (dry-run){% else %}EXECUTE{% endif %}
 
-    - name: "BAUER: Validate Trinity alignment"
-      include_role:
-        name: rylanlab.common.bauer_verify
+    - name: Pre-bootstrap verification
+      ansible.builtin.include_role:
+        name: rylanlab.common.infrastructure_verify
         tasks_from: main.yml
       vars:
-        bauer_verify_enabled: yes
-        bauer_verify_audit_enabled: yes
+        infrastructure_verify_enabled: yes
+        infrastructure_verify_audit_enabled: yes
 
   roles:
     # ============================================================================
-    # PHASE 1: CARTER — Identity Fabric Establishment
+    # PHASE 1: Identity Management
     # ============================================================================
-    # Responsibility: Establish centralized identity (AD/RADIUS/LDAP)
-    # Idempotency: Safe to run multiple times; validates existing configs
-    # Order: FIRST — must precede network hardening
-    # ============================================================================
-    - name: "CARTER: Establish identity fabric"
-      role: rylanlab.common.carter_identity
+    - name: Establish identity fabric
+      role: rylanlab.common.identity_management
       vars:
-        carter_identity_enabled: yes
-        carter_identity_audit_enabled: yes
-        carter_identity_providers:
+        identity_management_enabled: yes
+        identity_management_audit_enabled: yes
+        identity_providers:
           - type: radius
             enabled: yes
           - type: ldap
             enabled: yes
 
     # ============================================================================
-    # PHASE 2: BAUER — State Validation & Compliance Audit
+    # PHASE 2: Verification and Audit
     # ============================================================================
-    # Responsibility: Validate configuration drift, enforce policies, log results
-    # Idempotency: Audit-only, no state mutations
-    # Order: SECOND — validates Carter output, gates Beale execution
-    # ============================================================================
-    - name: "BAUER: Verify configuration state"
-      role: rylanlab.common.bauer_verify
+    - name: Verify configuration state
+      role: rylanlab.common.infrastructure_verify
       vars:
-        bauer_verify_enabled: yes
-        bauer_verify_audit_enabled: yes
-        bauer_verify_loki_endpoint: "{{ loki_endpoint | default('') }}"
-        bauer_verify_log_retention_days: 90
+        infrastructure_verify_enabled: yes
+        infrastructure_verify_audit_enabled: yes
+        infrastructure_loki_endpoint: "{{ loki_endpoint | default('') }}"
+        infrastructure_log_retention_days: 90
 
     # ============================================================================
-    # PHASE 3: BEALE — Network Hardening & Security Controls
+    # PHASE 3: Infrastructure Hardening
     # ============================================================================
-    # Responsibility: Enforce firewall rules, VLAN isolation, secret management
-    # Idempotency: Rules re-apply safely (PUT idempotent)
-    # Order: THIRD — executes only after Carter + Bauer succeed
-    # Constraints: Max 10 firewall rules, max 5 VLANs
-    # ============================================================================
-    - name: "BEALE: Harden network and apply security controls"
-      role: rylanlab.common.beale_harden
+    - name: Harden infrastructure and apply security controls
+      role: rylanlab.common.hardening_management
       vars:
-        beale_harden_enabled: yes
-        beale_harden_firewall_enabled: yes
-        beale_harden_rules: []  # Load from group_vars/host_vars
-        beale_harden_nmap_validation: no
+        hardening_management_enabled: yes
+        hardening_management_firewall_rules: []  # Load from group_vars/host_vars
+        hardening_management_vlan_configs: []
 
   post_tasks:
-    - name: "BAUER: Generate bootstrap audit summary"
-      debug:
+    - name: Generate bootstrap summary
+      ansible.builtin.debug:
         msg: |
           ============================================================
-          TRINITY BOOTSTRAP COMPLETE
+          BOOTSTRAP COMPLETE
           ============================================================
           Timestamp:    {{ bootstrap_timestamp }}
           Status:       SUCCESS
-          Duration:     ~{{ (ansible_date_time.epoch | int) - (bootstrap_timestamp | to_datetime('%Y-%m-%dT%H:%M:%S%z') | int) }}s
           Nodes:        {{ groups['all'] | length }}
 
           Phases Completed:
-          ✓ Carter (Identity)
-          ✓ Bauer (Verification)
-          ✓ Beale (Hardening)
+          ✓ Identity Management
+          ✓ Infrastructure Verification
+          ✓ Infrastructure Hardening
 
           Next Steps:
           1. Verify audit logs in .audit/bootstrap/ directory
-          2. Run: make ci-local (validate playbook)
-          3. Push changes: git add . && git commit -m "bootstrap: trinity complete"
+          2. Run validation checks
           ============================================================
 
-    - name: "BAUER: Log bootstrap event to audit trail"
-      copy:
+    - name: Log bootstrap event to audit trail
+      ansible.builtin.copy:
         content: |
           {
             "event": "bootstrap_complete",

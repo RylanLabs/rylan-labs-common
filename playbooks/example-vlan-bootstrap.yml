@@ -1,0 +1,74 @@
+---
+- name: Identity Domain Pattern - Bootstrap VLAN Infrastructure
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    # Use simulation mode by default for safety in example
+    unifi_simulation_mode: true
+    unifi_host: "https://unifi.local:443"
+    unifi_user: "admin"
+    unifi_pass: "password"
+
+    # Canonical VLAN scheme
+    network_vlans:
+      - name: "Management"
+        vlan: 10
+        purpose: "corporate"
+      - name: "IoT"
+        vlan: 20
+        purpose: "corporate"
+      - name: "Guest"
+        vlan: 30
+        purpose: "guest"
+
+  tasks:
+    - name: 1. GATHER - Fetch Existing State (Idempotency Check)
+      rylanlab.common.unifi_api:
+        host: "{{ unifi_host }}"
+        username: "{{ unifi_user }}"
+        password: "{{ unifi_pass }}"
+        action: get_networks
+      register: current_networks
+      failed_when: current_networks.failed | default(false)
+
+    - name: 2. PROCESS - Validate Constraints (Production Standards)
+      ansible.builtin.set_fact:
+        vlan_count: "{{ current_networks.data | selectattr('purpose', 'equalto', 'corporate') | list | length }}"
+      failed_when: vlan_count | int > 5
+      vars:
+        msg: "CONSTRAINT VIOLATION: Corporate VLAN count {{ vlan_count }} exceeds limit of 5"
+
+    - name: 3. IDENTITY - Deploy Canonical VLANs
+      rylanlab.common.unifi_api:
+        host: "{{ unifi_host }}"
+        username: "{{ unifi_user }}"
+        password: "{{ unifi_pass }}"
+        action: create_network
+        network_data: "{{ item }}"
+      loop: "{{ network_vlans }}"
+      register: vlan_results
+      changed_when: vlan_results.changed | default(true)
+
+    - name: 4. VERIFICATION - Audit Final State
+      rylanlab.common.unifi_api:
+        host: "{{ unifi_host }}"
+        username: "{{ unifi_user }}"
+        password: "{{ unifi_pass }}"
+        action: get_networks
+      register: final_audit
+      failed_when: final_audit.failed | default(false)
+
+    - name: 5. COMPLIANCE - Verify VLAN Coverage
+      ansible.builtin.assert:
+        that:
+          - (ansible_check_mode) or (final_audit.data | length >= network_vlans | length)
+        fail_msg: "VLAN deployment gap detected"
+        success_msg: "Canonical VLAN scheme verified"
+
+    - name: 6. REPORT - Final State JSON (Audit Logging)
+      ansible.builtin.copy:
+        content: "{{ final_audit.data | to_nice_json }}"
+        dest: ".audit/vlan-bootstrap-{{ ansible_date_time.iso8601 }}.json"
+        mode: '0644'
+      delegate_to: localhost

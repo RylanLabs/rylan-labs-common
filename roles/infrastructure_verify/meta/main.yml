@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: RylanLabs Team
+  role_name: infrastructure_verify
+  description: Verification guardian - validates, audits, and ensures compliance
+  company: RylanLabs
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.14"
+  galaxy_tags:
+    - verification
+    - audit
+    - validation
+    - compliance
+    - loki

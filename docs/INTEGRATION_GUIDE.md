@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD013 MD024 MD001 MD029 MD040 MD025 -->
 # Integration Guide
 
 > Tandem ecosystem integration for rylan-labs-common v1.0.0
@@ -8,7 +9,7 @@
 
 This guide covers integration of `rylanlabs.common` collection with domain repositories (e.g., `rylan-labs-iac`), `rylan-canon-library`, and `rylan-inventory`.
 
-**Key Concept**: rylanlabs.common is the *code hub*. Domain repos consume it via `ansible-galaxy install`, configure via `ansible.cfg`, and execute playbooks that include Trinity roles.
+**Key Concept**: rylanlabs.common is the *code hub*. Domain repos consume it via `ansible-galaxy install`, configure via `ansible.cfg`, and execute playbooks that include 3-Domain roles.
 
 ---
 
@@ -23,12 +24,13 @@ This guide covers integration of `rylanlabs.common` collection with domain repos
 
 ## Getting Started: Example Playbooks
 
-The fastest way to start using `rylanlabs.common` is to use the included example playbooks. These are templated orchestrations demonstrating the full Trinity workflow and key integrations.
+The fastest way to start using `rylanlabs.common` is to use the included example playbooks. These are templated orchestrations demonstrating the full 3-Domain workflow and key integrations.
 
 **Available Examples** (copy to your domain repo):
-- [`playbooks/example-bootstrap.yml`](../playbooks/example-bootstrap.yml): Full Trinity sequence (Carter → Bauer → Beale)
+
+- [`playbooks/example-bootstrap.yml`](../playbooks/example-bootstrap.yml): Full 3-Domain sequence (Identity → Audit → Hardening)
 - [`playbooks/example-unifi-integration.yml`](../playbooks/example-unifi-integration.yml): UniFi dynamic inventory + hardening
-- [`playbooks/example-validate-only.yml`](../playbooks/example-validate-only.yml): Bauer compliance audit (read-only)
+- [`playbooks/example-validate-only.yml`](../playbooks/example-validate-only.yml): Audit compliance audit (read-only)
 - [`playbooks/example-recovery.yml`](../playbooks/example-recovery.yml): Emergency recovery runbook with --confirm gates
 
 **Quick Start**:
@@ -41,9 +43,9 @@ cp -r /path/to/rylan-labs-common/playbooks your-domain-repo/
 # 3. Dry-run to validate
 ansible-playbook playbooks/example-bootstrap.yml --check
 
-# 4. Execute (requires Trinity roles + UniFi configured)
+# 4. Execute (requires 3-Domain roles + UniFi configured)
 ansible-playbook playbooks/example-bootstrap.yml
-```
+```bash
 
 See [Example Playbooks](../README.md#example-playbooks) in README.md for full details on each playbook's purpose, usage, and customization.
 
@@ -78,7 +80,7 @@ enable_plugins = rylanlabs.common.unifi_dynamic_inventory
 become = true
 become_method = sudo
 become_user = root
-```
+```bash
 
 ---
 
@@ -89,7 +91,7 @@ become_user = root
 ```bash
 cd your-domain-repo/
 ansible-galaxy collection install rylanlabs.common
-```
+```bash
 
 Installs to `~/.ansible/collections/ansible_collections/rylanlabs/common/`.
 
@@ -98,7 +100,7 @@ Installs to `~/.ansible/collections/ansible_collections/rylanlabs/common/`.
 ```bash
 cd your-domain-repo/
 ansible-galaxy collection install ../rylan-labs-common --force
-```
+```bash
 
 Useful for development and local testing.
 
@@ -107,10 +109,10 @@ Useful for development and local testing.
 Set `collections_paths` in `ansible.cfg` and reference FQCN directly:
 
 ```yaml
-- name: Include carter-identity role
+- name: Include identity-identity role
   ansible.builtin.include_role:
-    name: rylanlabs.common.carter_identity
-```
+    name: rylanlabs.common.identity_management
+```bash
 
 ---
 
@@ -120,47 +122,47 @@ Set `collections_paths` in `ansible.cfg` and reference FQCN directly:
 
 ```yaml
 ---
-- name: Bootstrap infrastructure with Trinity roles
+- name: Bootstrap infrastructure with 3-Domain roles
   hosts: all
   gather_facts: true
-  
+
   pre_tasks:
-    - name: Validate Trinity alignment
+    - name: Validate 3-Domain alignment
       ansible.builtin.debug:
-        msg: "Initializing Trinity-aligned infrastructure (Carter/Bauer/Beale)"
+        msg: "Initializing 3-Domain-aligned infrastructure (Identity/Audit/Hardening)"
 
   roles:
-    - name: Initialize identity (Carter)
+    - name: Initialize identity (Identity)
       ansible.builtin.include_role:
-        name: rylanlabs.common.carter_identity
+        name: rylanlabs.common.identity_management
       vars:
-        carter_identity_enabled: true
-        carter_identity_providers:
+        identity_management_enabled: true
+        identity_management_providers:
           - type: active_directory
             domain: example.com
           - type: radius
             server: 10.0.0.100
 
-    - name: Verify configuration (Bauer)
+    - name: Verify configuration (Audit)
       ansible.builtin.include_role:
-        name: rylanlabs.common.bauer_verify
+        name: rylanlabs.common.infrastructure_verify
       vars:
-        bauer_verify_enabled: true
-        bauer_verify_loki_endpoint: "http://loki.example.com:3100"
+        infrastructure_verify_enabled: true
+        infrastructure_verify_loki_endpoint: "http://loki.example.com:3100"
 
-    - name: Harden network (Beale)
+    - name: Harden network (Hardening)
       ansible.builtin.include_role:
-        name: rylanlabs.common.beale_harden
+        name: rylanlabs.common.hardening_management
       vars:
-        beale_harden_enabled: true
-        beale_harden_firewall_enabled: true
-        beale_harden_nmap_validation: true
+        hardening_management_enabled: true
+        hardening_management_firewall_enabled: true
+        hardening_management_nmap_validation: true
 
   post_tasks:
     - name: Audit deployment
       ansible.builtin.debug:
         msg: "Deployment complete. Audit trail in .audit/"
-```
+```bash
 
 ### Playbook Execution
 
@@ -172,13 +174,13 @@ ansible-playbook -i inventory/production.yml playbooks/bootstrap.yml --check
 ansible-playbook -i inventory/production.yml playbooks/bootstrap.yml -vv
 
 # Run specific role
-ansible-playbook -i inventory/production.yml playbooks/bootstrap.yml --tags carter_identity
+ansible-playbook -i inventory/production.yml playbooks/bootstrap.yml --tags identity_management
 
 # Run with custom variables
 ansible-playbook -i inventory/production.yml playbooks/bootstrap.yml \
-  -e "carter_identity_enabled=true" \
-  -e "bauer_verify_loki_endpoint=http://loki:3100"
-```
+  -e "identity_management_enabled=true" \
+  -e "infrastructure_verify_loki_endpoint=http://loki:3100"
+```bash
 
 ---
 
@@ -195,13 +197,13 @@ unifi_username: admin
 unifi_password: "{{ vault_unifi_password }}"
 unifi_verify_ssl: false
 unifi_site: default
-```
+```bash
 
 ### 2. Encrypt Password (Optional)
 
 ```bash
 ansible-vault encrypt inventory/unifi_inventory.yml
-```
+```bash
 
 ### 3. Use in Playbook
 
@@ -211,7 +213,7 @@ ansible-playbook -i inventory/unifi_inventory.yml playbooks/site.yml
 # Or with vault password
 ansible-playbook -i inventory/unifi_inventory.yml playbooks/site.yml \
   --vault-password-file ~/.vault_pass
-```
+```bash
 
 ---
 
@@ -225,19 +227,19 @@ make pre-commit-install
 
 # Validate before commit
 pre-commit run --all-files
-```
+```bash
 
 Expected: All hooks GREEN.
 
-### 2. Run Canon's beale-harden.sh (Post-Deployment)
+### 2. Run Canon's hardening-harden.sh (Post-Deployment)
 
 After `ansible-playbook` execution, validate with canon's hardening script:
 
 ```bash
-/path/to/rylan-canon-library/scripts/beale-harden.sh --ci \
+/path/to/rylan-canon-library/scripts/hardening-harden.sh --ci \
   --inventory ../rylan-inventory/inventory/production.yml \
   --audit-path .audit/
-```
+```bash
 
 Expected: All checks GREEN, audit trail in `.audit/`.
 
@@ -249,7 +251,7 @@ tail -50 .audit/ansible.log
 
 # Search for errors
 grep "ERROR\|FAIL" .audit/*.log
-```
+```bash
 
 ---
 
@@ -266,7 +268,7 @@ ansible-playbook -i inventory/production.yml playbooks/bootstrap.yml --check -vv
 
 # 3. Re-run with corrected variables
 ansible-playbook -i inventory/production.yml playbooks/bootstrap.yml -e "fix_variable=value"
-```
+```bash
 
 ### Scenario 2: Pre-Commit Hook Violation
 
@@ -280,7 +282,7 @@ ruff format .
 
 # 3. Commit
 git add . && git commit -m "[collection] Fix linting violations"
-```
+```bash
 
 ### Scenario 3: Collection Install Fails
 
@@ -290,7 +292,7 @@ ansible-galaxy collection install rylanlabs.common --force
 
 # Or from local source
 ansible-galaxy collection install ../rylan-labs-common --force
-```
+```bash
 
 ---
 
@@ -299,9 +301,9 @@ ansible-galaxy collection install ../rylan-labs-common --force
 | Scenario | Role | Recovery Command | RTO |
 |----------|------|-------------------|-----|
 | Collection unavailable | — | `ansible-galaxy install --force` | 2min |
-| Identity service drift | Carter | `ansible-playbook -i inv playbooks/bootstrap.yml --tags carter_identity` | 5min |
-| Firewall misconfiguration | Beale | `beale-harden.sh --reset` + re-run | 10min |
-| Full reset | Trinity | `eternal-resurrect.sh --common` | 15min |
+| Identity service drift | Identity | `ansible-playbook -i inv playbooks/bootstrap.yml --tags identity_management` | 5min |
+| Firewall misconfiguration | Hardening | `hardening-harden.sh --reset` + re-run | 10min |
+| Full reset | 3-Domain | `eternal-resurrect.sh --common` | 15min |
 
 See [EMERGENCY_RESPONSE.md](EMERGENCY_RESPONSE.md) for detailed procedures.
 
@@ -311,11 +313,12 @@ See [EMERGENCY_RESPONSE.md](EMERGENCY_RESPONSE.md) for detailed procedures.
 
 ### Issue: `collection not found`
 
-```
+```bash
 ERROR! collection rylanlabs.common not found
-```
+```bash
 
 **Solution:**
+
 ```bash
 # Verify installation
 ansible-galaxy collection list | grep rylanlabs
@@ -324,30 +327,32 @@ ansible-galaxy collection list | grep rylanlabs
 ansible-galaxy install rylanlabs.common
 
 # Or set collections_paths in ansible.cfg
-```
+```bash
 
 ### Issue: `module not found`
 
-```
+```bash
 fatal: [host]: FAILED! => {"msg": "The module unifi_api was not found"}
-```
+```bash
 
 **Solution:**
+
 ```bash
 # Check plugins path
 ansible-doc -t module unifi_api
 
 # Or verify installation
 ls -la ~/.ansible/collections/ansible_collections/rylanlabs/common/plugins/modules/
-```
+```bash
 
 ### Issue: Pre-commit hook fails
 
-```
+```bash
 yamllint............................................FAILED
-```
+```bash
 
 **Solution:**
+
 ```bash
 # Run hook individually for details
 yamllint -c .yamllint .
@@ -357,7 +362,7 @@ ruff format .
 
 # Reinstall hooks
 pre-commit install --install-hooks
-```
+```bash
 
 ---
 
@@ -373,11 +378,11 @@ pre-commit install --install-hooks
 ## References
 
 - **Collection**: [README.md](../README.md)
-- **Canon Library**: https://github.com/RylanLabs/rylan-canon-library
-- **Inventory**: https://github.com/RylanLabs/rylan-inventory
-- **Ansible Docs**: https://docs.ansible.com/ansible/latest/collections/
+- **Canon Library**: <https://github.com/RylanLabs/rylan-canon-library>
+- **Inventory**: <https://github.com/RylanLabs/rylan-inventory>
+- **Ansible Docs**: <https://docs.ansible.com/ansible/latest/collections/>
 
 ---
 
-**Status: PRODUCTION-READY**  
-**Grade: A+ | RTO <15min | Trinity-Aligned**
+**Status: PRODUCTION-READY**
+**Grade: A+ | RTO <15min | 3-Domain-Aligned**

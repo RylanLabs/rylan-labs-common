@@ -1,0 +1,19 @@
+---
+# Hardening Hardening Guardian - Phase 4: VERIFY
+# Purpose: Confirm state after application
+
+- name: "[VERIFY] Fetch final state"
+  unifi_api:
+    host: "{{ unifi_controller_host }}"
+    api_key: "{{ unifi_api_key }}"
+    site: "{{ unifi_site | default('default') }}"
+    action: get_firewall_rules
+  register: hardening_final_state
+  tags: [hardening, verify]
+
+- name: "[VERIFY] Check for drift"
+  ansible.builtin.assert:
+    that:
+      - hardening_final_state.data | length >= hardening_current_firewall.data | length
+    msg: "State drift detected after application!"
+  tags: [hardening, verify]

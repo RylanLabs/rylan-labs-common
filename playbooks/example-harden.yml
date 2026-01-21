@@ -1,0 +1,25 @@
+---
+# example-harden.yml
+# Purpose: Demonstrate infrastructure security hardening using hardening_management role.
+# This role applies firewall rules, VLAN isolation, and management security.
+
+- name: Infrastructure Security Hardening
+  hosts: unifi_controllers
+  vars:
+    # Set to true to enable actual execution
+    security_hardening_enabled: true
+    # Use simulation mode by default for safety
+    unifi_simulation_mode: true
+
+    # Example firewall policy
+    hardening_firewall_rules:
+      - name: "Block IoT to Management"
+        ruleset: "LAN_IN"
+        action: "drop"
+        src_vlan: 20
+        dst_vlan: 1
+
+  roles:
+    - role: rylanlab.common.hardening_management
+      vars:
+        harden_rules: "{{ hardening_firewall_rules }}"

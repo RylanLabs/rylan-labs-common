@@ -2,8 +2,8 @@
 # GitHub Actions Workflow: Galaxy Publish
 # Purpose: Publish Ansible collection to Ansible Galaxy
 # Trigger: release (published) OR push tag v*
-# Guardian: Bauer (Verification) | Ministry: Verification
-# Compliance: Seven Pillars ✓ | Trinity ✓ | Hellodeolu v6 ✓
+# Domain: Audit (Verification) | Ministry: Verification
+# Compliance: Seven Pillars ✓ | 3-Domain ✓ | Production Standards ✓
 
 name: Galaxy Publish
 
@@ -70,7 +70,38 @@ jobs:
 
           echo "✓ Version validated: $GALAXY_VERSION"
 
-  # Job 2: Build collection
+  # Job 2: Audit Canon Compliance
+  audit-canon-drift:
+    name: Canon Compliance Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Clone Canon Library
+        run: |
+          git clone --depth 1 \
+            https://github.com/RylanLabs/rylan-canon-library.git \
+            /tmp/canon
+
+      - name: Verify Sacred Files
+        run: |
+          echo "Auditing canon integration..."
+          cd /tmp/canon
+          SYMLINKS=$(find $GITHUB_WORKSPACE -type l | grep -E "(canon|shared-configs)" | wc -l)
+          echo "Found $SYMLINKS canon symlinks (expected: 13)"
+
+          # Check for broken links
+          BROKEN=$(find $GITHUB_WORKSPACE -type l -exec test ! -e {} \; -print | wc -l)
+          if [ "$BROKEN" -gt 0 ]; then
+            echo "::error::$BROKEN broken symlinks detected"
+            exit 1
+          fi
+
+          echo "✓ Canon compliance verified"
+
+  # Job 3: Build collection
   build-collection:
     name: Build Collection
     needs: validate-version

@@ -1,0 +1,22 @@
+---
+# Infrastructure Hardening Role
+# Component: Security fabric and threat isolation
+
+- name: Initialize Hardening Session
+  ansible.builtin.set_fact:
+    hardening_start_time: "{{ ansible_date_time.iso8601 }}"
+
+- name: Execute Phase 1 - GATHER
+  ansible.builtin.include_tasks: phase1-gather.yml
+
+- name: Execute Phase 2 - PROCESS
+  ansible.builtin.include_tasks: phase2-process.yml
+
+- name: Execute Phase 3 - APPLY
+  ansible.builtin.include_tasks: phase3-apply.yml
+
+- name: Execute Phase 4 - VERIFY
+  ansible.builtin.include_tasks: phase4-verify.yml
+
+- name: Execute Phases 5-7 - AUDIT, REPORT, FINALIZE
+  ansible.builtin.include_tasks: phases5-7-finalize.yml

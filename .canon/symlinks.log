@@ -1,0 +1,53 @@
+# Canonical Symlinks Registry
+# ============================
+# Date: 2026-01-14
+# Source: rylan-canon-library (Tier 0)
+# Pattern: Identity Domain (Identity/Standards) + Verification Domain (Verification/Enforcement)
+# Authority: canon-manifest.yaml (orchestration ministry)
+
+## Symlink Manifest
+
+### Orchestration Ministry (Agent Definitions & Instructions)
+
+1. **Agent Definition**
+   - Source: /home/egx570/repos/rylan-canon-library/.github/agents/.agent.md
+   - Target: .github/agents/.agent.md
+   - Immutable: true
+   - Purpose: Canonical Rylan Canon Library Guardian agent definition
+   - Enforcer: Hardening Domain (Enforcement via sync-canon.sh)
+   - Validator: Verification Domain (CI drift detection via audit-canon.sh)
+
+2. **Instruction Set**
+   - Source: /home/egx570/repos/rylan-canon-library/.github/instructions/instructions.md
+   - Target: .github/instructions/instructions.md
+   - Immutable: true
+   - Purpose: Canonical RylanLabs instruction set (Seven Pillars + 3-Domain)
+   - Enforcer: Identity Domain (Identity/Standards definition)
+   - Validator: Verification Domain (Pre-commit linting + CI validation)
+
+## Validation
+
+To verify symlinks:
+  $ ls -la .github/agents/.agent.md .github/instructions/instructions.md
+
+To test resolution:
+  $ head -5 .github/agents/.agent.md
+  $ head -5 .github/instructions/instructions.md
+
+To check for drift (Verification Domain audit):
+  $ sha256sum .github/agents/.agent.md > .audit/canon/expected-hashes.txt
+  $ sha256sum /home/egx570/repos/rylan-canon-library/.github/agents/.agent.md >> .audit/canon/expected-hashes.txt
+
+## Reversibility
+
+If local customization is required (against canon discipline):
+  1. Document exception in EXCEPTION_LOG.md with justification
+  2. Replace symlink with local copy (accepting audit flag)
+  3. Run: make audit-canon (will flag drift)
+  4. Obtain approval from @Identity Domain (identity team)
+
+## Next Steps
+
+- Run: git status (should show .github/agents/.agent.md and .github/instructions/instructions.md as symlinks)
+- Commit: git commit -m "feat: register canonical symlinks from rylan-canon-library"
+- Pre-commit: make ci-local (validates no breakage)

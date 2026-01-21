@@ -2,8 +2,8 @@
 # GitHub Actions Workflow: Build & Artifact
 # Purpose: Build Ansible collection and validate with smoke test
 # Trigger: push to main/master
-# Guardian: Bauer (Verification) | Ministry: Verification
-# Compliance: Seven Pillars ✓ | Trinity ✓ | Hellodeolu v6 ✓
+# Domain: Audit (Verification) | Ministry: Verification
+# Compliance: Seven Pillars ✓ | 3-Domain ✓ | Production Standards ✓
 
 name: Build & Artifact
 

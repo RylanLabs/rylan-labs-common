@@ -1,0 +1,31 @@
+---
+# Global Infrastructure configuration
+# Repository: rylan-labs-common (Fortress Template)
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# UNIFI CONTROLLER AUTHENTICATION
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+unifi_controller_host: "localhost"
+unifi_controller_port: 443
+unifi_site: "default"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# TRINITY SAFETY DEFAULTS (No Bypass Culture)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Default to simulation mode to prevent unauthorized production changes
+hardening_management_unifi_simulation_mode: true
+
+# Guardian overall status
+identity_management_enabled: false
+infrastructure_verify_enabled: false
+hardening_management_enabled: false
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# SECRETS (Placeholders - USE VAULT IN PRODUCTION)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+unifi_api_key: ""
+# unifi_username: "admin"
+# unifi_password: "CHANGEME"
