@@ -17,3 +17,5 @@ ansible.log
 *.swo
 .vscode/
 .idea/
+*.tar.gz
+test_collections/

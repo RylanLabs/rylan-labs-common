@@ -1,1 +1,14 @@
-../rylan-labs-shared-configs/.markdownlint.json
+{
+  "MD013": {
+    "code_blocks": false,
+    "line_length": 120,
+    "tables": false
+  },
+  "MD022": true,
+  "MD031": true,
+  "MD032": true,
+  "MD036": true,
+  "MD040": true,
+  "MD060": true,
+  "default": true
+}

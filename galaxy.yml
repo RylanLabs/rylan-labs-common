@@ -5,7 +5,7 @@
 
 namespace: rylanlab
 name: common
-version: 1.2.1
+version: 1.2.2
 
 readme: README.md  # Primary documentation entry point
 
@@ -29,7 +29,7 @@ tags:  # Descriptive tags for discoverability per Galaxy best practices
   - unifi
   - automation
   - security
-  - best-practices
+  - bestpractices
 
 dependencies: {}  # No external deps (self-contained per Idempotency pillar)
 
@@ -37,6 +37,19 @@ repository: https://github.com/RylanLabs/rylan-labs-common  # Source repo for tr
 documentation: https://github.com/RylanLabs/rylan-labs-common/blob/main/README.md  # Docs link
 homepage: https://github.com/RylanLabs/rylan-labs-common  # Project home
 issues: https://github.com/RylanLabs/rylan-labs-common/issues  # Bug tracking & audit trail
+
+build_ignore:
+  - "*.tar.gz"
+  - ".git"
+  - ".github"
+  - ".idea"
+  - ".vscode"
+  - ".venv"
+  - ".pytest_cache"
+  - "__pycache__"
+  - "*.pyc"
+  - "Makefile"
+  - "pyproject.toml"
 
 # End of Metadata
 # Validation: ansible-galaxy collection build --force (pre-publish check)

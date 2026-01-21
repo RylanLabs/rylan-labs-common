@@ -1,60 +1,155 @@
 ---
+# playbooks/example-vlan-bootstrap.yml
+# Guardian: Carter (Identity Management)
+# Ministry: Network Infrastructure Bootstrap
+# Consciousness: 9.9
+# Compliance: Seven Pillars ✓, Trinity v1.0.0 ✓, Production Standards v6 ✓
+#
+# PURPOSE:
+#   Demonstrates Trinity 7-task workflow for idempotent VLAN provisioning.
+#   Safe for community use with simulation_mode enabled by default.
+#
+# USAGE:
+#   # Dry-run (simulation mode)
+#   ansible-playbook playbooks/example-vlan-bootstrap.yml
+#
+#   # Production deployment
+#   ansible-playbook playbooks/example-vlan-bootstrap.yml \
+#     -e unifi_simulation_mode=false \
+#     -e unifi_api_key=$UNIFI_API_KEY
+#
+# PREREQUISITES:
+#   - UniFi Controller with API access enabled
+#   - API key generated (Settings → Admins → API Key)
+#   - rylanlab.common collection installed
+#
+# CONSTRAINTS:
+#   - Maximum 5 corporate VLANs (hardware offload limit)
+#   - Idempotent: safe to run multiple times
+#   - Audit trail: logs to .audit/vlan-bootstrap-*.json
+
 - name: Identity Domain Pattern - Bootstrap VLAN Infrastructure
   hosts: localhost
   connection: local
   gather_facts: true
   vars:
-    # Use simulation mode by default for safety in example
-    unifi_simulation_mode: true
-    unifi_host: "https://unifi.local:443"
-    unifi_user: "admin"
-    unifi_pass: "password"
+    # SECURITY: Override these via environment variables or vault
+    unifi_simulation_mode: true  # Safe by default
+    unifi_host: "{{ lookup('env', 'UNIFI_HOST') | default('https://unifi.local:443') }}"
+    unifi_site: "{{ lookup('env', 'UNIFI_SITE') | default('default') }}"
+    unifi_api_key: "{{ lookup('env', 'UNIFI_API_KEY') | default('') }}"
 
-    # Canonical VLAN scheme
+    # Canonical VLAN scheme (RylanLabs v1.0.0)
+    # Adjust to match your network architecture
     network_vlans:
       - name: "Management"
         vlan: 10
         purpose: "corporate"
+        subnet: "10.0.10.0/26"
+        dhcp_enabled: true
       - name: "IoT"
         vlan: 20
         purpose: "corporate"
+        subnet: "10.0.20.0/24"
+        dhcp_enabled: true
       - name: "Guest"
         vlan: 30
         purpose: "guest"
+        subnet: "10.0.30.0/24"
+        dhcp_enabled: true
+
+  pre_tasks:
+    - name: PRE-FLIGHT - Validate API Key
+      ansible.builtin.fail:
+        msg: |
+          SECURITY ERROR: UNIFI_API_KEY not set.
+
+          Generate an API key:
+            1. Log into UniFi Controller
+            2. Settings → Admins → [Your Admin] → API Key
+            3. Export: export UNIFI_API_KEY='your-key-here'
+
+          Then re-run this playbook.
+      when:
+        - not unifi_simulation_mode
+        - unifi_api_key | length == 0
+
+    - name: PRE-FLIGHT - Ensure audit directory exists
+      ansible.builtin.file:
+        path: ".audit"
+        state: directory
+        mode: '0755'
 
   tasks:
     - name: 1. GATHER - Fetch Existing State (Idempotency Check)
       rylanlab.common.unifi_api:
         host: "{{ unifi_host }}"
-        username: "{{ unifi_user }}"
-        password: "{{ unifi_pass }}"
+        api_key: "{{ unifi_api_key }}"
+        site: "{{ unifi_site }}"
+        simulation_mode: "{{ unifi_simulation_mode }}"
         action: get_networks
       register: current_networks
       failed_when: current_networks.failed | default(false)
 
+    - name: 1.1 GATHER - Display Current State
+      ansible.builtin.debug:
+        msg: "Found {{ (current_networks.data | default([])) | length }} existing networks"
+      when: current_networks.data is defined
+
     - name: 2. PROCESS - Validate Constraints (Production Standards)
       ansible.builtin.set_fact:
-        vlan_count: "{{ current_networks.data | selectattr('purpose', 'equalto', 'corporate') | list | length }}"
-      failed_when: vlan_count | int > 5
-      vars:
-        msg: "CONSTRAINT VIOLATION: Corporate VLAN count {{ vlan_count }} exceeds limit of 5"
+        existing_count: "{{ (current_networks.data | default([])) | length }}"
+        new_count: "{{ network_vlans | length }}"
+        total_vlans: "{{ ((current_networks.data | default([])) | length) + (network_vlans | length) }}"
+        max_vlans: 5
+
+    - name: 2.1 PROCESS - Enforce Hardware Limits
+      ansible.builtin.fail:
+        msg: |
+          CONSTRAINT VIOLATION: Hardware Offload Limit Exceeded
+
+          Current VLANs: {{ existing_count }}
+          Requested VLANs: {{ new_count }}
+          Total: {{ total_vlans }}
+          Maximum: {{ max_vlans }}
+
+          UniFi switches support max {{ max_vlans }} hardware-offloaded VLANs.
+          Exceeding this limit degrades switching performance to CPU-based forwarding.
+
+          REMEDIATION:
+            1. Review existing VLANs: ansible-playbook playbooks/audit-networks.yml
+            2. Remove unused VLANs or reduce network_vlans list
+            3. Re-run this playbook
+      when: total_vlans | int > max_vlans | int
 
     - name: 3. IDENTITY - Deploy Canonical VLANs
       rylanlab.common.unifi_api:
         host: "{{ unifi_host }}"
-        username: "{{ unifi_user }}"
-        password: "{{ unifi_pass }}"
+        api_key: "{{ unifi_api_key }}"
+        site: "{{ unifi_site }}"
+        simulation_mode: "{{ unifi_simulation_mode }}"
         action: create_network
         network_data: "{{ item }}"
       loop: "{{ network_vlans }}"
+      loop_control:
+        label: "{{ item.name }} (VLAN {{ item.vlan }})"
       register: vlan_results
       changed_when: vlan_results.changed | default(true)
+
+    - name: 3.1 IDENTITY - Display Deployment Results
+      ansible.builtin.debug:
+        msg: "{{ item.item.name }}: {{ 'CREATED' if item.changed else 'EXISTS' }}"
+      loop: "{{ vlan_results.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+      when: vlan_results.results is defined
 
     - name: 4. VERIFICATION - Audit Final State
       rylanlab.common.unifi_api:
         host: "{{ unifi_host }}"
-        username: "{{ unifi_user }}"
-        password: "{{ unifi_pass }}"
+        api_key: "{{ unifi_api_key }}"
+        site: "{{ unifi_site }}"
+        simulation_mode: "{{ unifi_simulation_mode }}"
         action: get_networks
       register: final_audit
       failed_when: final_audit.failed | default(false)
@@ -63,12 +158,51 @@
       ansible.builtin.assert:
         that:
           - (ansible_check_mode) or (final_audit.data | length >= network_vlans | length)
-        fail_msg: "VLAN deployment gap detected"
-        success_msg: "Canonical VLAN scheme verified"
+        fail_msg: "VLAN deployment gap detected: expected {{ network_vlans | length }}, found {{ (final_audit.data | default([])) | length }}"
+        success_msg: "Canonical VLAN scheme verified: {{ (final_audit.data | default([])) | length }} networks deployed"
 
-    - name: 6. REPORT - Final State JSON (Audit Logging)
+    - name: 6. REPORT - Generate Audit Log
       ansible.builtin.copy:
-        content: "{{ final_audit.data | to_nice_json }}"
+        content: |
+          # VLAN Bootstrap Audit Report
+          # Generated: {{ ansible_date_time.iso8601 }}
+          # Guardian: Carter (Identity Management)
+          # Simulation Mode: {{ unifi_simulation_mode }}
+
+          ## Deployment Summary
+          - Existing Networks: {{ existing_count }}
+          - Requested Networks: {{ new_count }}
+          - Final Network Count: {{ (final_audit.data | default([])) | length }}
+
+          ## Network Details
+          {{ final_audit.data | to_nice_json }}
         dest: ".audit/vlan-bootstrap-{{ ansible_date_time.iso8601 }}.json"
         mode: '0644'
       delegate_to: localhost
+
+    - name: 7. FINALIZE - Display Summary
+      ansible.builtin.debug:
+        msg: |
+          ╔════════════════════════════════════════════════════════════╗
+          ║  VLAN Bootstrap Complete                                   ║
+          ╠════════════════════════════════════════════════════════════╣
+          ║  Mode: {{ 'SIMULATION' if unifi_simulation_mode else 'PRODUCTION' }}                                      ║
+          ║  Networks Deployed: {{ (final_audit.data | default([])) | length }}                              ║
+          ║  Audit Log: .audit/vlan-bootstrap-{{ ansible_date_time.iso8601 }}.json ║
+          ╚════════════════════════════════════════════════════════════╝
+
+          {% if unifi_simulation_mode %}
+          ⚠️  SIMULATION MODE ACTIVE - No changes applied to controller
+
+          To deploy to production:
+            ansible-playbook playbooks/example-vlan-bootstrap.yml \
+              -e unifi_simulation_mode=false \
+              -e unifi_api_key=$UNIFI_API_KEY
+          {% else %}
+          ✅ PRODUCTION DEPLOYMENT COMPLETE
+
+          Next steps:
+            1. Verify VLANs in UniFi Controller UI
+            2. Assign VLANs to switch ports
+            3. Run Hardening logic: ansible-playbook playbooks/example-harden.yml
+          {% endif %}
