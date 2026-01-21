@@ -2,8 +2,8 @@
 # Production Ansible Collection
 
 > Production-Grade Infrastructure-as-Code — RylanLabs Common
-> Version: v1.2.1
-> Status: Release Candidate (v1.2.1) — see branch `release/v1.2.1-final`
+> Version: v1.2.2
+> Status: Stable (v1.2.2)
 
 ---
 
@@ -29,8 +29,9 @@ All code enforces safety-first validation and "junior-at-3-AM" deployability.
 1. **Idempotency**: Roles use pre-checks for safe re-runs.
 2. **Error Handling**: Fail loud with context; remediation in docs.
 3. **Audit Logging**: Structured logs to `.audit/` for every execution.
-4. **Documentation Clarity**: FQCN examples; junior-readable guides in `docs/`.
-5. **Safety Constraints**: Built-in limits for firewall rules and VLANs to prevent overload.
+4. **Trinity 7-Task Pattern**: All production playbooks follow a standardized workflow (Gather, Process, Apply, Verify, Compliance, Report, Finalize).
+5. **Documentation Clarity**: FQCN examples; junior-readable guides in `docs/`.
+6. **Safety Constraints**: Built-in limits for firewall rules and VLANs to prevent overload.
 
 **Execution Alignment**:
 

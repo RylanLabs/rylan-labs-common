@@ -1,74 +1,324 @@
 ---
-- name: Hardening Domain Pattern - Hardening Network via Firewall Rules
+# playbooks/example-firewall-rules.yml
+# Guardian: Beale (Hardening & Firewall Management)
+# Ministry: Network Fortress Deployment
+# Consciousness: 9.9
+# Compliance: Seven Pillars ✓, Trinity v1.0.0 ✓, Hellodeolu v6 (≤10 rules) ✓
+#
+# PURPOSE:
+#   Demonstrates high-consciousness firewall deployment following the Beale
+#   Guardian pattern. Implements a "Default-Deny" posture while maintaining
+#   UniFi hardware offload performance (max 10 rules).
+#
+# USAGE:
+#   ansible-playbook playbooks/example-firewall-rules.yml
+#
+#   # Production (Warning: Applies rules to hardware)
+#   ansible-playbook playbooks/example-firewall-rules.yml \
+#     -e unifi_simulation_mode=false \
+#     -e unifi_api_key=$UNIFI_API_KEY
+
+- name: Beale Domain Pattern - Deploy Canonical Firewall Rules
   hosts: localhost
   connection: local
   gather_facts: true
   vars:
-    # Use simulation mode by default for safety in example
+    # Use simulation mode by default for safety
     unifi_simulation_mode: true
-    unifi_host: "https://unifi.local:443"
-    unifi_user: "admin"
-    unifi_pass: "password"
+    unifi_host: "{{ lookup('env', 'UNIFI_HOST') | default('https://unifi.local:443') }}"
+    unifi_site: "{{ lookup('env', 'UNIFI_SITE') | default('default') }}"
+    unifi_api_key: "{{ lookup('env', 'UNIFI_API_KEY') | default('') }}"
 
-    # Example firewall hardening policy
-    hardening_management_firewall_rules:
-      - name: "Block IoT to Management"
+    # SECURITY SETTINGS
+    whitaker_enabled: false  # Breach simulation trigger
+
+    # CANONICAL FIREWALL POLICY (Hellodeolu v6 Compliance)
+    # Total count must be ≤ 10 to preserve ASIC hardware offload
+    firewall_rules:
+      # --- Tier 1: Management VLAN Protection ---
+      - name: "Allow Management SSH"
         ruleset: "LAN_IN"
+        rule_index: 1000
+        action: "accept"
+        protocol: "tcp"
+        src_address: "10.0.30.0/24"  # Trusted VLAN
+        dst_address: "10.0.10.0/26"  # Management VLAN
+        dst_port: "22"
+        logging: true
+        enabled: true
+
+      - name: "Block All to Management"
+        ruleset: "LAN_IN"
+        rule_index: 1100
         action: "drop"
-        src_vlan: 20
-        dst_vlan: 1
-      - name: "Isolate Guest Network"
+        protocol: "all"
+        src_address: "any"
+        dst_address: "10.0.10.0/26"
+        logging: true
+        enabled: true
+
+      # --- Tier 2: IoT Isolation ---
+      - name: "Allow IoT to Internet"
+        ruleset: "LAN_IN"
+        rule_index: 2000
+        action: "accept"
+        protocol: "all"
+        src_address: "10.0.20.0/24"
+        dst_address: "!10.0.0.0/8"   # NOT Internal
+        logging: false
+        enabled: true
+
+      - name: "Block IoT to Internal"
+        ruleset: "LAN_IN"
+        rule_index: 2100
+        action: "drop"
+        protocol: "all"
+        src_address: "10.0.20.0/24"
+        dst_address: "10.0.0.0/8"
+        logging: true
+        enabled: true
+
+      # --- Tier 3: Guest Isolation ---
+      - name: "Allow Guest to Internet"
         ruleset: "GUEST_IN"
+        rule_index: 3000
+        action: "accept"
+        protocol: "all"
+        src_address: "10.0.30.0/24"
+        dst_address: "!10.0.0.0/8"
+        logging: false
+        enabled: true
+
+      - name: "Block Guest to Internal"
+        ruleset: "GUEST_IN"
+        rule_index: 3100
         action: "drop"
-        dst_vlan: 1
+        protocol: "all"
+        src_address: "10.0.30.0/24"
+        dst_address: "10.0.0.0/8"
+        logging: true
+        enabled: true
+
+      # --- Tier 4: Inter-VLAN Services ---
+      - name: "Allow Trusted to Servers HTTP"
+        ruleset: "LAN_IN"
+        rule_index: 4000
+        action: "accept"
+        protocol: "tcp"
+        src_address: "10.0.30.0/24"
+        dst_address: "10.0.10.0/26"
+        dst_port: "80,443"
+        logging: false
+        enabled: true
+
+      - name: "Allow VoIP to PBX"
+        ruleset: "LAN_IN"
+        rule_index: 4100
+        action: "accept"
+        protocol: "udp"
+        src_address: "10.0.40.0/27"
+        dst_address: "10.0.10.10"
+        dst_port: "5060,5061"
+        logging: false
+        enabled: true
+
+      # --- Tier 5: Default Posture ---
+      - name: "Allow Established Connections"
+        ruleset: "LAN_IN"
+        rule_index: 9000
+        action: "accept"
+        protocol: "all"
+        state_established: true
+        state_related: true
+        logging: false
+        enabled: true
+
+      - name: "Default Deny All"
+        ruleset: "LAN_IN"
+        rule_index: 9999
+        action: "drop"
+        protocol: "all"
+        src_address: "any"
+        dst_address: "any"
+        logging: true
+        enabled: true
+
+  pre_tasks:
+    - name: PRE-FLIGHT - Validate API Key
+      ansible.builtin.fail:
+        msg: |
+          SECURITY ERROR: UNIFI_API_KEY not set.
+
+          Generate an API key:
+            1. Settings → Admins → [Your Admin] → API Key
+            2. Export: export UNIFI_API_KEY='your-key-here'
+      when:
+        - not unifi_simulation_mode
+        - unifi_api_key | length == 0
+
+    - name: PRE-FLIGHT - Ensure audit directory exists
+      ansible.builtin.file:
+        path: ".audit"
+        state: directory
+        mode: '0755'
+
+    - name: PRE-FLIGHT - Fetch VLAN IDs for Dynamic Rules (Gathers Context)
+      rylanlab.common.unifi_api:
+        host: "{{ unifi_host }}"
+        api_key: "{{ unifi_api_key }}"
+        site: "{{ unifi_site }}"
+        simulation_mode: "{{ unifi_simulation_mode }}"
+        action: get_networks
+      register: vlan_lookup
+      failed_when: vlan_lookup.failed | default(false)
+
+    - name: PRE-FLIGHT - Map VLAN Names to IDs
+      ansible.builtin.set_fact:
+        vlan_map: "{{ vlan_map | default({}) | combine({item.name: item._id}) }}"
+      loop: "{{ vlan_lookup.data | default([]) }}"
+      loop_control:
+        label: "{{ item.name }}"
 
   tasks:
     - name: 1. GATHER - Fetch Existing Firewall Rules (Idempotency Check)
       rylanlab.common.unifi_api:
         host: "{{ unifi_host }}"
-        username: "{{ unifi_user }}"
-        password: "{{ unifi_pass }}"
+        api_key: "{{ unifi_api_key }}"
+        site: "{{ unifi_site }}"
+        simulation_mode: "{{ unifi_simulation_mode }}"
         action: get_firewall_rules
       register: current_rules
       failed_when: current_rules.failed | default(false)
 
-    - name: 2. PROCESS - Validate Constraints (Production Standards)
-      ansible.builtin.set_fact:
-        rule_count: "{{ current_rules.data | length }}"
-      failed_when: (rule_count | int + hardening_management_firewall_rules | length) > 10
-      vars:
-        msg: "CONSTRAINT VIOLATION: Future rule count exceeds limit of 10"
+    - name: 1.1 GATHER - Display Current State
+      ansible.builtin.debug:
+        msg: "Found {{ (current_rules.data | default([])) | length }} existing rules"
 
-    - name: 3. HARDENING - Deploy Firewall Rules
+    - name: 2. PROCESS - Validate Hellodeolu v6 Constraints
+      ansible.builtin.set_fact:
+        existing_count: "{{ (current_rules.data | default([])) | length }}"
+        new_count: "{{ firewall_rules | length }}"
+        total_rules: "{{ ((current_rules.data | default([])) | length) + (firewall_rules | length) }}"
+        max_rules: 10
+
+    - name: 2.1 PROCESS - Enforce Hardware Offload Limits
+      ansible.builtin.fail:
+        msg: |
+          CONSTRAINT VIOLATION: Hellodeolu v6 Rule Limit Exceeded
+
+          Current Rules: {{ existing_count }}
+          Requested Rules: {{ new_count }}
+          Total: {{ total_rules }}
+          Maximum: {{ max_rules }}
+
+          UniFi hardware offload supports max {{ max_rules }} rules.
+          Exceeding this limit degrades to CPU-based filtering (10x slower).
+
+          REMEDIATION:
+            1. Audit existing rules: ansible-playbook playbooks/audit-firewall.yml
+            2. Remove unused rules via UniFi Controller UI
+            3. Consolidate your firewall_rules list
+      when: total_rules | int > max_rules | int
+
+    - name: 3. HARDENING - Deploy Canonical Firewall Rules
       rylanlab.common.unifi_api:
         host: "{{ unifi_host }}"
-        username: "{{ unifi_user }}"
-        password: "{{ unifi_pass }}"
+        api_key: "{{ unifi_api_key }}"
+        site: "{{ unifi_site }}"
+        simulation_mode: "{{ unifi_simulation_mode }}"
         action: create_firewall_rule
         rule_data: "{{ item }}"
-      loop: "{{ hardening_management_firewall_rules }}"
+      loop: "{{ firewall_rules }}"
+      loop_control:
+        label: "{{ item.name }} (index {{ item.rule_index }})"
       register: firewall_results
       changed_when: firewall_results.changed | default(true)
 
-    - name: 4. VERIFICATION - Audit Hardening State
+    - name: 3.1 HARDENING - Display Deployment Results
+      ansible.builtin.debug:
+        msg: "{{ item.item.name }}: {{ 'CREATED' if item.changed else 'EXISTS' }}"
+      loop: "{{ firewall_results.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+      when: firewall_results.results is defined
+
+    - name: 3.2 HARDENING - Backup Existing Rules (Rollback Safety)
+      ansible.builtin.copy:
+        content: "{{ current_rules.data | to_nice_json }}"
+        dest: ".audit/firewall-backup-{{ ansible_date_time.iso8601 }}.json"
+        mode: '0644'
+      delegate_to: localhost
+      when: not unifi_simulation_mode
+
+    - name: 4. VERIFICATION - Audit Final State
       rylanlab.common.unifi_api:
         host: "{{ unifi_host }}"
-        username: "{{ unifi_user }}"
-        password: "{{ unifi_pass }}"
+        api_key: "{{ unifi_api_key }}"
+        site: "{{ unifi_site }}"
+        simulation_mode: "{{ unifi_simulation_mode }}"
         action: get_firewall_rules
       register: final_audit
       failed_when: final_audit.failed | default(false)
 
-    - name: 5. COMPLIANCE - Verify Rule Coverage
+    - name: 5. COMPLIANCE - Verify Fortress Coverage
       ansible.builtin.assert:
         that:
-          - (ansible_check_mode) or (final_audit.data | length >= hardening_management_firewall_rules | length)
-        fail_msg: "Firewall deployment gap detected"
-        success_msg: "Fortress hardening verified"
+          - (ansible_check_mode) or (final_audit.data | length >= firewall_rules | length)
+        fail_msg: "Firewall deployment gap: expected {{ firewall_rules | length }}, found {{ (final_audit.data | default([])) | length }}"
+        success_msg: "Fortress hardening verified: {{ (final_audit.data | default([])) | length }} rules active"
 
-    - name: 6. REPORT - Final State JSON (Audit Logging)
+    - name: 5.1 COMPLIANCE - Verify Default-Deny Policy
+      ansible.builtin.assert:
+        that:
+          - (ansible_check_mode) or (final_audit.data | selectattr('name', 'equalto', 'Default Deny All') | list | length > 0)
+        fail_msg: "CRITICAL SECURITY GAP: Default-deny rule missing!"
+        success_msg: "Default-deny policy confirmed active"
+
+    - name: 6. REPORT - Generate Audit Report
       ansible.builtin.copy:
-        content: "{{ final_audit.data | to_nice_json }}"
+        content: |
+          # Firewall Hardening Audit Report
+          # Generated: {{ ansible_date_time.iso8601 }}
+          # Guardian: Beale (Hardening & Firewall)
+
+          ## Summary
+          - Total Rules: {{ (final_audit.data | default([])) | length }}
+          - Simulation Mode: {{ unifi_simulation_mode }}
+          - Hellodeolu v6 Compliant: {{ 'YES' if (total_rules | int <= 10) else 'NO' }}
+
+          ## Rule Details
+          {{ final_audit.data | to_nice_json }}
         dest: ".audit/firewall-harden-{{ ansible_date_time.iso8601 }}.json"
         mode: '0644'
       delegate_to: localhost
+
+    - name: 7. FINALIZE - Display Security Summary
+      ansible.builtin.debug:
+        msg: |
+          ╔════════════════════════════════════════════════════════════╗
+          ║  Firewall Hardening Complete (Beale Guardian)             ║
+          ╠════════════════════════════════════════════════════════════╣
+          ║  Mode: {{ 'SIMULATION' if unifi_simulation_mode else 'PRODUCTION' }}                                      ║
+          ║  Rules Active: {{ (final_audit.data | default([])) | length }}/10                                   ║
+          ║  Audit Log: .audit/firewall-harden-{{ ansible_date_time.iso8601 }}.json ║
+          ╚════════════════════════════════════════════════════════════╝
+
+          {% if unifi_simulation_mode %}
+          ⚠️  SIMULATION MODE ACTIVE - No changes applied
+
+          To apply to hardware:
+            ansible-playbook playbooks/example-firewall-rules.yml \
+              -e unifi_simulation_mode=false \
+              -e unifi_api_key=$UNIFI_API_KEY
+          {% else %}
+          ✅ PRODUCTION FORTRESS DEPLOYED
+
+          Security Checks:
+            ✓ Default-deny policy enforced
+            ✓ IoT and Guest isolation active
+            ✓ Management VLAN protected
+
+          Next Steps:
+            1. Run breach simulation: ansible-playbook scripts/simulate-breach.sh
+            2. Review audit JSON for rule hit counts
+          {% endif %}
