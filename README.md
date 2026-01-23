@@ -1,43 +1,50 @@
-<!-- markdownlint-disable MD013 MD024 MD001 MD029 MD040 MD025 -->
-# Production Ansible Collection
+# RylanLabs Common Collection README
 
-> Production-Grade Infrastructure-as-Code — RylanLabs Common
-> Version: v1.2.2
-> Status: Stable (v1.2.2)
+> Canonical README — RylanLabs standard  
+> Organization: RylanLabs  
+> Version: v1.2.2  
+> Date: 2026-01-23  
+> Guardian: Bauer (Verification) | Ministry: whispers (Audit)  
+> Agents: Carter (Identity), Bauer (Verification), Beale (Hardening)  
+> Consciousness: 9.9  
+> Status: PRODUCTION-READY  
+> Compliance: Hellodeolu v6, Seven Pillars, Trinity Pattern  
+> Tags: ["ansible-collection", "infrastructure-automation", "rylan-canon-library", "production-grade"]
 
 ---
 
 ## Purpose
 
-`rylanlabs.common` is a production-grade Ansible collection for infrastructure automation.
-It bundles roles for standardized tasks (Identity for authentication, Audit for verification,
-Hardening for security), modules for custom operations (e.g., UniFi API), and plugins for extensions.
-Designed for public distribution via Ansible Galaxy. It enables modular, idempotent deployments while following infrastructure-as-code best practices.
-All code enforces safety-first validation and "junior-at-3-AM" deployability.
+This README serves as the canonical documentation for the `rylanlab.common` Ansible collection (note: namespace corrected to `rylanlab` per intended Galaxy publication; GitHub repo uses `rylan-labs-common` for development). It provides a deep-dive synthesis of the repository contents, cross-referenced with the Ansible Galaxy state (currently unpublished/no content found, indicating the collection is in pre-release preparation). All elements enforce Seven Pillars (idempotency in roles, error handling via handlers, audit logging to `.audit/`, etc.), Trinity alignment (Carter for identity bootstrap, Bauer for verification, Beale for hardening), and Hellodeolu v6 (RTO <15 minutes, junior-at-3-AM deployability, zero bypass).
 
 **Objectives**:
+- Centralize reusable Ansible components to eliminate duplication across domain repositories.
+- Enforce production-grade IaC practices: modular, idempotent, auditable deployments.
+- Support Tandem ecosystem integration for end-to-end workflows.
+- Facilitate rapid recovery and validation, with built-in constraints (e.g., firewall rule limits).
 
-- Centralize reusable code to eliminate duplication across domain repos.
-- Enforce infrastructure-as-code best practices in every role/module.
-- Support high availability with built-in safety handlers.
-- Facilitate modular workflows for bootstrap, validation, and hardening.
+**Ingestion Summary**:
+- GitHub Repo Deep Dive: Analyzed all files/directories (tree below). Roles focus on Trinity domains; plugins/modules enable UniFi integration; docs emphasize principles; CI/CD enforces validation gates.
+- Galaxy Cross-Reference: No published content (empty page). Repo tarball (v1.2.1) suggests impending v1.2.2 release. Canonical aligns repo as source-of-truth until publication; post-publish, sync metadata.
 
 ---
 
 ## Core Principles Applied
 
-1. **Idempotency**: Roles use pre-checks for safe re-runs.
-2. **Error Handling**: Fail loud with context; remediation in docs.
-3. **Audit Logging**: Structured logs to `.audit/` for every execution.
-4. **Trinity 7-Task Pattern**: All production playbooks follow a standardized workflow (Gather, Process, Apply, Verify, Compliance, Report, Finalize).
-5. **Documentation Clarity**: FQCN examples; junior-readable guides in `docs/`.
-6. **Safety Constraints**: Built-in limits for firewall rules and VLANs to prevent overload.
+1. **Idempotency**: Roles use state checks (e.g., pre-tasks in `main.yml`); supports `--check` mode.
+2. **Error Handling**: `block/rescue` patterns; handlers for rollbacks; fail loud with remediation.
+3. **Audit Logging**: JSON logs to `.audit/` for all operations; Loki integration optional.
+4. **Documentation Clarity**: Inline vars docs; junior-readable guides in `docs/`.
+5. **Validation**: Pre-commit hooks, Makefile targets; verifies preconditions/postconditions.
+6. **Reversibility**: Handlers enable rollbacks; recovery playbooks in `playbooks/`.
+7. **Observability**: Utils for logging/monitoring; nmap in examples for state visibility.
 
-**Execution Alignment**:
+**Trinity Alignment**:
+- Carter (Identity): `identity_management` bootstraps auth (RADIUS/LDAP).
+- Bauer (Verification): `infrastructure_verify` runs linting/audits.
+- Beale (Hardening): `hardening_management` enforces isolation/firewalls.
 
-- **Identity**: `identity_management` role bootstraps auth services.
-- **Audit**: `infrastructure_verify` enforces linting and state validation.
-- **Hardening**: `hardening_management` applies firewall and isolation policies.
+**Hellodeolu v6 Outcomes**: All scripts/roles junior-deployable; human gates for critical ops; no symlinks in CI (fixed in v1.2.2).
 
 ---
 
@@ -45,55 +52,62 @@ All code enforces safety-first validation and "junior-at-3-AM" deployability.
 
 ```bash
 rylan-labs-common/
-├── .audit/                     # Structured JSON audit logs
-├── .github/                    # CI/CD workflows and GitHub Actions
-├── docs/                       # Documentation files
-│   ├── EMERGENCY_RESPONSE.md   # Incident recovery procedures
-│   ├── INTEGRATION_GUIDE.md    # Tandem setup and ansible.cfg
-│   ├── SEVEN_PILLARS.md        # Compliance framework
-│   └── TANDEM_WORKFLOW.md      # Execution and dataflow
-├── meta/                       # Collection metadata
-│   └── runtime.yml             # Ansible reqs and dependencies
-├── playbooks/                  # Example playbooks
-│   ├── example-bootstrap.yml    # Complete sequence demo (Identity -> Audit -> Hardening)
-│   ├── example-identity.yml     # Identity management role demonstration
-│   ├── example-verify.yml       # Audit and verification role demonstration
-│   ├── example-harden.yml       # Security hardening role demonstration
-│   ├── example-vlan-bootstrap.yml # Network: VLAN infrastructure provisioning
-│   └── example-firewall-rules.yml # Hardening: Production-grade firewall rules
-├── plugins/                    # Custom extensions
-│   ├── modules/                # Python modules
-│   │   └── unifi_api.py        # UniFi API queries
-│   ├── inventory/              # Inventory plugins
-│   │   └── unifi_dynamic_inventory.py  # Dynamic UniFi inventory
-│   └── module_utils/           # Shared utils
-│       └── rylan_utils.py      # Audit/rollback helpers
-├── roles/                      # Reusable roles
-│   ├── infrastructure_verify/  # Verification tasks
-│   │   ├── defaults/           # main.yml with vars
-│   │   ├── tasks/              # main.yml
-│   │   └── handlers/           # Service restarts
-│   ├── hardening_management/   # Hardening tasks
-│   │   ├── defaults/           # main.yml
-│   │   ├── tasks/              # main.yml
-│   │   └── handlers/           # Rollbacks
-│   └── identity_management/    # Identity tasks
-│       ├── defaults/           # main.yml
-│       ├── tasks/              # main.yml
-│       └── handlers/           # Audits
-├── scripts/                    # Validation utilities
-├── tests/                      # Unit/integration tests (skeleton)
-├── .gitignore                  # Ignore builds/tests
-├── .pre-commit-config.yaml     # Hooks (ansible-lint, etc.)
-├── .yamllint                   # YAML rules
-├── CHANGELOG.md                # Version history
-├── galaxy.yml                  # Collection metadata
-├── LICENSE                     # MIT
-├── Makefile                    # Build/validate tasks
-├── pyproject.toml              # Python linting
-├── rylanlab-common-1.2.1.tar.gz  # Built archive (v1.2.1)
-└── README.md                   # This file
-```bash
+├── .audit/                     # Runtime audit logs (JSON); enforces traceability per Seven Pillars.
+├── .canon/                     # Canonical symlinks to doctrine/templates; ensures alignment.
+├── .github/                    # Workflows for CI/CD; includes linting/validation gates.
+├── docs/                       # Principle docs; junior-at-3-AM guides.
+│   ├── EMERGENCY_RESPONSE.md   # Recovery runbooks with RTO <15min scenarios.
+│   ├── INTEGRATION_GUIDE.md    # Ansible.cfg/setup for Tandem.
+│   ├── SEVEN_PILLARS.md        # Seven Pillars framework.
+│   └── TANDEM_WORKFLOW.md      # Dataflow/execution patterns.
+├── inventory/                  # Vars files; e.g., hardening vars (prefixed for lint compliance).
+├── meta/                       # Collection metadata.
+│   └── runtime.yml             # Ansible deps/reqs; Trinity-initialized.
+├── playbooks/                  # Example workflows following Trinity 7-Task Pattern (Gather, Process, Apply, Verify, Compliance, Report, Finalize).
+│   ├── example-bootstrap.yml   # Full Trinity sequence.
+│   ├── example-identity.yml    # Carter demo.
+│   ├── example-verify.yml      # Bauer demo.
+│   ├── example-harden.yml      # Beale demo.
+│   ├── example-vlan-bootstrap.yml # VLAN provisioning.
+│   └── example-firewall-rules.yml # Firewall hardening.
+├── plugins/                    # Custom extensions.
+│   ├── modules/                # Python modules.
+│   │   └── unifi_api.py        # UniFi API interactions (queries topology/WLAN).
+│   ├── inventory/              # Inventory plugins.
+│   │   └── unifi_dynamic_inventory.py # Generates inventory from UniFi.
+│   └── module_utils/           # Shared code.
+│       └── rylan_utils.py      # Logging/validation/rollback helpers.
+├── roles/                      # Core reusable roles.
+│   ├── infrastructure_verify/  # Bauer: Validation/linting.
+│   │   ├── defaults/main.yml   # Vars: enabled flags, Loki endpoint, retention.
+│   │   ├── tasks/main.yml      # Check/audit tasks.
+│   │   └── handlers/           # Restart/recovery.
+│   ├── hardening_management/   # Beale: Security enforcement.
+│   │   ├── defaults/main.yml   # Vars: firewall rules, VLAN configs.
+│   │   ├── tasks/main.yml      # Policy application.
+│   │   └── handlers/           # Rollbacks.
+│   └── identity_management/    # Carter: Auth bootstrap.
+│       ├── defaults/main.yml   # Vars: providers, audit flags.
+│       ├── tasks/main.yml      # Install/config auth.
+│       └── handlers/           # Audit handlers.
+├── scripts/                    # Utilities; e.g., validate-security-posture.sh (fixed symlinks for CI).
+├── tests/                      # Test skeletons; for unit/integration.
+├── .ansible-lint               # Linting config; best practices enforcement.
+├── .canon-metadata.yml         # Canonical tracking; doctrine alignment.
+├── .gitignore                  # Ignores temps/builds; updated v1.2.2.
+├── .markdownlint.json          # MD lint rules; doc consistency.
+├── .pre-commit-config.yaml     # Hooks: ansible-lint, ruff, yamllint (real file, no symlinks).
+├── .yamllint                   # YAML rules; syntax compliance.
+├── CHANGELOG.md                # History: CI fixes, v1.2.2 updates.
+├── galaxy.yml                  # Metadata: namespace rylanlab, name common, version v1.2.2, deps.
+├── LICENSE                     # MIT.
+├── Makefile                    # Targets: ci-local, pre-commit-install.
+├── pyproject.toml              # Python config: ruff/mypy; excludes specifics.
+├── rylanlab-common-1.2.1.tar.gz # v1.2.1 archive (pre-v1.2.2).
+└── README.md                   # This file; comprehensive guide.
+```
+
+**Galaxy Cross-Reference**: No published content; repo tarball (v1.2.1) precedes v1.2.2. Post-publish, Galaxy will mirror `galaxy.yml` metadata, roles/plugins. Ensure sync via CI.
 
 ---
 
@@ -101,244 +115,136 @@ rylan-labs-common/
 
 ### Core Roles
 
-#### identity_management
-
-- **Purpose**: Bootstrap centralized identity services (RADIUS, LDAP).
-- **Defaults** (`defaults/main.yml`):
-
-  ```yaml
-  identity_management_enabled: false
-  identity_providers: []
-  identity_management_audit_enabled: false
-  ```
-
-- **Tasks**: Install packages, configure authentication, audit events.
-
-### infrastructure_verify
-
-- **Purpose**: Validate configuration, run linting, and audit logging.
-- **Defaults**:
-
-  ```yaml
-  infrastructure_verify_enabled: false
-  infrastructure_verify_audit_enabled: true
-  infrastructure_loki_endpoint: ""
-  infrastructure_log_retention_days: 90
-  ```
-
-- **Tasks**: Run validation checks and log auditing.
-
-#### hardening_management
-
-- **Purpose**: Firewall rules, VLAN isolation, and security enforcement.
-- **Defaults**:
-
-  ```yaml
-  hardening_management_enabled: false
-  hardening_management_firewall_rules: []
-  hardening_management_vlan_configs: []
-  ```
-
-- **Tasks**: Configure security policies and enforce infrastructure isolation.
+- **identity_management**: Bootstraps RADIUS/LDAP; vars in defaults/main.yml (e.g., identity_providers); tasks install/configure; handlers audit.
+- **infrastructure_verify**: Validates/lints; vars for audit/Loki; tasks run checks.
+- **hardening_management**: Enforces firewalls/VLANs; vars for rules/configs; tasks apply policies.
 
 ### Custom Plugins & Modules
 
-#### unifi_api.py (modules/)
-
-- Queries UniFi for topology/WLAN/clients.
-
-#### unifi_dynamic_inventory.py (inventory/)
-
-- Generates inventory from UniFi controller.
-
-#### rylan_utils.py (module_utils/)
-
-- Shared: Logging, validation, rollback.
+- **unifi_api.py**: UniFi queries.
+- **unifi_dynamic_inventory.py**: Dynamic inventory.
+- **rylan_utils.py**: Shared helpers.
 
 ---
 
 ## Installation
 
-Via Galaxy:
-
 ```bash
-ansible-galaxy install rylanlabs.common
-```bash
+ansible-galaxy collection install rylanlab.common
+```
 
 From Source:
-
 ```bash
 git clone https://github.com/RylanLabs/rylan-labs-common.git
 cd rylan-labs-common
-ansible-galaxy collection install . --force
-# Or install the packaged tarball directly (from repo root):
-# ansible-galaxy collection install rylanlab-common-1.2.1.tar.gz --force
-```bash
+ansible-galaxy collection build
+ansible-galaxy collection install rylanlab-common-1.2.2.tar.gz --force
+```
 
 ---
 
 ## Standards & Validation
 
-This collection follows high-standard development practices for infrastructure automation.
-
-**Key Features**:
-
-- Linting configs synchronized with production standards.
-- Pre-commit hooks enforce modular patterns and YAML best practices.
-- Validators run locally to ensure CI parity.
-- Architectural disciplines documented in `docs/disciplines/`.
-
-**For Developers**:
-
-```bash
-# Install pre-commit hooks (one-time)
-pre-commit install
-
-# Run validators manually
-pre-commit run --all-files
-```bash
-
-**For Maintainers**: See `docs/` for architecture and validation manifests.
+- Pre-commit: ansible-lint, ruff, yamllint.
+- Local: `make ci-local`.
+- Developers: `pre-commit install; pre-commit run --all-files`.
 
 ---
 
 ## Implementation & Quality
 
-This collection implements the **Seven Pillars** as follows:
-
-- **Idempotency**: All roles support `--check` mode; second runs report zero changes.
-- **Error Handling**: Uses `block/rescue` for critical operations with automated rollback handlers.
-- **Audit Logging**: Structured JSON trails generated in `.audit/` for all deployments.
-- **Security**: Firewalls and VLAN isolation validated via `validate-security-posture.sh`.
+- Idempotency/Error Handling: Pre-checks, rescue blocks.
+- Audit/Security: JSON logs, validate-security-posture.sh.
+- Galaxy Prep: Metadata ready; no content yet—publish via CI.
 
 ---
 
 ## Emergency Procedures
 
-**Target RTO**: < 15 minutes for all incidents.
+| Scenario | Domain | Action | RTO |
+|----------|--------|--------|-----|
+| Install Fail | Audit | `--force install` | 2min |
+| Role Drift | Identity | Validate playbook | 5min |
+| Hardening Breach | Hardening | `--tags hardening` recovery | 10min |
+| Full Reset | Recovery | `eternal-resurrect.sh --common` | 15min |
 
-| Scenario | Recovery Strategy | Target |
-| --- | --- | --- |
-| Collection Missing | `ansible-galaxy collection install . --force` | 2 min |
-| Task Failure | Identify tags via `-vvv` and re-run specific tags | 5 min |
-| Service Down | Check reachability; fallback to static credentials | 8 min |
-| Full Reset | Run `scripts/example-recovery.yml` with domain tags | 15 min |
-
-For detailed runbooks, see [docs/EMERGENCY_RESPONSE.md](docs/EMERGENCY_RESPONSE.md) (Canonical Link).
+See docs/EMERGENCY_RESPONSE.md.
 
 ---
 
 ## Usage
 
-### Example Playbook
-
+Example:
 ```yaml
 - name: Bootstrap Infrastructure
   hosts: all
   roles:
-    - rylanlabs.common.identity_management
-    - rylanlabs.common.infrastructure_verify
-    - rylanlabs.common.hardening_management
-```bash
+    - rylanlab.common.identity_management
+    - rylanlab.common.infrastructure_verify
+    - rylanlab.common.hardening_management
+```
 
-### Dynamic Inventory
-
-Configure `unifi_inventory.yml`; use `-i unifi_inventory.yml`.
-
-### Playbooks (playbooks/)
-
-- `example-bootstrap.yml`: Complete sequence.
-- `example-identity.yml`: Identity management.
-- `example-verify.yml`: Audit and verification.
-- `example-harden.yml`: Security hardening.
+Dynamic Inventory: `-i unifi_inventory.yml`.
 
 ---
 
 ## Tandem Integration
 
-With `rylan-canon-library`: Bootstrap hooks/validators.
-With `rylan-inventory`: Dynamic plugin pulls manifests.
-
-**Architecture Flowchart**:
-
 ```mermaid
 graph TD
-    A[rylan-canon-library<br/>Doctrine/Templates] -->|Bootstrap Hooks| B[rylan-labs-common<br/>Roles/Modules/Plugins]
-    B -->|ansible-galaxy install| C[Domain Repos<br/>e.g., rylan-labs-iac]
-    D[rylan-inventory<br/>Manifests/Data] -->|Dynamic Plugin| B
-    B -->|Playbooks/Roles| E[Deployment<br/>3-Domain Sequence]
-    subgraph "Tandem Ecosystem"
-        A --> B --> C
-        D --> B
-    end
-```bash
+    A[rylan-canon-library] -->|Hooks| B[rylanlab.common]
+    B -->|Install| C[Domain Repos]
+    D[rylan-inventory] -->|Plugin| B
+    B -->|Playbooks| E[Deployment]
+```
 
 ---
 
 ## Quality Assurance
 
-Local: `make ci-local` (`ansible-lint`, `ruff`, `mypy`, etc.).
-Pre-commit: `make pre-commit-install`.
+CI enforces Seven Pillars; tests skeleton-ready for expansion.
 
 ---
 
 ## Seven Pillars Compliance
 
-- Idempotency: Pre-checks in roles.
-- Error Handling: `failed_when` clauses.
-- Audit Logging: Loki integration.
-- Documentation: Extensive `docs/`.
-- Validation: Makefile targets.
-- Reversibility: Rollback handlers.
-- Observability: `nmap`/Loki.
-
----
-
-## Emergency Response
-
-| Scenario         | Domain   | Action                              | RTO   |
-|------------------|----------|-------------------------------------|-------|
-| Install Fail     | Audit    | `--force install`                   | 2min  |
-| Role Drift       | Identity | Validate-only playbook              | 5min  |
-| Hardening Breach | Hardening| Recovery playbook `--tags hardening`| 10min |
-| Full Reset       | Recovery | `eternal-resurrect.sh --common`     | 15min |
+As detailed in docs/SEVEN_PILLARS.md.
 
 ---
 
 ## Documentation
 
-- INTEGRATION_GUIDE.md: Setup/ansible.cfg.
-- SEVEN_PILLARS.md: Framework.
-- TANDEM_WORKFLOW.md: Dataflow.
-- EMERGENCY_RESPONSE.md: Procedures.
+See docs/ for guides.
 
 ---
 
 ## Versioning
 
-SemVer: MAJOR.MINOR.PATCH. CHANGELOG.md tracks.
+SemVer; see CHANGELOG.md (v1.2.2: CI fixes, Trinity updates).
 
 ---
 
 ## License
 
-MIT. See LICENSE.
+MIT.
 
 ---
 
 ## Authors
 
-RylanLabs Team <team@rylanlabs.com>
+RylanLabs Team.
 
 ---
 
 ## Support & Contribution
 
-Issues: <https://github.com/RylanLabs/rylan-labs-common/issues>.
-PRs follow Seven Pillars.
+Issues/PRs via GitHub; enforce Seven Pillars.
 
 ---
 
-**Last Updated**: 2026-01-15
-**Status**: Release Candidate (v1.2.1) — PR branch `release/v1.2.1-final`
-**Infrastructure-as-Code requires discipline. All changes must be validated.**
+## Closing Statement
+
+This canonical README establishes disciplined IaC for RylanLabs. Publish to Galaxy for production use.
+
+No bypass. No shortcuts. No exceptions.  
+The canon is law. The Trinity endures. The fortress stands eternal.
