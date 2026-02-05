@@ -1,0 +1,6 @@
+---
+# defaults file for verification_role
+verification_enforce_sops: true
+verification_whitaker_path: "/usr/local/bin/whitaker-scan.sh"
+verification_audit_level: "high"
+verification_fail_on_leak: true

@@ -1,0 +1,42 @@
+manifest_version: "2.1.0"
+tier: 3
+tier_name: "GALAXY_COLLECTION"
+maturity_level: 4
+guardian: "Security Council"
+
+repository:
+  namespace: "rylanlabs"
+  collection: "unifi"
+
+ministries:
+  - ansible
+  - security
+  - validation
+  - orchestration
+  - api
+  - playbook
+  - rotation
+
+gates:
+  - name: "whitaker"
+    status: "active"
+  - name: "bauer"
+    status: "active"
+  - name: "carter"
+    status: "active"
+
+sacred_files:
+  ansible:
+    - dest: "Makefile"
+    - dest: "common.mk"
+  documentation:
+    - dest: "README.md"
+  security:
+    - dest: ".gitleaks.toml"
+
+sync:
+  source: "rylan-canon-library"
+  patterns:
+    - scripts/whitaker-scan.sh
+    - scripts/sentinel-expiry.sh
+    - scripts/playbook-structure-linter.py

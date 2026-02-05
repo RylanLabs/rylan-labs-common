@@ -1,0 +1,8 @@
+.backups/
+.audit/
+vaults/
+*.log
+*.tmp
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/

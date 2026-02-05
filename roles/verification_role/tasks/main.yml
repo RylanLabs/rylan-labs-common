@@ -1,0 +1,42 @@
+---
+# tasks file for verification_role
+# Ministry: Intelligence
+# Trinity Workflow: GATHER-PROCESS-APPLY-VERIFY-AUDIT-REPORT-FINALIZE
+
+- name: "[GATHER] Scan for SOPS encrypted files"
+  ansible.builtin.find:
+    paths: "{{ ansible_project_dir | default(lookup('env', 'PWD')) }}"
+    patterns: "*.sops.yaml,*.sops.yml,*.sops.json"
+    recurse: true
+  register: sops_files
+
+- name: "[PROCESS] Analyze encryption status"
+  ansible.builtin.set_fact:
+    verification_target_count: "{{ sops_files.matched }}"
+
+- name: "[APPLY] Run Whitaker security scan"
+  ansible.builtin.shell: "bash {{ verification_whitaker_path }} ."
+  register: whitaker_output
+  failed_when: 
+    - verification_fail_on_leak
+    - "'LEAK DETECTED' in whitaker_output.stdout"
+  changed_when: false
+
+- name: "[VERIFY] Validate SOPS integrity"
+  ansible.builtin.command: "sops -d {{ item.path }}"
+  loop: "{{ sops_files.files }}"
+  register: sops_check
+  changed_when: false
+  when: verification_enforce_sops and sops_files.matched > 0
+  no_log: true
+
+- name: "[AUDIT] Log verification result"
+  ansible.builtin.lineinfile:
+    path: ".audit/audit-trail.jsonl"
+    line: '{"timestamp": "{{ lookup("pipe", "date -u +%Y-%m-%dT%H:%M:%SZ") }}", "agent": "Bauer", "action": "security_scan", "status": "{{ "PASS" if whitaker_output.rc == 0 else "FAIL" }}"}'
+    create: true
+  delegate_to: localhost
+
+- name: "[REPORT] Finalize verification"
+  ansible.builtin.debug:
+    msg: "Security posture verified. Found {{ verification_target_count }} encrypted assets."

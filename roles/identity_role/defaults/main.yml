@@ -1,0 +1,8 @@
+---
+# defaults file for identity_role
+# Maturity: Level 5 (Autonomous)
+
+identity_gpg_key_id: "security@rylan.local"
+identity_enforce_signatures: true
+identity_sentinel_path: "/usr/local/bin/sentinel-expiry.sh"
+identity_vault_path: ".backups/vaults"

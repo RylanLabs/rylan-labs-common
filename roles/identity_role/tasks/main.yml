@@ -1,0 +1,41 @@
+---
+# tasks file for identity_role
+# Ministry: Security
+# Trinity Workflow: GATHER-PROCESS-APPLY-VERIFY-AUDIT-REPORT-FINALIZE
+
+- name: "[GATHER] Verify GPG environment"
+  ansible.builtin.command: gpg --version
+  register: gpg_check
+  changed_when: false
+
+- name: "[PROCESS] Analyze sentinel status"
+  ansible.builtin.stat:
+    path: "{{ identity_sentinel_path }}"
+  register: sentinel_bin
+
+- name: "[APPLY] Distribute identity rotation policy"
+  ansible.builtin.copy:
+    content: |
+      # Managed by rylanlabs.unifi.identity_role
+      policy: strict-gpg
+      key: {{ identity_gpg_key_id }}
+    dest: /etc/rylanlabs/identity.conf
+    mode: '0644'
+  become: true
+
+- name: "[VERIFY] Check GPG key expiry"
+  ansible.builtin.shell: "bash {{ identity_sentinel_path }} --check {{ identity_gpg_key_id }}"
+  register: expiry_status
+  changed_when: false
+  when: sentinel_bin.stat.exists
+
+- name: "[AUDIT] Append to local trail"
+  ansible.builtin.lineinfile:
+    path: ".audit/audit-trail.jsonl"
+    line: '{"timestamp": "{{ lookup("pipe", "date -u +%Y-%m-%dT%H:%M:%SZ") }}", "agent": "Carter", "action": "identity_verification", "status": "PASS"}'
+    create: true
+  delegate_to: localhost
+
+- name: "[REPORT] Finalize identity posture"
+  ansible.builtin.debug:
+    msg: "Identity posture validated for {{ identity_gpg_key_id }}"

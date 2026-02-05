@@ -1,0 +1,48 @@
+---
+# RylanLabs Network Scheme Template
+# Maturity: v2.0.0
+# Description: Canonical 5-VLAN scheme with SemVer tracking
+
+network_scheme:
+  version: "1.1.0"  # Bumped for VLAN 80 integration
+  domain: rylanlabs.internal
+  default_posture: deny-all
+
+  vlans:
+    - id: 10
+      name: MANAGEMENT
+      subnet: 10.10.10.0/24
+      description: "Core infrastructure, switches, APs"
+      isolation: false
+
+    - id: 20
+      name: SERVERS
+      subnet: 10.10.20.0/24
+      description: "Trusted local services"
+      isolation: false
+
+    - id: 30
+      name: TRUSTED
+      subnet: 10.10.30.0/24
+      description: "Primary user devices"
+      isolation: false
+
+    - id: 40
+      name: VOIP
+      subnet: 10.10.40.0/24
+      description: "Voice and Communication"
+      isolation: true
+
+    - id: 80
+      name: GUEST
+      subnet: 192.168.80.0/24
+      description: "Isolated guest network"
+      isolation: true
+      device_isolation: true
+
+    - id: 90
+      name: GUEST_IOT
+      subnet: 192.168.90.0/24
+      description: "Isolated guest and IoT devices"
+      isolation: true
+      device_isolation: true
