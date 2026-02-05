@@ -3,39 +3,196 @@
 
 Generates dynamic inventory from UniFi controller,
 enabling runtime topology discovery and device grouping.
-
-Phase: rylan-inventory v4.3.1 extraction
 """
 
 from __future__ import annotations
 
+import json
+import os
+import subprocess  # nosec: B404
+import sys
 from typing import Any
 
+import yaml
+from ansible.plugins.inventory import BaseInventoryPlugin
 
-class InventoryModule:
+# Add module_utils to path for UniFiClient
+# This handles the environment when running as a plugin
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "module_utils"))
+try:
+    # Use any available import path for compatibility
+    try:
+        from ansible_collections.rylanlab.unifi.plugins.module_utils.unifi_api import UniFiClient
+    except ImportError:
+        from plugins.module_utils.unifi_api import UniFiClient
+except ImportError:
+    # Fallback for localized testing
+    UniFiClient = None
+
+
+class InventoryModule(BaseInventoryPlugin):
     """Dynamic inventory from UniFi controller."""
 
-    NAME = "rylanlabs.common.unifi_dynamic_inventory"
+    NAME = "rylanlab.unifi.unifi_inventory"
 
     def __init__(self) -> None:
         """Initialize inventory module."""
-
-    def parse(
-        self,
-        inventory: Any,
-        loader: Any,
-        path: str,
-    ) -> None:
-        """Parse inventory from UniFi controller."""
+        super().__init__()
+        self.client: UniFiClient | None = None
 
     def verify_file(self, path: str) -> bool:
         """Verify inventory file."""
-        return path.endswith("unifi_inventory.yml")
+        return super().verify_file(path) and (path.endswith(("unifi_inventory.yml", "unifi_inventory.yaml")))
 
+    def _load_vault_secrets(self, vault_path: str, vault_password_file: str | None = None) -> dict[str, Any]:
+        """Load secrets using ansible-vault (Pattern 5: Beale constraints)."""
+        cmd = ["ansible-vault", "view", vault_path]
+        if vault_password_file:
+            cmd.extend(["--vault-password-file", vault_password_file])
+            
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)  # nosec: B603
+            return yaml.safe_load(result.stdout)
+        except Exception:  # pylint: disable=broad-except
+            return {}
 
-def main() -> None:
-    """Module entry point."""
+    def parse(self, inventory: Any, loader: Any, path: str, cache: bool = True) -> None:
+        """Parse inventory from UniFi controller."""
+        super().parse(inventory, loader, path)
 
+        # 1. Load config from file
+        self._read_config_data(path)
+        
+        host = self.get_option("host") or os.getenv("UNIFI_HOST")
+        port = int(self.get_option("port") or os.getenv("UNIFI_PORT", "443"))
+        user = self.get_option("username") or os.getenv("UNIFI_USER")
+        password = self.get_option("password") or os.getenv("UNIFI_PASS")
+        manifest_path = self.get_option("manifest_path") or os.getenv("MANIFEST_PATH", "inventory/device-manifest.yml")
+        
+        # 2. Vault integration fallback
+        vault_path = self.get_option("vault_path")
+        if not (user and password) and vault_path and os.path.exists(vault_path):
+            vault_pass_file = self.get_option("vault_password_file")
+            secrets = self._load_vault_secrets(vault_path, vault_pass_file)
+            user = secrets.get("unifi_api_user") or secrets.get("unifi_user")
+            password = secrets.get("unifi_api_pass") or secrets.get("unifi_pass")
+            host = host or secrets.get("unifi_host")
 
-if __name__ == "__main__":
-    main()
+        if not UniFiClient:
+            raise Exception("UniFiClient module_util not found. Ensure collection is installed correctly.")
+
+        # 3. Initialize API Client
+        self.client = UniFiClient(
+            host=host,
+            port=port,
+            username=user,
+            password=password
+        )
+
+        # 4. Fetch Live Data
+        live_devices = self.client.get_devices_legacy()
+        live_clients = self.client.get_clients()
+        
+        # 5. Load Static Manifest
+        static_manifest = {}
+        if os.path.exists(manifest_path):
+            with open(manifest_path) as f:
+                static_manifest = yaml.safe_load(f) or {}
+                
+        # Normalize manifest (v2.0 list format)
+        devices_manifest = static_manifest.get("devices", [])
+        if isinstance(devices_manifest, dict):
+            devices_manifest = [{"name": k, **v} for k, v in devices_manifest.items()]
+
+        # 6. Merge & Populate Inventory
+        live_map = {d.get("mac", "").lower(): d for d in live_devices if d.get("mac")}
+        client_map = {c.get("mac", "").lower(): c for c in live_clients if c.get("mac")}
+        
+        # Process manifest-defined devices (Primary Truth)
+        for m_dev in devices_manifest:
+            hostname = m_dev.get("name")
+            mac = (m_dev.get("mac") or "").lower()
+            if not hostname:
+                continue
+                
+            self.inventory.add_host(hostname)
+            
+            # Map Live Info
+            live_info = live_map.get(mac) or client_map.get(mac) or {}
+            
+            # Merit state: -1 (Offline), 1 (Online)
+            state = 1 if live_info else -1
+            
+            # Set variables (Merge Manifest + Live)
+            self.inventory.set_variable(hostname, "mac", mac)
+            self.inventory.set_variable(hostname, "ansible_host", m_dev.get("ip") or live_info.get("ip"))
+            self.inventory.set_variable(hostname, "live_state", state)
+            self.inventory.set_variable(hostname, "unifi_managed", bool(live_info))
+            
+            # Custom Manifest Fields
+            for key in ["role", "tier", "ministry", "boot_order"]:
+                if key in m_dev:
+                    self.inventory.set_variable(hostname, key, m_dev[key])
+            
+            # Grouping
+            if "tier" in m_dev:
+                tier_group = f"tier_{m_dev['tier']}"
+                self.inventory.add_group(tier_group)
+                self.inventory.add_child(tier_group, hostname)
+                
+            if "role" in m_dev:
+                role_group = f"role_{m_dev['role']}"
+                self.inventory.add_group(role_group)
+                self.inventory.add_child(role_group, hostname)
+
+        # Add live-only devices (Discovery/Ungrouped)
+        manifest_macs = { (d.get("mac") or "").lower() for d in devices_manifest }
+        for mac, l_dev in live_map.items():
+            if mac not in manifest_macs:
+                discover_name = l_dev.get("name") or f"unmanaged-{mac.replace(':', '')}"
+                self.inventory.add_host(discover_name)
+                self.inventory.add_group("undocumented")
+                self.inventory.add_child("undocumented", discover_name)
+                self.inventory.set_variable(discover_name, "ansible_host", l_dev.get("ip"))
+                self.inventory.set_variable(discover_name, "mac", mac)
+                self.inventory.set_variable(discover_name, "unifi_managed", True)
+                self.inventory.set_variable(discover_name, "in_manifest", False)
+
+document = r"""
+    name: unifi_inventory
+    plugin_type: inventory
+    short_description: RylanLabs UniFi Dynamic Hybrid Inventory
+    description:
+        - Merges UniFi Controller API data with static device-manifest.yml
+        - Supports MAC-based identity matching
+    options:
+        plugin:
+            description: plugin name (must be rylanlab.unifi.unifi_inventory)
+            required: true
+            choices: ['rylanlab.unifi.unifi_inventory']
+        host:
+            description: UniFi Controller Host
+            type: str
+        port:
+            description: UniFi Controller Port
+            type: int
+            default: 443
+        username:
+            description: UniFi Controller Username
+            type: str
+        password:
+            description: UniFi Controller Password
+            type: str
+        manifest_path:
+            description: Path to device-manifest.yml
+            type: str
+            default: 'inventory/device-manifest.yml'
+        vault_path:
+            description: Path to encrypted unifi_vault.yml
+            type: str
+        vault_password_file:
+            description: Path to vault password file
+            type: str
+"""
+
+InventoryModule.DOCUMENTATION = document

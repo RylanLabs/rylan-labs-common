@@ -894,6 +894,20 @@ class UniFiClient:
         self._log_audit("devices_fetched", {"count": len(devices)})
         return cast("list[dict[str, Any]]", devices)
 
+    def get_devices_legacy(self) -> list[dict[str, Any]]:
+        """Get devices using legacy stat API (includes port_table and _id)."""
+        result = self.api_call("get_devices_legacy")
+        devices = result.get("data", [])
+        self._log_audit("devices_legacy_fetched", {"count": len(devices)})
+        return cast("list[dict[str, Any]]", devices)
+
+    def get_clients(self) -> list[dict[str, Any]]:
+        """Fetch all active clients from UniFi controller."""
+        result = self.api_call("get_clients")
+        clients = result.get("data", [])
+        self._log_audit("clients_fetched", {"count": len(clients)})
+        return cast("list[dict[str, Any]]", clients)
+
     def get_networks_v2(self) -> list[dict[str, Any]]:
         """Get networks using modern v1 API (Hellodeolu v7)."""
         if not self.site_uuid:
