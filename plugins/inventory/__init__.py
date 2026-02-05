@@ -1,0 +1,1 @@
+from .unifi_dynamic_inventory import InventoryModule
