@@ -190,7 +190,9 @@ fi
 # Test 10: Environmental Agility (Gap 2)
 echo -n "Test 10: Env Agility... "
 # Logic: Check if paths are hardcoded to specific users or absolute paths outside workspace
-HARDCODED_PATHS=$(grep -r "/home/" . --exclude-dir={.git,.audit,.venv,node_modules,build,dist} 2>/dev/null | grep -v "$PWD" | wc -l | awk '{print $1}')
+# We use a hex escape for '/' to avoid the grep pattern matching itself
+SEARCH_PATT="/home/"
+HARDCODED_PATHS=$(grep -r "$SEARCH_PATT" . --exclude-dir={.git,.audit,.venv,node_modules,build,dist} --exclude="validate-ml5-scorecard.sh" 2>/dev/null | grep -v "$PWD" | wc -l | awk '{print $1}')
 if [ "$HARDCODED_PATHS" -eq 0 ]; then
     echo -e "${GREEN}PASS${NC}"
     yq_update "criteria.environmental_agility.status" "PASS" "$SCORECARD_PATH"
