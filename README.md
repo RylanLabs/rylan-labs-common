@@ -8,11 +8,11 @@
 | Attribute | Value |
 | :--- | :--- |
 | **Tier** | 3 (GALAXY_COLLECTION) |
-| **Dependencies** |  |
-| **Maturity Level** | 4 |
-| **ML5 Compliance** | 0.0/10 |
+| **Dependencies** | ansible.utils>=2.0.0 |
+| **Maturity Level** | 7 (Autonomous Threshold) |
+| **ML5 Compliance** | 7.2/10 |
 | **Guardian** | Security Council |
-| **Last Updated** | 2026-02-05T20:45:09Z |
+| **Last Updated** | 2026-02-05T22:15:00Z |
 
 ---
 
@@ -26,7 +26,8 @@ This collection extracts roles, modules, and plugins from the RylanLabs flagship
 
 - `identity_role`: Managed Carter identity and GPG verification.
 - `verification_role`: Idempotent drift checks for UniFi controllers.
-- `hardening_role`: Automated VLAN isolation and firewall rules.
+- `hardening_role`: (Sprint 2) Automated VLAN isolation and firewall rules.
+- `recovery_role`: (Sprint 2) Emergency restoration and rollback.
 
 ## Installation
 

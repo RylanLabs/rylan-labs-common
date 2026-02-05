@@ -1,6 +1,6 @@
 namespace: rylanlabs
 name: unifi
-version: 2.1.0
+version: 2.3.0
 readme: README.md
 authors:
   - Security Council
