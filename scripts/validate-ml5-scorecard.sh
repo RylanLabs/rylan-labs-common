@@ -26,6 +26,7 @@ NC='\033[0m'
 # HELPERS & TRAPS
 # ============================================================================
 # Robust YAML update using Python to avoid yq version hell
+# shellcheck disable=SC2317
 yq_update() {
     local key=$1
     local value=$2
@@ -33,7 +34,7 @@ yq_update() {
     python3 -c "
 import sys, yaml
 with open('$file', 'r') as f:
-    data = yaml.safe_load(f)
+    data = yaml.safe_load(f) or {}
 keys = '$key'.split('.')
 curr = data
 for k in keys[:-1]:
@@ -45,13 +46,14 @@ with open('$file', 'w') as f:
 "
 }
 
+# shellcheck disable=SC2317
 yq_read() {
     local key=$1
     local file=$2
     python3 -c "
 import sys, yaml
 with open('$file', 'r') as f:
-    data = yaml.safe_load(f)
+    data = yaml.safe_load(f) or {}
 keys = '$key'.split('.')
 curr = data
 for k in keys:
@@ -77,16 +79,16 @@ check_dependencies() {
     fi
 }
 
+# shellcheck disable=SC2317
 log_audit() {
     local action=$1
     local status=$2
     local message=$3
     mkdir -p "$(dirname "$AUDIT_TRAIL")"
-    cat <<JSON >> "$AUDIT_TRAIL"
-{"timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)", "agent": "Bauer", "action": "$action", "status": "$status", "message": "$message"}
-JSON
+    echo "{\"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"agent\": \"Bauer\", \"action\": \"$action\", \"status\": \"$status\", \"message\": \"$message\"}" >> "$AUDIT_TRAIL"
 }
 
+# shellcheck disable=SC2317
 error_handler() {
     local line_no=$1
     local exit_code=$2
@@ -129,6 +131,7 @@ fi
 
 # Test 2: Error Handling (No bare excepts)
 echo -n "Test 2: Error Handling... "
+# shellcheck disable=SC2126
 BARE_EXCEPTS=$(grep -r "except:" --include="*.py" . 2>/dev/null | grep -v "except Exception" | grep -v "except (" | wc -l | awk '{print $1}')
 if [ "$BARE_EXCEPTS" -eq 0 ]; then
     echo -e "${GREEN}PASS${NC}"
@@ -176,6 +179,7 @@ echo -n "Test 8: Whitaker Adversarial... "
 # Logic: Whitaker checks if critical files have unexpected local modifications 
 # that aren't represented in the manifest OR if dirty state persists.
 # Restricted to current directory (.)
+# shellcheck disable=SC2126
 GHOST_FILES=$(git status --short . 2>/dev/null | grep -v "maturity-level-5-scorecard.yml" | grep -v "audit-trail.jsonl" | wc -l | awk '{print $1}')
 if [ "$GHOST_FILES" -eq 0 ]; then
     echo -e "${GREEN}PASS (Zero Drift)${NC}"
@@ -192,6 +196,7 @@ echo -n "Test 10: Env Agility... "
 # Logic: Check if paths are hardcoded to specific users or absolute paths outside workspace
 # We use a hex escape for '/' to avoid the grep pattern matching itself
 SEARCH_PATT="/home/"
+# shellcheck disable=SC2126
 HARDCODED_PATHS=$(grep -r "$SEARCH_PATT" . --exclude-dir={.git,.audit,.venv,node_modules,build,dist} --exclude="validate-ml5-scorecard.sh" 2>/dev/null | grep -v "$PWD" | wc -l | awk '{print $1}')
 if [ "$HARDCODED_PATHS" -eq 0 ]; then
     echo -e "${GREEN}PASS${NC}"
