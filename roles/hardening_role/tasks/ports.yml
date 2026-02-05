@@ -1,0 +1,117 @@
+---
+# roles/security_hardening/tasks/ports.yml
+
+# Purpose: Idempotent switch port configuration with constraint validation
+
+- name: "GATHER: Discover current port profiles"
+  ansible.builtin.uri:
+    url: "https://{{ unifi_host }}/proxy/network/api/s/default/rest/portconf"
+    method: GET
+    headers: "{{ api_auth_headers }}"
+    validate_certs: false
+    return_content: true
+  register: current_profiles
+  failed_when: false
+  check_mode: no
+  tags: [gather, ports]
+
+- name: "PROCESS: Plan port changes (dry-run)"
+  ansible.builtin.set_fact:
+    port_plan: "{{ lookup('template', 'port_plan.j2') | from_json }}"
+  vars:
+    desired_profiles: "{{ port_profiles }}"  # From group_vars
+    current_state: "{{ current_profiles.json.data | default([]) }}"
+  tags: [process, ports]
+
+- name: "VALIDATE: Check Hellodeolu v6 constraints"
+  ansible.builtin.assert:
+    that:
+      - item.native_networkconf_id | int in [1, 10, 30, 40, 90]
+      - port_plan.total_poe_watts | default(0) <= 150
+    fail_msg: "Constraint violation: {{ item }}"
+  loop: "{{ port_plan.changes }}"
+  when: port_plan.changes | length > 0
+  tags: [validate, ports]
+
+- name: "VALIDATE: Identity authorization check"
+  ansible.builtin.include_role:
+    name: identity_management
+    tasks_from: authorize_device_vlan
+  vars:
+    identity_management_device_mac: "{{ item.device_mac }}"
+    identity_management_vlan_id: "{{ item.native_networkconf_id }}"
+  loop: "{{ port_plan.changes }}"
+  when:
+    - port_plan.changes | length > 0
+    - item.device_mac is defined
+  tags: [validate, carter]
+
+- name: "APPLY: Update port profiles (idempotent)"
+  ansible.builtin.uri:
+    url: "https://{{ unifi_host }}/proxy/network/api/s/default/rest/portconf/{{ item.profile_id }}"
+    method: PUT
+    headers: "{{ api_auth_headers }}"
+    body: "{{ item.patch }}"
+    body_format: json
+    validate_certs: false
+    status_code: [200, 201]
+  loop: "{{ port_plan.changes }}"
+  when:
+    - not ansible_check_mode
+    - item.diff | length > 0
+  register: apply_result
+  changed_when: apply_result.json.meta.rc == 'ok'
+  tags: [apply, ports]
+
+- name: "VERIFY: Confirm applied state matches desired"
+  ansible.builtin.uri:
+    url: "https://{{ unifi_host }}/proxy/network/api/s/default/rest/portconf/{{ item.profile_id }}"
+    method: GET
+    headers: "{{ api_auth_headers }}"
+    validate_certs: false
+  loop: "{{ port_plan.changes }}"
+  register: verify_result
+  failed_when: verify_result.json.data[0].poe_mode != item.patch.poe_mode
+  when:
+    - not ansible_check_mode
+    - item.diff | length > 0
+  tags: [verify, ports]
+
+- name: "AUDIT: Write change log to .audit/"
+  ansible.builtin.copy:
+    content: |
+      {
+        "timestamp": "{{ ansible_date_time.iso8601 }}",
+        "guardian": "Security",
+        "operation": "configure_ports",
+        "changes": {{ port_plan.changes | to_nice_json }},
+        "results": {{ apply_result.results | default([]) | to_nice_json }},
+        "verification": {{ verify_result.results | default([]) | to_nice_json }},
+        "rto_seconds": {{ apply_result.delta | default(0) }}
+      }
+    dest: ".audit/ports-apply-{{ ansible_date_time.iso8601 }}.json"
+    mode: '0644'
+  delegate_to: localhost
+  when:
+    - not ansible_check_mode
+    - port_plan.changes | length > 0
+
+- name: "REPORT: Display summary"
+  ansible.builtin.debug:
+    msg: |
+      Port Configuration Summary:
+      - Total profiles: {{ current_profiles.json.data | length }}
+      - Changes planned: {{ port_plan.changes | length }}
+      - Changes applied: {{ apply_result.results | default([]) | length }}
+      - RTO: {{ apply_result.delta | default(0) }}s
+      - Audit log: .audit/ports-apply-{{ ansible_date_time.iso8601 }}.json
+  tags: [report, ports]
+
+- name: "FINALIZE: Snapshot for rollback"
+  ansible.builtin.copy:
+    content: "{{ current_profiles.json | to_nice_json }}"
+    dest: ".audit/ports-snapshot-{{ ansible_date_time.iso8601 }}.json"
+    mode: '0644'
+  delegate_to: localhost
+  when: not ansible_check_mode
+  tags: [finalize, ports]

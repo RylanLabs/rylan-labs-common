@@ -1,0 +1,18 @@
+{
+  "total": {{ desired_profiles | length }},
+  "changes": [
+    {% for desired in desired_profiles %}
+    {% set current = current_state | selectattr('_id', 'equalto', desired.profile_id) | first | default({}) %}
+    {% if current != desired.patch %}
+    {
+      "profile_id": "{{ desired.profile_id }}",
+      "patch": {{ desired.patch | to_json }},
+      "diff": {{ (desired.patch.items() | list) | difference(current.items() | list) | to_json }},
+      "valid": true,
+      "device_mac": "{{ desired.device_mac | default('') }}"
+    }{% if not loop.last %},{% endif %}
+    {% endif %}
+    {% endfor %}
+  ],
+  "total_poe_watts": {{ desired_profiles | map(attribute='patch.poe_mode') | select('equalto', 'auto') | list | length * 30 }}
+}

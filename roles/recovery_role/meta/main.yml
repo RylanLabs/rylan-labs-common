@@ -1,0 +1,20 @@
+galaxy_info:
+  author: Security Council
+  namespace: rylanlabs
+  name: unifi
+  role_name: recovery_role
+  description: Lazarus Recovery Guardian - emergency restoration and rollback protocol
+  company: RylanLabs
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - "22.04"
+        - "24.04"
+  tags:
+    - recovery
+    - lazarus
+    - restoration
+    - rollback
+dependencies: []

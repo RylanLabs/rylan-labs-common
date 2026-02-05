@@ -1,0 +1,33 @@
+---
+- name: "Security | Hardening | Map Object Networks"
+  ansible.builtin.set_fact:
+    object_payloads: "{{ object_payloads | default([]) + [new_payload] }}"
+  vars:
+    targets: >-
+      {{ item.network_names | default([])
+      | select('in', net_name_to_id)
+      | map('extract', net_name_to_id)
+      | list }}
+    new_payload: "{{ item | combine({'targets': targets}) }}"
+  loop: "{{ firewall_objects | default([]) }}"
+
+- name: "Security | Hardening | Remove Legacy Network Names from Payloads"
+  ansible.builtin.set_fact:
+    object_payloads_clean: >-
+      {{ object_payloads
+      | map('dict2items')
+      | map('rejectattr', 'key', 'equalto', 'network_names')
+      | map('list')
+      | map('items2dict')
+      | list }}
+
+- name: "Security | Hardening | Apply Target Objects"
+  unifi_api:
+    action: create_target_object
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user }}"
+    password: "{{ unifi_pass }}"
+    data: "{{ item }}"
+  loop: "{{ object_payloads_clean | default([]) }}"
+  when: firewall_objects is defined
+  tags: [beale, objects]

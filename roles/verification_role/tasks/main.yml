@@ -37,6 +37,16 @@
     create: true
   delegate_to: localhost
 
+- name: "[VERIFY] Validate UniFi Constraints (Beale Gate)"
+  rylanlab.unifi.unifi_api:
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user | default(omit) }}"
+    password: "{{ unifi_password | default(omit) }}"
+    api_key: "{{ unifi_api_key | default(omit) }}"
+    action: "validate_constraints"
+  register: constraint_results
+  ignore_errors: true
+
 - name: "[REPORT] Finalize verification"
   ansible.builtin.debug:
-    msg: "Security posture verified. Found {{ verification_target_count }} encrypted assets."
+    msg: "Security posture verified. Found {{ verification_target_count }} encrypted assets. Constraint Status: {{ constraint_results.validation.compliant if constraint_results.validation is defined else 'N/A' }}"

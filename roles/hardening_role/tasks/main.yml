@@ -1,0 +1,17 @@
+---
+# roles/infrastructure_fortification/tasks/main.yml
+
+# Purpose: Orchestrate infrastructure hardening
+
+- name: Load OON Definitions
+  ansible.builtin.set_fact:
+    oon_objects: "{{ lookup('file', project_root + '/vars/oon_objects.yml') | from_yaml }}"
+
+- name: "[Beale] Hardening SSH"
+  ansible.builtin.include_tasks: ssh_hardening.yml
+
+- name: "[Beale] Establishing Baseline Firewall"
+  ansible.builtin.include_tasks: baseline_firewall.yml
+
+- name: "[Beale] Configuring IDS/IPS"
+  ansible.builtin.include_tasks: ids_ips_config.yml

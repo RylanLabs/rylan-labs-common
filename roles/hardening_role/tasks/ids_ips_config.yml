@@ -1,0 +1,18 @@
+---
+# roles/infrastructure_fortification/tasks/ids_ips_config.yml
+
+# Purpose: Enable Threat Management (IDS/IPS)
+
+- name: "[Beale] Configure Threat Management"
+  ansible.builtin.uri:
+    url: "https://{{ unifi_host }}/proxy/network/api/v2/setting/ips"
+    method: PUT
+    headers: "{{ api_auth_headers }}"
+    body_format: json
+    body:
+      enabled: true
+      mode: "ips"
+      level: 5
+      signature_count: 55000
+    validate_certs: false
+    status_code: [200]

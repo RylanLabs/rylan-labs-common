@@ -1,0 +1,72 @@
+---
+- name: "Security | Hardening | Fetch Current Networks"
+  unifi_api:
+    api_key: "{{ unifi_api_key | default(omit) }}"
+    action: get_networks
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user if unifi_api_key is not defined else omit }}"
+    password: "{{ unifi_pass if unifi_api_key is not defined else omit }}"
+  register: zone_networks
+  tags: [always]
+
+- name: "Security | Hardening | Map Network Names to IDs"
+  ansible.builtin.set_fact:
+    net_name_to_id: "{{ zone_networks.data | items2dict(key_name='name', value_name='_id') }}"
+    vlan_to_id: {}
+  tags: [always]
+
+- name: "Security | Hardening | Map Network VLANs to IDs"
+  ansible.builtin.set_fact:
+    vlan_to_id: "{{ vlan_to_id | default({}) | combine({(item.vlan | default(1) | int): item._id}) }}"
+  loop: "{{ zone_networks.data }}"
+  when: item.vlan is defined or item.name == 'Default'
+  tags: [always]
+
+- name: "Security | Hardening | Configure Firewall Zones (vlan_id mapping)"
+  unifi_api:
+    api_key: "{{ unifi_api_key | default(omit) }}"
+    action: create_zone
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user if unifi_api_key is not defined else omit }}"
+    password: "{{ unifi_pass if unifi_api_key is not defined else omit }}"
+    data:
+      name: "{{ zone_item.name }}"
+      network_ids: >-
+        {{ (
+          (zone_item.assigned_networks | selectattr('vlan_id', 'defined') | map(attribute='vlan_id') | map('int') | list
+           | select('in', vlan_to_id.keys() | map('int') | list) | map('extract', vlan_to_id) | list)
+          +
+          (zone_item.assigned_networks | selectattr('name', 'defined') | map(attribute='name') | list
+           | select('in', net_name_to_id.keys() | list) | map('extract', net_name_to_id) | list)
+        ) | unique }}
+  loop: "{{ security_hardening_zones }}"
+  loop_control:
+    loop_var: zone_item
+  when: security_hardening_zones is defined
+  tags: [beale, zones]
+
+- name: "Security | Hardening | Fetch Zones for Matrix ID Resolution"
+  unifi_api:
+    api_key: "{{ unifi_api_key | default(omit) }}"
+    action: get_zones
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user if unifi_api_key is not defined else omit }}"
+    password: "{{ unifi_pass if unifi_api_key is not defined else omit }}"
+  register: current_zones_fetched
+  tags: [always]
+
+- name: "Security | Hardening | Map Zone Names to IDs (UUID Detection)"
+  ansible.builtin.set_fact:
+    zone_name_to_id: >-
+      {{ current_zones_fetched.data
+      | items2dict(key_name='name', value_name='_id')
+      | combine({
+        'External': (current_zones_fetched.data
+          | selectattr('zone_key', 'equalto', 'external')
+          | map(attribute='_id') | first | default('INTERNET')),
+        'Gateway': (current_zones_fetched.data
+          | selectattr('zone_key', 'equalto', 'gateway')
+          | map(attribute='_id') | first | default('GATEWAY')),
+        'Any': 'ANY'
+      }) }}
+  tags: [always]

@@ -1,0 +1,38 @@
+---
+# Security Hardening | Global Security Baseline
+# Purpose: Enforce controller-wide security flags (Pattern: Security)
+
+- name: BEALE | Apply Global Security Posture (v2)
+  unifi_api:
+    action: update_v2_setting
+    path: "v2/api/site/default/global/config/network"
+    data:
+      default_security_posture: "{{ global_security_posture }}"
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user }}"
+    password: "{{ unifi_pass }}"
+    ssh_key: "{{ unifi_ssh_private_key | default(omit) }}"
+  tags: [beale, security_posture]
+
+- name: BEALE | Apply Global Switch Settings
+  unifi_api:
+    action: update_setting
+    setting_key: "global_switch"
+    setting_data: "{{ global_switch_settings }}"
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user }}"
+    password: "{{ unifi_pass }}"
+    ssh_key: "{{ unifi_ssh_private_key | default(omit) }}"
+  tags: [beale, global_switch]
+
+- name: BEALE | Apply Global mDNS Proxy
+  unifi_api:
+    action: update_setting
+    setting_key: "mdns"
+    setting_data:
+      enabled: "{{ global_network_settings.mdns_enabled }}"
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user }}"
+    password: "{{ unifi_pass }}"
+    ssh_key: "{{ unifi_ssh_private_key | default(omit) }}"
+  tags: [beale, mdns]

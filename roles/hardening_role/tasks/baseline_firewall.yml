@@ -1,0 +1,33 @@
+---
+# roles/hardening_role/tasks/baseline_firewall.yml
+
+# Purpose: Establish initial firewall zones and deny-all baseline
+# Guardian: Beale (Hardening)
+
+- name: "[Beale] Fetch existing firewall zones"
+  rylanlab.unifi.unifi_api:
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user | default(omit) }}"
+    password: "{{ unifi_password | default(omit) }}"
+    api_key: "{{ unifi_api_key | default(omit) }}"
+    action: "get_firewall_zones"
+  register: existing_zones
+
+- name: "[Beale] Create baseline zones (Idempotent)"
+  rylanlab.unifi.unifi_api:
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user | default(omit) }}"
+    password: "{{ unifi_password | default(omit) }}"
+    api_key: "{{ unifi_api_key | default(omit) }}"
+    action: "api_call"
+    path: "/proxy/network/api/v2/firewall-policies"
+    method: "POST"
+    data:
+      name: "{{ item.key }}"
+      description: "{{ item.value.description }}"
+      default_action: "drop"
+      schedule: {"mode": "always"}
+  loop: "{{ oon_objects.zones | dict2items }}"
+  when: 
+    - oon_objects.zones is defined
+    - item.key not in (existing_zones.data | default([]) | map(attribute='name') | list)

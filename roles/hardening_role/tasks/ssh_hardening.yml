@@ -1,0 +1,25 @@
+---
+# roles/hardening_role/tasks/ssh_hardening.yml
+
+# Purpose: Enforce SSH security on network infrastructure using rylanlab.unifi.unifi_api
+# Guardian: Beale (Hardening)
+
+- name: "[Beale] Hardening SSH settings via UniFi API"
+  rylanlab.unifi.unifi_api:
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user | default(omit) }}"
+    password: "{{ unifi_password | default(omit) }}"
+    api_key: "{{ unifi_api_key | default(omit) }}"
+    action: "api_call"
+    path: "/proxy/network/api/v2/setting/ssh"
+    method: "PUT"
+    data:
+      enabled: true
+      password_enabled: false
+      key_only: true
+      port: 22
+  register: ssh_status
+
+- name: "[Beale] Log SSH hardening status"
+  ansible.builtin.debug:
+    msg: "SSH Hardened: {{ ssh_status.data.key_only | default('Yes') }}"

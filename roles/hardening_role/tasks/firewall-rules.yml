@@ -1,0 +1,127 @@
+---
+- name: Fetch Port and IP Sets
+  rylanlab.unifi.unifi_api:
+    action: get_firewall_groups
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user }}"
+    password: "{{ unifi_pass }}"
+  register: unifi_groups
+  tags: policies
+
+- name: Map Group Names to IDs
+  ansible.builtin.set_fact:
+    group_name_to_id: "{{ (group_name_to_id | default({})) | combine({ item.name: item._id }) }}"
+  loop: "{{ unifi_groups.data }}"
+  tags: policies
+
+- name: Fetch Zones
+  rylanlab.unifi.unifi_api:
+    action: get_zones
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user }}"
+    password: "{{ unifi_pass }}"
+  register: unifi_zones
+  tags: policies
+
+- name: Map Zone Names to IDs
+  ansible.builtin.set_fact:
+    zone_name_to_id: "{{ (zone_name_to_id | default({})) | combine({ item.name: item._id }) }}"
+  loop: "{{ unifi_zones.data }}"
+  tags: policies
+
+- name: Debug Zones
+  ansible.builtin.debug:
+    var: zone_name_to_id
+  tags: policies
+
+- name: Security | Hardening | Resolve Port Group Members
+  ansible.builtin.set_fact:
+    policy_port_groups: >-
+      {% set results = {} %}
+      {% for item in security_hardening_policies %}
+        {% if item.match.ports is defined %}
+          {% set members = [] %}
+          {% for p in item.match.ports %}
+            {% if p | string | regex_search('^[0-9]+$') %}
+              {% set _ = members.append(p | string) %}
+            {% else %}
+              {% set existing = unifi_groups.data | selectattr('name', 'equalto', p) | first | default(none) %}
+              {% if existing %}
+                {% set _ = members.extend(existing.group_members) %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {% set _ = results.update({item.name: members | unique | list}) %}
+        {% endif %}
+      {% endfor %}
+      {{ results }}
+  tags: policies
+
+- name: Security | Hardening | Ensure Policy Port Objects Exist
+  rylanlab.unifi.unifi_api:
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user }}"
+    password: "{{ unifi_pass }}"
+    action: create_firewall_group
+    data:
+      name: "{{ item.name }} - Ports"
+      group_type: "port-group"
+      group_members: "{{ (policy_port_groups | from_yaml)[item.name] }}"
+  loop: "{{ security_hardening_policies }}"
+  when:
+    - item.match.ports is defined
+    - (unifi_groups.data | selectattr('name', 'equalto', item.name ~ ' - Ports') | list | length == 0)
+  tags: policies
+
+- name: Security | Hardening | Refresh Group Map
+  block:
+    - name: Fetch Port and IP Sets (Refresh)
+      rylanlab.unifi.unifi_api:
+        action: get_firewall_groups
+        host: "{{ unifi_host }}"
+        username: "{{ unifi_user }}"
+        password: "{{ unifi_pass }}"
+      register: unifi_groups_refresh
+
+    - name: Map Group Names to IDs (Refresh)
+      set_fact:
+        group_name_to_id: "{{ (group_name_to_id | default({})) | combine({ item.name: item._id }) }}"
+      loop: "{{ unifi_groups_refresh.data }}"
+  tags: policies
+
+- name: Security | Hardening | Deploy Firewall Policies
+  rylanlab.unifi.unifi_api:
+    host: "{{ unifi_host }}"
+    username: "{{ unifi_user }}"
+    password: "{{ unifi_pass }}"
+    action: create_firewall_policy
+    data:
+      name: "{{ item.name }}"
+      action: "{{ 'ALLOW' if item.action == 'allow' else 'BLOCK' }}"
+      enabled: true
+      ip_version: "IPV4"
+      protocol: "{{ item.match.protocol if (item.match.protocol is string) else 'all' }}"
+      logging: "{{ item.log | default(false) }}"
+      connection_state_type: "ALL"
+      connection_states: []
+      create_allow_respond: >-
+        {{ (item.action == 'allow' and item.dst_zone not in ['External', 'Gateway'])
+           | ternary(item.auto_return_traffic | default(true), false) }}
+      icmp_typename: "ANY"
+      icmp_v6_typename: "ANY"
+      schedule:
+        mode: "ALWAYS"
+      source:
+        zone_id: "{{ zone_name_to_id[item.src_zone] }}"
+        matching_target: "ANY"
+        matching_target_type: "SPECIFIC"
+        port_matching_type: "ANY"
+      destination:
+        zone_id: "{{ zone_name_to_id[item.dst_zone] }}"
+        matching_target: "ANY"
+        matching_target_type: "SPECIFIC"
+        port_matching_type: "{{ 'OBJECT' if (item.match.ports is defined) else 'ANY' }}"
+        port_group_id: "{{ group_name_to_id[item.name + ' - Ports'] if (item.match.ports is defined) else 'ANY' }}"
+  loop: "{{ security_hardening_policies }}"
+  register: policy_results
+  tags: policies

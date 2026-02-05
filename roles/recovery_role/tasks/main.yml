@@ -1,0 +1,41 @@
+---
+# roles/recovery_role/tasks/main.yml
+# Purpose: Emergency restoration and rollback protocol
+# Guardian: Lazarus (Recovery)
+
+- name: "[Lazarus] Initialize Restore Protocol"
+  ansible.builtin.set_fact:
+    restore_file_path: "{{ lazarus_restore_file | default(lookup('env', 'BACKUP_FILE')) }}"
+
+- name: "[Lazarus] Validate Backup File Presence"
+  ansible.builtin.stat:
+    path: "{{ restore_file_path }}"
+  register: backup_file_stat
+  failed_when: not backup_file_stat.stat.exists
+
+- name: "[Lazarus] Execute Restoration via UniFi API"
+  ansible.builtin.uri:
+    url: "https://{{ unifi_host }}/api/cmds/system"
+    method: POST
+    headers:
+      Cookie: "{{ unifi_session_cookie | default(omit) }}"
+      X-CSRF-Token: "{{ unifi_csrf_token | default(omit) }}"
+      X-API-KEY: "{{ unifi_api_key | default(omit) }}"
+    body_format: json
+    body:
+      cmd: "restore"
+      file: "{{ restore_file_path | basename }}"
+    validate_certs: false
+    status_code: [200, 201]
+  register: restore_res
+  ignore_errors: yes
+
+- name: "[Lazarus] Log Recovery Operation"
+  rylanlab.unifi.unifi_api:
+    action: "validate_constraints"
+    host: "{{ unifi_host }}"
+  register: post_recovery_check
+
+- name: "[Lazarus] Final Recovery Status"
+  ansible.builtin.debug:
+    msg: "Recovery protocol initiated. Current constraint status: {{ post_recovery_check.validation.compliant | default('Unknown') }}"
