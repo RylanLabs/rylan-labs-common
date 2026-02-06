@@ -11,6 +11,11 @@ SHELL := /usr/bin/bash
 .SHELLFLAGS := -euo pipefail -c
 .ONESHELL:
 
+# --- Pathing & Identity ---
+CANON_ROOT ?= .
+VAULT_ROOT ?= $(shell realpath ../rylanlabs-private-vault 2>/dev/null || echo "../rylanlabs-private-vault")
+GPG_KEY_ID ?= security@rylan.local
+
 # --- Global Mesh Gates (No-Bypass) ---
 # Check for unsigned commits and identity expiry on every invocation
 # Note: Silenced to keep help output clean, but will exit 1 on failure
@@ -46,15 +51,18 @@ endef
 define log_audit
 	mkdir -p .audit/; \
 	if command -v jq >/dev/null 2>&1; then \
-		jq -n \
+		ENTRY=$$(jq -n \
 			--arg ts "$$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
 			--arg act "$(1)" \
 			--arg grd "$(2)" \
 			--arg sts "$(3)" \
 			--arg dur "$(4)" \
 			--arg det "$(5)" \
-			'{"timestamp": $$ts, "action": $$act, "guardian": $$grd, "status": $$sts, "duration_ms": ($$dur | tonumber), "details": $$det}' \
-			>> .audit/audit-trail.jsonl; \
+			'{"timestamp": $$ts, "action": $$act, "guardian": $$grd, "status": $$sts, "duration_ms": ($$dur | tonumber), "details": $$det}'); \
+		echo "$$ENTRY" >> .audit/audit-trail.jsonl; \
+		if [[ -n "$${GPG_KEY_ID:-}" ]]; then \
+			echo "$$ENTRY" | gpg --armor --local-user "$$GPG_KEY_ID" --detach-sign >> .audit/audit-trail.jsonl.asc 2>/dev/null || true; \
+		fi; \
 	else \
 		echo "[\$$(date -Iseconds)] [AUDIT] action=$(1) guardian=$(2) status=$(3) duration=$(4) details=$(5)" >> .audit/audit-trail.log; \
 	fi
