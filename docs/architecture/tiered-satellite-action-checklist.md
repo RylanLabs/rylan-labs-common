@@ -9,9 +9,9 @@
 ## Pre-Phase A (NOW): Approval & Sign-Off
 
 - [ ] **Trinity Council Review**: Carter, Bauer, Beale, Whitaker, Lazarus review all three docs:
-  - `TIERED_SATELLITE_HIERARCHY_CANONICAL.md` (comprehensive)
-  - `TIERED_SATELLITE_HIERARCHY_EXECUTIVE_SUMMARY.md` (1-page view)
-  - `TIERED_SATELLITE_SYNTHESIS_ANALYSIS.md` (Grok/Leo reconciliation)
+  - `tiered-satellite-hierarchy-canonical.md` (comprehensive)
+  - `tiered-satellite-hierarchy-executive-summary.md` (1-page view)
+  - `tiered-satellite-synthesis-analysis.md` (Grok/Leo reconciliation)
 
 - [ ] **Stakeholder Buy-In**: 
   - [ ] Engineering Lead sign-off

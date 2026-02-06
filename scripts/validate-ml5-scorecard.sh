@@ -64,7 +64,7 @@ try:
         curr = curr[k]
     if isinstance(curr, list): print(len(curr))
     else: print(curr)
-except Exception:
+except (yaml.YAMLError, KeyError, TypeError, AttributeError):
     sys.exit(0)
 "
 }

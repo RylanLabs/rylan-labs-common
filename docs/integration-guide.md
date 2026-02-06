@@ -310,7 +310,7 @@ ansible-galaxy collection install ../rylan-labs-common --force
 | Firewall misconfiguration | Hardening | `hardening-harden.sh --reset` + re-run | 10min |
 | Full reset | 3-Domain | `eternal-resurrect.sh --common` | 15min |
 
-See [EMERGENCY_RESPONSE.md](EMERGENCY_RESPONSE.md) for detailed procedures.
+See [emergency-response.md](emergency-response.md) for detailed procedures.
 
 ---
 
@@ -373,9 +373,9 @@ pre-commit install --install-hooks
 
 ## Next Steps
 
-1. **Review**: [SEVEN_PILLARS.md](SEVEN_PILLARS.md) for compliance framework
-2. **Study**: [TANDEM_WORKFLOW.md](TANDEM_WORKFLOW.md) for full integration example
-3. **Plan**: [EMERGENCY_RESPONSE.md](EMERGENCY_RESPONSE.md) for incident procedures
+1. **Review**: [seven-pillars.md](seven-pillars.md) for compliance framework
+2. **Study**: [tandem-workflow.md](tandem-workflow.md) for full integration example
+3. **Plan**: [emergency-response.md](emergency-response.md) for incident procedures
 4. **Execute**: Run `make ci-local` in your domain repo to validate
 
 ---

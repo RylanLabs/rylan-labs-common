@@ -97,7 +97,9 @@ class InventoryModule(BaseInventoryPlugin):
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)  # nosec: S603
             return yaml.safe_load(result.stdout)
-        except Exception:
+        except (subprocess.CalledProcessError, OSError, yaml.YAMLError) as e:
+            # Don't fail inventory parse on vault read errors; return empty secrets and log.
+            print(f"WARN: Could not load vault secrets ({e})")
             return {}
 
     def parse(self, inventory: Any, loader: Any, path: str, cache: bool = True) -> None:
