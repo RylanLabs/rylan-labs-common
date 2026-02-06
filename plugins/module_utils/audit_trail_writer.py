@@ -12,7 +12,12 @@ from typing import Any
 
 
 def write_audit_log(
-    audit_dir: Path, operation: str, target: str, status: str, details: dict[str, Any], guardian: str = "Bauer"
+    audit_dir: Path,
+    operation: str,
+    target: str,
+    status: str,
+    details: dict[str, Any],
+    guardian: str = "Bauer",
 ) -> Path:
     """Write a structured audit log and return the path."""
     timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")

@@ -38,7 +38,7 @@
   delegate_to: localhost
 
 - name: "[VERIFY] Validate UniFi Constraints (Beale Gate)"
-  rylanlab.unifi.unifi_api:
+  rylanlabs.unifi.unifi_api:
     host: "{{ unifi_host }}"
     username: "{{ unifi_user | default(omit) }}"
     password: "{{ unifi_password | default(omit) }}"

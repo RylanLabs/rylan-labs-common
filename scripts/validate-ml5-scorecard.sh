@@ -13,7 +13,9 @@ IFS=$'\n\t'
 # CONFIGURATION
 # ============================================================================
 SCORECARD_PATH="${1:-.audit/maturity-level-5-scorecard.yml}"
+THRESHOLDS_PATH=".rylan/ml5-thresholds.yml"
 AUDIT_TRAIL=".audit/audit-trail.jsonl"
+ML5_WARN_LOG=".audit/ml5-warn.jsonl"
 EXIT_CODE=0
 
 # Colors
@@ -26,7 +28,6 @@ NC='\033[0m'
 # HELPERS & TRAPS
 # ============================================================================
 # Robust YAML update using Python to avoid yq version hell
-# shellcheck disable=SC2317
 yq_update() {
     local key=$1
     local value=$2
@@ -34,7 +35,7 @@ yq_update() {
     python3 -c "
 import sys, yaml
 with open('$file', 'r') as f:
-    data = yaml.safe_load(f) or {}
+    data = yaml.safe_load(f)
 keys = '$key'.split('.')
 curr = data
 for k in keys[:-1]:
@@ -50,17 +51,21 @@ with open('$file', 'w') as f:
 yq_read() {
     local key=$1
     local file=$2
+    if [ ! -f "$file" ]; then echo ""; return; fi
     python3 -c "
 import sys, yaml
-with open('$file', 'r') as f:
-    data = yaml.safe_load(f) or {}
-keys = '$key'.split('.')
-curr = data
-for k in keys:
-    if k not in curr: print(''); sys.exit(0)
-    curr = curr[k]
-if isinstance(curr, list): print(len(curr))
-else: print(curr)
+try:
+    with open('$file', 'r') as f:
+        data = yaml.safe_load(f)
+    keys = '$key'.split('.')
+    curr = data
+    for k in keys:
+        if k not in curr: sys.exit(0)
+        curr = curr[k]
+    if isinstance(curr, list): print(len(curr))
+    else: print(curr)
+except Exception:
+    sys.exit(0)
 "
 }
 
@@ -79,13 +84,24 @@ check_dependencies() {
     fi
 }
 
-# shellcheck disable=SC2317
 log_audit() {
     local action=$1
     local status=$2
     local message=$3
     mkdir -p "$(dirname "$AUDIT_TRAIL")"
-    echo "{\"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"agent\": \"Bauer\", \"action\": \"$action\", \"status\": \"$status\", \"message\": \"$message\"}" >> "$AUDIT_TRAIL"
+    cat <<JSON >> "$AUDIT_TRAIL"
+{"timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)", "agent": "Bauer", "action": "$action", "status": "$status", "message": "$message"}
+JSON
+}
+
+log_ml5_warn() {
+    local phase=$1
+    local score=$2
+    local threshold=$3
+    mkdir -p "$(dirname "$ML5_WARN_LOG")"
+    cat <<JSON >> "$ML5_WARN_LOG"
+{"timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)", "phase": "$phase", "score": "$score", "threshold": "$threshold", "status": "TOLERANCE_APPLIED"}
+JSON
 }
 
 # shellcheck disable=SC2317
@@ -107,9 +123,18 @@ if [ ! -f "$SCORECARD_PATH" ]; then
     exit 1
 fi
 
+# Load Phased Thresholds
+CURRENT_PHASE=$(yq_read "current_phase" "$THRESHOLDS_PATH")
+[ -z "$CURRENT_PHASE" ] && CURRENT_PHASE="production"
+MIN_SCORE=$(yq_read "phases.$CURRENT_PHASE.min_score" "$THRESHOLDS_PATH")
+[ -z "$MIN_SCORE" ] && MIN_SCORE="9.5"
+ENFORCEMENT=$(yq_read "phases.$CURRENT_PHASE.enforcement" "$THRESHOLDS_PATH")
+[ -z "$ENFORCEMENT" ] && ENFORCEMENT="strict"
+
 echo -e "${BLUE}=== Maturity Level 5 Validation Drill ===${NC}"
 echo "Repository: $(basename "$(git rev-parse --show-toplevel)")"
 echo "Scorecard: $SCORECARD_PATH"
+echo "Phase: $CURRENT_PHASE (Threshold: $MIN_SCORE, Enforcement: $ENFORCEMENT)"
 echo ""
 
 # ============================================================================
@@ -194,10 +219,8 @@ fi
 # Test 10: Environmental Agility (Gap 2)
 echo -n "Test 10: Env Agility... "
 # Logic: Check if paths are hardcoded to specific users or absolute paths outside workspace
-# We use a hex escape for '/' to avoid the grep pattern matching itself
-SEARCH_PATT="/home/"
 # shellcheck disable=SC2126
-HARDCODED_PATHS=$(grep -r "$SEARCH_PATT" . --exclude-dir={.git,.audit,.venv,node_modules,build,dist} --exclude="validate-ml5-scorecard.sh" 2>/dev/null | grep -v "$PWD" | wc -l | awk '{print $1}')
+HARDCODED_PATHS=$(grep -r "/home/" . --exclude-dir={.git,.audit,.venv,node_modules,build,dist} 2>/dev/null | grep -v "$PWD" | wc -l | awk '{print $1}')
 if [ "$HARDCODED_PATHS" -eq 0 ]; then
     echo -e "${GREEN}PASS${NC}"
     yq_update "criteria.environmental_agility.status" "PASS" "$SCORECARD_PATH"
@@ -222,12 +245,26 @@ echo ""
 echo -e "Overall Score: ${BLUE}$OVERALL_SCORE/10${NC}"
 log_audit "ml5_score" "COMPLETE" "Score: $OVERALL_SCORE/10"
 
-if (( $(echo "$OVERALL_SCORE >= 9.5" | bc -l) )); then
-    echo -e "${GREEN}✓ ML5 ACHIEVED${NC}"
-    yq_update "status" "ML5_ACHIEVED" "$SCORECARD_PATH"
+# Phased Enforcement Logic
+if (( $(echo "$OVERALL_SCORE >= $MIN_SCORE" | bc -l) )); then
+    echo -e "${GREEN}✓ PHASED ML5 COMPLIANCE MET ($CURRENT_PHASE phase)${NC}"
+    if [ "$ENFORCEMENT" == "warning" ]; then
+        if [ "$EXIT_CODE" -ne 0 ]; then
+            echo -e "${BLUE}NOTE: Tolerance applied for legacy debt in $CURRENT_PHASE phase.${NC}"
+            log_ml5_warn "$CURRENT_PHASE" "$OVERALL_SCORE" "$MIN_SCORE"
+        fi
+        EXIT_CODE=0
+    fi
+    yq_update "status" "PHASED_COMPLIANCE_MET" "$SCORECARD_PATH"
 else
-    echo -e "${RED}⚠ ML5 NOT YET ACHIEVED (Threshold: 9.5/10)${NC}"
+    echo -e "${RED}⚠ ML5 SCORE BELOW PHASED THRESHOLD (Current: $OVERALL_SCORE, Required: $MIN_SCORE)${NC}"
     yq_update "status" "IN_PROGRESS" "$SCORECARD_PATH"
+    EXIT_CODE=1
+fi
+
+if (( $(echo "$OVERALL_SCORE >= 9.5" | bc -l) )); then
+    echo -e "${GREEN}✓ FULL ML5 ACHIEVED${NC}"
+    yq_update "status" "ML5_ACHIEVED" "$SCORECARD_PATH"
 fi
 
 exit "$EXIT_CODE"

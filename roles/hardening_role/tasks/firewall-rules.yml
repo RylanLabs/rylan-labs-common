@@ -1,6 +1,6 @@
 ---
 - name: Fetch Port and IP Sets
-  rylanlab.unifi.unifi_api:
+  rylanlabs.unifi.unifi_api:
     action: get_firewall_groups
     host: "{{ unifi_host }}"
     username: "{{ unifi_user }}"
@@ -15,7 +15,7 @@
   tags: policies
 
 - name: Fetch Zones
-  rylanlab.unifi.unifi_api:
+  rylanlabs.unifi.unifi_api:
     action: get_zones
     host: "{{ unifi_host }}"
     username: "{{ unifi_user }}"
@@ -58,7 +58,7 @@
   tags: policies
 
 - name: Security | Hardening | Ensure Policy Port Objects Exist
-  rylanlab.unifi.unifi_api:
+  rylanlabs.unifi.unifi_api:
     host: "{{ unifi_host }}"
     username: "{{ unifi_user }}"
     password: "{{ unifi_pass }}"
@@ -76,7 +76,7 @@
 - name: Security | Hardening | Refresh Group Map
   block:
     - name: Fetch Port and IP Sets (Refresh)
-      rylanlab.unifi.unifi_api:
+      rylanlabs.unifi.unifi_api:
         action: get_firewall_groups
         host: "{{ unifi_host }}"
         username: "{{ unifi_user }}"
@@ -90,7 +90,7 @@
   tags: policies
 
 - name: Security | Hardening | Deploy Firewall Policies
-  rylanlab.unifi.unifi_api:
+  rylanlabs.unifi.unifi_api:
     host: "{{ unifi_host }}"
     username: "{{ unifi_user }}"
     password: "{{ unifi_pass }}"

@@ -17,7 +17,9 @@ class UniFiAPIAdapter:
         self.logger = logging.getLogger(__name__)
         self._id_cache: dict[str, str] = {}
 
-    def create_group(self, group_type: Literal["ip", "port", "mac"], name: str, members: list[str]) -> dict[str, Any]:
+    def create_group(
+        self, group_type: Literal["ip", "port", "mac"], name: str, members: list[str]
+    ) -> dict[str, Any]:
         """Create group using appropriate API endpoint based on type."""
         if group_type in ["ip", "port"]:
             # Legacy REST endpoint (Leo Section 20)
@@ -50,7 +52,10 @@ class UniFiAPIAdapter:
         raise ValueError(f"Unknown group type: {group_type}")
 
     def create_policy(
-        self, policy_type: Literal["secure", "route", "qos"], name: str, config: dict[str, Any]
+        self,
+        policy_type: Literal["secure", "route", "qos"],
+        name: str,
+        config: dict[str, Any],
     ) -> dict[str, Any]:
         """Create policy with mandatory fields injected (Leo Section 29)."""
         # Inject mandatory schedule field (9.4+ requirement)

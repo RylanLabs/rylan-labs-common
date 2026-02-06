@@ -22,7 +22,9 @@ def zone_by_name(zones: list[dict[str, Any]], zone_name: str) -> dict[str, Any] 
     return None
 
 
-def policy_by_id(policies: list[dict[str, Any]], policy_id: str) -> dict[str, Any] | None:
+def policy_by_id(
+    policies: list[dict[str, Any]], policy_id: str
+) -> dict[str, Any] | None:
     """Find policy by ID."""
     for policy in policies:
         if policy.get("id") == policy_id:

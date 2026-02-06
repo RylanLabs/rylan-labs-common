@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: ALL
 """
 Script: playbook-structure-linter.py
 Purpose: Enforce 7-task Trinity workflow sequence (P2 Discipline)
@@ -54,10 +53,14 @@ def lint_playbook(file_path: str | Path) -> bool:
     all_valid = True
     for play in content:
         tasks: list[Any] = play.get("tasks", [])
-        task_names: list[str] = [task.get("name", "").upper() for task in tasks if isinstance(task, dict)]
+        task_names: list[str] = [
+            task.get("name", "").upper() for task in tasks if isinstance(task, dict)
+        ]
 
         # Filter for canonical task names
-        found_canonical: list[str] = [name for name in task_names if any(req in name for req in REQUIRED_TASKS)]
+        found_canonical: list[str] = [
+            name for name in task_names if any(req in name for req in REQUIRED_TASKS)
+        ]
 
         # Check order and completeness
         for i, req in enumerate(REQUIRED_TASKS):

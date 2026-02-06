@@ -12,11 +12,19 @@ class TestUniFiAPIAdapter(unittest.TestCase):
         self.adapter = UniFiAPIAdapter(self.mock_client)
 
     def test_create_group_ip(self):
-        self.mock_client.post.return_value = {"external_id": "uuid-123", "_id": "mongo-123"}
+        self.mock_client.post.return_value = {
+            "external_id": "uuid-123",
+            "_id": "mongo-123",
+        }
         result = self.adapter.create_group("ip", "test_ips", ["1.1.1.1"])
 
         self.mock_client.post.assert_called_with(
-            "/rest/firewallgroup", {"name": "test_ips", "group_type": "address-group", "group_members": ["1.1.1.1"]}
+            "/rest/firewallgroup",
+            {
+                "name": "test_ips",
+                "group_type": "address-group",
+                "group_members": ["1.1.1.1"],
+            },
         )
         self.assertEqual(result["id"], "uuid-123")
 
@@ -25,7 +33,8 @@ class TestUniFiAPIAdapter(unittest.TestCase):
         result = self.adapter.create_group("mac", "test_macs", ["aa:bb:cc:dd:ee:ff"])
 
         self.mock_client.post.assert_called_with(
-            "/api/v2/network-members-group", {"name": "test_macs", "type": "CLIENTS", "members": ["aa:bb:cc:dd:ee:ff"]}
+            "/api/v2/network-members-group",
+            {"name": "test_macs", "type": "CLIENTS", "members": ["aa:bb:cc:dd:ee:ff"]},
         )
         self.assertEqual(result["id"], "uuid-456")
 
@@ -38,7 +47,6 @@ class TestUniFiAPIAdapter(unittest.TestCase):
         call_args = self.mock_client.post.call_args[0][1]
         self.assertEqual(call_args["schedule"]["mode"], "always")
         self.assertEqual(call_args["action"], "DENY")
-
 
     def test_create_group_invalid(self):
         with self.assertRaises(ValueError):

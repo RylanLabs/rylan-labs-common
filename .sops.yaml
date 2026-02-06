@@ -1,1 +1,23 @@
-/home/egx570/repos/rylan-canon-library/.sops.yaml
+# RylanLabs SOPS Configuration
+# Version: 1.0.0
+# Agent: Carter (Identity)
+# Maturity: Level 5 (Autonomous Mesh)
+
+creation_rules:
+  # Tier 0 - Canon Library (Global Policy)
+  # Only encrypt files that explicitly contain 'vault' or 'secret' in the name
+  - path_regex: .*(vault|secret).*\.ya?ml$
+    # RylanLabs Master Signer & Organization Core Keys
+    pgp: >-
+      F5FFF5CB35A8B1F38304FC28AC4A4D261FD62D75
+    unencrypted_regex: "^(kind|apiVersion|metadata)$"
+
+  # Inventory/Secrets Tiers
+  - path_regex: inventory/.*\.ya?ml$
+    pgp: >-
+      F5FFF5CB35A8B1F38304FC28AC4A4D261FD62D75
+
+  # Infrastructure/Mesh Tiers
+  - path_regex: scripts/.*secret.*
+    pgp: >-
+      F5FFF5CB35A8B1F38304FC28AC4A4D261FD62D75

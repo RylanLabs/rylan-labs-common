@@ -1,10 +1,7 @@
 """RylanLabs Audit Logger."""
-
-"""RylanLabs Audit Logger."""
 # File: plugins/module_utils/rylan_audit_logger.py
 # Guardian: Bauer | Ministry: Verification & Audit
 # Purpose: Seven Pillars Pillar 4 (Audit Logging) Implementation
-
 
 import json
 import os

@@ -5,7 +5,7 @@
 # Guardian: Beale (Hardening)
 
 - name: "[Beale] Fetch existing firewall zones"
-  rylanlab.unifi.unifi_api:
+  rylanlabs.unifi.unifi_api:
     host: "{{ unifi_host }}"
     username: "{{ unifi_user | default(omit) }}"
     password: "{{ unifi_password | default(omit) }}"
@@ -14,7 +14,7 @@
   register: existing_zones
 
 - name: "[Beale] Create baseline zones (Idempotent)"
-  rylanlab.unifi.unifi_api:
+  rylanlabs.unifi.unifi_api:
     host: "{{ unifi_host }}"
     username: "{{ unifi_user | default(omit) }}"
     password: "{{ unifi_password | default(omit) }}"

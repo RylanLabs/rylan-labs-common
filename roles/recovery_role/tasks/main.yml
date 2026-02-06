@@ -31,7 +31,7 @@
   ignore_errors: yes
 
 - name: "[Lazarus] Log Recovery Operation"
-  rylanlab.unifi.unifi_api:
+  rylanlabs.unifi.unifi_api:
     action: "validate_constraints"
     host: "{{ unifi_host }}"
   register: post_recovery_check

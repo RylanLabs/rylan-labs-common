@@ -22,7 +22,7 @@ DOCUMENTATION = r"""
 
 
 class InventoryModule(BaseInventoryPlugin):
-    NAME = "rylanlab.unifi.unifi_manifest"
+    NAME = "rylanlabs.unifi.unifi_manifest"
 
     def verify_file(self, path):
         return super().verify_file(path)

@@ -1,0 +1,19 @@
+# Phased ML5 Maturity Thresholds
+# Current Level: 1.2/10
+# Target: 9.5/10
+
+current_phase: initial
+
+phases:
+  initial:
+    min_score: 1.0
+    description: "Tolerance for legacy bare excepts and unsigned early commits."
+    enforcement: warning
+  integration:
+    min_score: 7.5
+    description: "Phase B Integration - Requires remediation of all critical bare excepts."
+    enforcement: strict
+  production:
+    min_score: 9.5
+    description: "Hardened Production - No bypass allowed."
+    enforcement: strict

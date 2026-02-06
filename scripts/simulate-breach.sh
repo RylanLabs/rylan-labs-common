@@ -2,7 +2,7 @@
 # scripts/simulate-breach.sh
 # Guardian: Whitaker (Red Team / Breach Simulation)
 # Purpose: Validate firewall rule effectiveness via automated probe attempts.
-# Status: Ported to rylanlab.unifi collection @MESH-LOGIC
+# Status: Ported to rylanlabs.unifi collection @MESH-LOGIC
 
 echo "╔════════════════════════════════════════════════════════════╗"
 echo "║  Whitaker Breach Simulation (v2.0.0-PROD)                  ║"

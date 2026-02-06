@@ -1,1 +1,51 @@
-/home/egx570/repos/rylan-canon-library/.github/workflows/sentinel-loop.yml
+---
+name: Sentinel Loop (Bauer/Whitaker)
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Midnight UTC nightly
+  repository_dispatch:
+    types: [mesh-sync, satellite-drift]
+  workflow_dispatch: # Manual trigger for ad-hoc reconciliation
+
+jobs:
+  reconcile:
+    name: Mesh Reconciliation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Tier 0 Canon
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RYLAN_GITOPS_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Setup Environment
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq
+          chmod +x scripts/*.sh
+
+      - name: Run Organizational Audit
+        id: audit
+        run: ./scripts/org-audit.sh
+        env:
+          GH_TOKEN: ${{ secrets.RYLAN_GITOPS_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Perform Mesh Remediation
+        if: always() # Run remediation if audit fails or finds drift
+        run: ./scripts/mesh-remediate.sh
+        env:
+          GH_TOKEN: ${{ secrets.RYLAN_GITOPS_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Generate Compliance Matrix
+        if: always()
+        run: |
+          mkdir -p .audit
+          # This will be populated by org-audit.sh in Phase 2
+          echo "{\"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"status\": \"completed\"}" > .audit/latest-run.json
+
+      - name: Upload Audit Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mesh-audit-report
+          path: .audit/

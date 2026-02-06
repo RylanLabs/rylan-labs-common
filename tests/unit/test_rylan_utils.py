@@ -46,12 +46,14 @@ def setup_simulation_mode() -> Generator[None, None, None]:
 def test_unifi_api_import() -> None:
     """Test UniFi API module imports without error."""
     from plugins.modules.unifi_api import UniFiClient as client
+
     assert client is not None  # nosec: B101
 
 
 def test_unifi_api_methods_exist() -> None:
     """Test UniFi API methods are defined."""
     from plugins.modules.unifi_api import UniFiClient as client
+
     assert hasattr(client, "get_devices")  # nosec: B101
     assert hasattr(client, "get_wlan_configs")  # nosec: B101
     assert callable(client.get_devices)  # nosec: B101
@@ -61,6 +63,7 @@ def test_unifi_api_methods_exist() -> None:
 def test_unifi_api_get_devices_placeholder() -> None:
     """Test UniFi API get_devices returns a list."""
     from plugins.modules.unifi_api import UniFiClient
+
     client = UniFiClient(host="1.1.1.1", username="test", password="test")
     devices = client.get_devices()
     assert isinstance(devices, list)  # nosec: B101
@@ -69,6 +72,7 @@ def test_unifi_api_get_devices_placeholder() -> None:
 def test_unifi_api_get_wlan_configs_placeholder() -> None:
     """Test UniFi API get_wlan_configs returns a list."""
     from plugins.modules.unifi_api import UniFiClient
+
     client = UniFiClient(host="1.1.1.1", username="test", password="test")
     config = client.get_wlan_configs()
     assert isinstance(config, list)  # nosec: B101

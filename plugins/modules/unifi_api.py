@@ -97,7 +97,9 @@ class UniFiConstraintValidator:
                 with open(config_path) as f:
                     config = yaml.safe_load(f)
                     if isinstance(config, dict):
-                        limits: dict[str, Any] = config.get("hardware", {}).get("capabilities", {})
+                        limits: dict[str, Any] = config.get("hardware", {}).get(
+                            "capabilities", {}
+                        )
                         return limits
             except (OSError, RuntimeError, ValueError):
                 pass
@@ -129,12 +131,18 @@ class UniFiConstraintValidator:
         """Fail if VLAN count exceeds limit (if limit exists)."""
         limits = UniFiConstraintValidator.get_limits()
         max_vlans = limits.get("vlans")
-        vlans = [n for n in networks if n.get("purpose") in ["corporate", "guest"]] if networks else []
+        vlans = (
+            [n for n in networks if n.get("purpose") in ["corporate", "guest"]]
+            if networks
+            else []
+        )
         vlan_count = len(vlans)
 
         if max_vlans is not None and max_vlans != "unlimited":
             if vlan_count > int(max_vlans):
-                msg = f"CONSTRAINT VIOLATION: {vlan_count} VLANs exceeds max {max_vlans}"
+                msg = (
+                    f"CONSTRAINT VIOLATION: {vlan_count} VLANs exceeds max {max_vlans}"
+                )
                 raise UniFiConstraintError(msg)
 
         return {
@@ -157,7 +165,9 @@ class UniFiConstraintValidator:
             results["firewall"] = {"valid": False, "error": str(e), "compliant": False}
 
         try:
-            results["vlans"] = UniFiConstraintValidator.validate_vlans(controller_state.get("networks", []))
+            results["vlans"] = UniFiConstraintValidator.validate_vlans(
+                controller_state.get("networks", [])
+            )
         except UniFiConstraintError as e:
             results["vlans"] = {"valid": False, "error": str(e), "compliant": False}
 
@@ -348,7 +358,9 @@ class UniFiClient:
         self.ssl_ctx.verify_mode = ssl.CERT_NONE
 
         # Simulation mode detection
-        self.simulation_mode = os.environ.get("UNIFI_SIMULATION", "false").lower() == "true"
+        self.simulation_mode = (
+            os.environ.get("UNIFI_SIMULATION", "false").lower() == "true"
+        )
 
         # Create HTTPS handler with SSL context
         https_handler = urllib.request.HTTPSHandler(context=self.ssl_ctx)
@@ -370,12 +382,20 @@ class UniFiClient:
         for name, details in self._REGISTRY.items():
             for key in required_keys:
                 if key not in details:
-                    raise UniFiConfigError(f"CRITICAL: Registry corruption in '{name}' - missing '{key}'")
+                    raise UniFiConfigError(
+                        f"CRITICAL: Registry corruption in '{name}' - missing '{key}'"
+                    )
 
             # Path convention check (Pillar 5)
             path = details["path"]
-            if not (path.startswith("api/") or path.startswith("integration/") or path.startswith("proxy/")):
-                raise UniFiConfigError(f"CRITICAL: Registry path '{path}' violates naming convention")
+            if not (
+                path.startswith("api/")
+                or path.startswith("integration/")
+                or path.startswith("proxy/")
+            ):
+                raise UniFiConfigError(
+                    f"CRITICAL: Registry path '{path}' violates naming convention"
+                )
 
         self._log_audit("registry_validated", {"count": len(self._REGISTRY)})
 
@@ -478,7 +498,9 @@ class UniFiClient:
         if self.jwt_token and self.jwt_exp:
             current_time = int(time.time())
             if current_time < self.jwt_exp - 60:  # 60-second buffer
-                self._log_audit("auth_cache_hit", {"ttl_remaining": self.jwt_exp - current_time})
+                self._log_audit(
+                    "auth_cache_hit", {"ttl_remaining": self.jwt_exp - current_time}
+                )
                 return
 
         self._log_audit(
@@ -551,7 +573,9 @@ class UniFiClient:
             # S603/S607: Use full path to ssh if possible, but 'ssh' is standard
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)  # noqa: S603
             if result.returncode != 0:
-                error_detail = result.stderr.strip() or f"Return code {result.returncode}"
+                error_detail = (
+                    result.stderr.strip() or f"Return code {result.returncode}"
+                )
                 raise UniFiAuthError(f"SSH command failed: {error_detail}")
 
             self.jwt_token = result.stdout.strip()
@@ -616,7 +640,9 @@ class UniFiClient:
             raise UniFiAuthError("Credentials missing for JWT login")
 
         url = f"{self.auth_base}/login"
-        data = json.dumps({"username": self.username, "password": self.password}).encode("utf-8")
+        data = json.dumps(
+            {"username": self.username, "password": self.password}
+        ).encode("utf-8")
         req = urllib.request.Request(  # noqa: S310
             url,
             data=data,
@@ -662,12 +688,18 @@ class UniFiClient:
 
             self._log_audit(
                 "login_success",
-                {"ttl_seconds": ((self.jwt_exp - int(time.time())) if self.jwt_exp else None)},
+                {
+                    "ttl_seconds": (
+                        (self.jwt_exp - int(time.time())) if self.jwt_exp else None
+                    )
+                },
             )
 
         except urllib.error.HTTPError as e:
             error_msg = f"Login failed: HTTP {e.code} {e.reason}"
-            self._log_audit("login_failed", {"http_code": e.code, "reason": str(e.reason)})
+            self._log_audit(
+                "login_failed", {"http_code": e.code, "reason": str(e.reason)}
+            )
             raise UniFiAuthError(error_msg) from e
         except UniFiAuthError:
             raise
@@ -703,12 +735,16 @@ class UniFiClient:
                 self.discover_sites()
 
             # Formatting template with available identifiers and kwargs
-            endpoint = path_template.format(site_id=self.site_id, site_uuid=self.site_uuid or "PENDING", **kwargs)
+            endpoint = path_template.format(
+                site_id=self.site_id, site_uuid=self.site_uuid or "PENDING", **kwargs
+            )
 
         method = method or "GET"
 
         if self.simulation_mode:
-            self._log_audit("simulation_api_call", {"endpoint": endpoint, "method": method})
+            self._log_audit(
+                "simulation_api_call", {"endpoint": endpoint, "method": method}
+            )
             if "stat/device" in endpoint:
                 return {
                     "meta": {"rc": "ok"},
@@ -828,7 +864,9 @@ class UniFiClient:
         if data is not None:
             request_data = json.dumps(data).encode("utf-8")
 
-        req = urllib.request.Request(url, data=request_data, headers=headers, method=method)  # noqa: S310
+        req = urllib.request.Request(
+            url, data=request_data, headers=headers, method=method
+        )  # noqa: S310
 
         try:
             with self.opener.open(req, timeout=10) as r:
@@ -862,14 +900,18 @@ class UniFiClient:
             raise UniFiAPIError(f"HTTP {e.code} on {endpoint}: {msg}") from e
 
         except (OSError, ValueError) as e:
-            self._log_audit("api_call_exception", {"endpoint": endpoint, "error": str(e)})
+            self._log_audit(
+                "api_call_exception", {"endpoint": endpoint, "error": str(e)}
+            )
             raise UniFiAPIError(f"Request failed on {endpoint}: {e!s}") from e
 
         # Pattern 3: Check UniFi's error wrapper (.meta.rc == "error")
         if isinstance(response, dict):
             if response.get("meta", {}).get("rc") == "error":
                 error_msg = response.get("meta", {}).get("msg", "Unknown error")
-                self._log_audit("api_call_unifi_error", {"endpoint": endpoint, "msg": error_msg})
+                self._log_audit(
+                    "api_call_unifi_error", {"endpoint": endpoint, "msg": error_msg}
+                )
                 raise UniFiAPIError(f"{endpoint}: {error_msg}")
 
         self._log_audit("api_call_success", {"endpoint": endpoint, "method": method})
@@ -881,7 +923,9 @@ class UniFiClient:
         sites = result.get("data", [])
         if sites:
             self.site_uuid = sites[0]["id"]
-            self._log_audit("site_discovered", {"site_uuid": self.site_uuid, "count": len(sites)})
+            self._log_audit(
+                "site_discovered", {"site_uuid": self.site_uuid, "count": len(sites)}
+            )
         return cast("list[dict[str, Any]]", sites)
 
     def get_devices(self) -> list[dict[str, Any]]:
@@ -951,7 +995,9 @@ class UniFiClient:
         self._log_audit("firewall_rules_fetched", {"count": len(rules)})
         return rules  # type: ignore[no-any-return]
 
-    def create_firewall_rule(self, rule_data: dict[str, Any], check_mode: bool = False) -> dict[str, Any]:
+    def create_firewall_rule(
+        self, rule_data: dict[str, Any], check_mode: bool = False
+    ) -> dict[str, Any]:
         """Create firewall rule with idempotency."""
         name = rule_data.get("name")
 
@@ -1010,7 +1056,9 @@ class UniFiClient:
             groups = self.get_firewall_groups()
             if "src_group" in payload:
                 group_name = payload.pop("src_group")
-                group_id = next((g["_id"] for g in groups if g.get("name") == group_name), None)
+                group_id = next(
+                    (g["_id"] for g in groups if g.get("name") == group_name), None
+                )
                 if not group_id:
                     raise UniFiError(f"Source Group '{group_name}' not found")
                 payload["src_firewallgroup_ids"] = [group_id]
@@ -1018,7 +1066,9 @@ class UniFiClient:
 
             if "dst_group" in payload:
                 group_name = payload.pop("dst_group")
-                group_id = next((g["_id"] for g in groups if g.get("name") == group_name), None)
+                group_id = next(
+                    (g["_id"] for g in groups if g.get("name") == group_name), None
+                )
                 if not group_id:
                     raise UniFiError(f"Destination Group '{group_name}' not found")
                 payload["dst_firewallgroup_ids"] = [group_id]
@@ -1062,7 +1112,9 @@ class UniFiClient:
                 "msg": "Firewall rule would be created (check_mode)",
             }
 
-        result = self.api_call(f"api/s/{self.site_id}/rest/firewallrule", method="POST", data=payload)
+        result = self.api_call(
+            f"api/s/{self.site_id}/rest/firewallrule", method="POST", data=payload
+        )
         self._log_audit("firewall_rule_created", {"rule_name": name})
         return {"changed": True, "data": result}
 
@@ -1072,12 +1124,18 @@ class UniFiClient:
         rule = next((r for r in rules if r.get("name") == rule_name), None)
 
         if not rule:
-            self._log_audit("firewall_delete_skip", {"name": rule_name, "reason": "not_found"})
+            self._log_audit(
+                "firewall_delete_skip", {"name": rule_name, "reason": "not_found"}
+            )
             return {"changed": False, "msg": f"Firewall rule {rule_name} not found"}
 
         rule_id = rule["_id"]
-        result = self.api_call(f"api/s/{self.site_id}/rest/firewallrule/{rule_id}", method="DELETE")
-        self._log_audit("firewall_rule_deleted", {"rule_name": rule_name, "rule_id": rule_id})
+        result = self.api_call(
+            f"api/s/{self.site_id}/rest/firewallrule/{rule_id}", method="DELETE"
+        )
+        self._log_audit(
+            "firewall_rule_deleted", {"rule_name": rule_name, "rule_id": rule_id}
+        )
         return {"changed": True, "data": result}
 
     def get_firewall_groups(self) -> list[dict[str, Any]]:
@@ -1110,7 +1168,9 @@ class UniFiClient:
         if "group_type" not in payload:
             payload["group_type"] = payload.get("type", "address-group")
 
-        result = self.api_call(f"api/s/{self.site_id}/rest/firewallgroup", method="POST", data=payload)
+        result = self.api_call(
+            f"api/s/{self.site_id}/rest/firewallgroup", method="POST", data=payload
+        )
         self._log_audit("firewall_group_created", {"group_name": name})
         return {"changed": True, "data": result}
 
@@ -1126,7 +1186,9 @@ class UniFiClient:
         self._log_audit("zones_fetched", {"count": len(zones)})
         return zones
 
-    def create_zone(self, zone_data: dict[str, Any], check_mode: bool = False) -> dict[str, Any]:
+    def create_zone(
+        self, zone_data: dict[str, Any], check_mode: bool = False
+    ) -> dict[str, Any]:
         """Create or update a firewall zone."""
         name = zone_data.get("name")
         network_ids = zone_data.get("network_ids", [])
@@ -1158,7 +1220,9 @@ class UniFiClient:
         if check_mode:
             return {"changed": True, "msg": f"Zone '{name}' would be created"}
 
-        result = self.api_call(f"v2/api/site/{self.site_id}/firewall/zone", method="POST", data=zone_data)
+        result = self.api_call(
+            f"v2/api/site/{self.site_id}/firewall/zone", method="POST", data=zone_data
+        )
         self._log_audit("zone_created", {"name": name})
         return {"changed": True, "data": result}
 
@@ -1174,7 +1238,9 @@ class UniFiClient:
             raise UniFiError(f"Cannot delete default zone '{zone_name}'")
 
         zone_id = zone["_id"]
-        result = self.api_call(f"v2/api/site/{self.site_id}/firewall/zone/{zone_id}", method="DELETE")
+        result = self.api_call(
+            f"v2/api/site/{self.site_id}/firewall/zone/{zone_id}", method="DELETE"
+        )
         return {"changed": True, "data": result}
 
     def get_zone_matrix(self) -> list[dict[str, Any]]:
@@ -1193,7 +1259,9 @@ class UniFiClient:
         )
         return {"changed": True, "data": result}
 
-    def get_firewall_policies(self, query_params: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    def get_firewall_policies(
+        self, query_params: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
         """Get V2 Firewall Policies (ZBF Rules)."""
         url = f"v2/api/site/{self.site_id}/firewall-policies"
         if query_params:
@@ -1207,11 +1275,15 @@ class UniFiClient:
 
     def delete_firewall_policy(self, policy_id: str) -> dict[str, Any]:
         """Delete V2 Firewall Policy by ID."""
-        result = self.api_call(f"v2/api/site/{self.site_id}/firewall-policies/{policy_id}", method="DELETE")
+        result = self.api_call(
+            f"v2/api/site/{self.site_id}/firewall-policies/{policy_id}", method="DELETE"
+        )
         self._log_audit("firewall_policy_deleted", {"policy_id": policy_id})
         return {"changed": True, "data": result}
 
-    def create_firewall_policy(self, policy_data: dict[str, Any], check_mode: bool = False) -> dict[str, Any]:
+    def create_firewall_policy(
+        self, policy_data: dict[str, Any], check_mode: bool = False
+    ) -> dict[str, Any]:
         """Create or update a V2 Firewall Policy (ZBF Rule)."""
         name = policy_data.get("name")
         current_policies = self.get_firewall_policies()
@@ -1223,8 +1295,10 @@ class UniFiClient:
             # Simple idempotency: check action and zones
             if (
                 policy.get("action") == policy_data.get("action")
-                and policy.get("source", {}).get("zone_id") == policy_data.get("source", {}).get("zone_id")
-                and policy.get("destination", {}).get("zone_id") == policy_data.get("destination", {}).get("zone_id")
+                and policy.get("source", {}).get("zone_id")
+                == policy_data.get("source", {}).get("zone_id")
+                and policy.get("destination", {}).get("zone_id")
+                == policy_data.get("destination", {}).get("zone_id")
             ):
                 return {
                     "changed": False,
@@ -1260,7 +1334,9 @@ class UniFiClient:
         groups = result if isinstance(result, list) else result.get("data", [])
         return groups
 
-    def create_network_members_group(self, group_data: dict[str, Any], check_mode: bool = False) -> dict[str, Any]:
+    def create_network_members_group(
+        self, group_data: dict[str, Any], check_mode: bool = False
+    ) -> dict[str, Any]:
         """Create or update a Network Members Group."""
         name = group_data.get("name")
         current_groups = self.get_network_members_groups()
@@ -1299,7 +1375,9 @@ class UniFiClient:
         """Fetch V2 Target Objects (Consolidated OONC endpoint)."""
         try:
             # Hellodeolu v7: Use plural plural object-oriented-network-configs for listing
-            res = self.api_call(f"v2/api/site/{self.site_id}/object-oriented-network-configs")
+            res = self.api_call(
+                f"v2/api/site/{self.site_id}/object-oriented-network-configs"
+            )
             data = res if isinstance(res, list) else res.get("data", [])
             self._log_audit("target_objects_fetched", {"count": len(data)})
             return data
@@ -1320,7 +1398,9 @@ class UniFiClient:
                     continue
             return results
 
-    def create_target_object(self, obj_data: dict[str, Any], check_mode: bool = False) -> dict[str, Any]:
+    def create_target_object(
+        self, obj_data: dict[str, Any], check_mode: bool = False
+    ) -> dict[str, Any]:
         """Create or update a V2 Target Object (Dynamic Group)."""
         name = obj_data.get("name")
 
@@ -1428,7 +1508,9 @@ class UniFiClient:
         self._log_audit("setting_updated", {"key": key})
         return {"changed": True, "data": result}
 
-    def create_network(self, network_data: dict[str, Any], check_mode: bool = False) -> dict[str, Any]:
+    def create_network(
+        self, network_data: dict[str, Any], check_mode: bool = False
+    ) -> dict[str, Any]:
         """Create VLAN or network configuration with idempotency."""
         name = network_data.get("name")
         vlan_id = network_data.get("vlan_id") or network_data.get("vlan")
@@ -1502,7 +1584,9 @@ class UniFiClient:
                         "msg": "Network updated (subnet mismatch)",
                     }
 
-        result = self.api_call(f"api/s/{self.site_id}/rest/networkconf", method="POST", data=payload)
+        result = self.api_call(
+            f"api/s/{self.site_id}/rest/networkconf", method="POST", data=payload
+        )
         self._log_audit("network_created", {"network_name": name})
         return {"changed": True, "data": result}
 
@@ -1513,7 +1597,9 @@ class UniFiClient:
         self._log_audit("wlan_configs_fetched", {"count": len(wlan_configs)})
         return wlan_configs  # type: ignore[no-any-return]
 
-    def create_wlan_config(self, wlan_data: dict[str, Any], check_mode: bool = False) -> dict[str, Any]:
+    def create_wlan_config(
+        self, wlan_data: dict[str, Any], check_mode: bool = False
+    ) -> dict[str, Any]:
         """Create a new wireless network configuration with idempotency."""
         name = wlan_data.get("name")
 
@@ -1523,11 +1609,15 @@ class UniFiClient:
             # For WLAN, we need to find the networkconf_id of the VLAN
             vlan_id = payload.pop("vlan_id")
             networks = self.get_networks()
-            net_id = next((n["_id"] for n in networks if str(n.get("vlan")) == str(vlan_id)), None)
+            net_id = next(
+                (n["_id"] for n in networks if str(n.get("vlan")) == str(vlan_id)), None
+            )
             if net_id:
                 payload["networkconf_id"] = net_id
             else:
-                raise UniFiAPIError(f"VLAN {vlan_id} not found; cannot link SSID {name}")
+                raise UniFiAPIError(
+                    f"VLAN {vlan_id} not found; cannot link SSID {name}"
+                )
 
         # Ensure security is set (UniFi defaults to open otherwise)
         if "x_passphrase" not in payload and "passphrase" in payload:
@@ -1559,7 +1649,11 @@ class UniFiClient:
             try:
                 # Capture suggests this endpoint for v2 Groups on fresh OS
                 groups_resp = self.api_call("v2/api/site/default/apgroups")
-                groups = groups_resp if isinstance(groups_resp, list) else groups_resp.get("data", [])
+                groups = (
+                    groups_resp
+                    if isinstance(groups_resp, list)
+                    else groups_resp.get("data", [])
+                )
             except UniFiAPIError:
                 try:
                     # Fallback to legacy
@@ -1568,7 +1662,9 @@ class UniFiClient:
                 except UniFiAPIError:
                     pass
 
-            default_group = next((g["_id"] for g in groups if g.get("name") == "All APs"), None)
+            default_group = next(
+                (g["_id"] for g in groups if g.get("name") == "All APs"), None
+            )
             if not default_group and groups:
                 default_group = groups[0].get("_id")
 
@@ -1594,7 +1690,9 @@ class UniFiClient:
                 "msg": f"SSID {name} would be created (check_mode)",
             }
 
-        result = self.api_call(f"api/s/{self.site_id}/rest/wlanconf", method="POST", data=payload)
+        result = self.api_call(
+            f"api/s/{self.site_id}/rest/wlanconf", method="POST", data=payload
+        )
         self._log_audit("wlan_config_created", {"ssid": name})
         return {"changed": True, "data": result}
 
@@ -1610,27 +1708,37 @@ class UniFiClient:
 
     def delete_network(self, network_id: str) -> dict[str, Any]:
         """Delete a network configuration."""
-        result = self.api_call(f"api/s/{self.site_id}/rest/networkconf/{network_id}", method="DELETE")
+        result = self.api_call(
+            f"api/s/{self.site_id}/rest/networkconf/{network_id}", method="DELETE"
+        )
         self._log_audit("network_deleted", {"network_id": network_id})
         return {"changed": True, "data": result}
 
     def delete_wlan_config(self, wlan_id: str) -> dict[str, Any]:
         """Delete a wireless network configuration."""
-        result = self.api_call(f"api/s/{self.site_id}/rest/wlanconf/{wlan_id}", method="DELETE")
+        result = self.api_call(
+            f"api/s/{self.site_id}/rest/wlanconf/{wlan_id}", method="DELETE"
+        )
         self._log_audit("wlan_deleted", {"wlan_id": wlan_id})
         return {"changed": True, "data": result}
 
     def update_device(self, device_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         """Update device configuration (e.g., port overrides, aliases)."""
-        result = self.api_call(f"api/s/{self.site_id}/rest/device/{device_id}", method="PUT", data=payload)
+        result = self.api_call(
+            f"api/s/{self.site_id}/rest/device/{device_id}", method="PUT", data=payload
+        )
         self._log_audit("device_updated", {"device_id": device_id})
         return {"changed": True, "data": result}
 
-    def configure_port(self, device_mac: str, port_config: dict[str, Any], check_mode: bool = False) -> dict[str, Any]:
+    def configure_port(
+        self, device_mac: str, port_config: dict[str, Any], check_mode: bool = False
+    ) -> dict[str, Any]:
         """Configure a specific switch port via port_overrides."""
         # 1. Find device
         devices = self.api_call(f"api/s/{self.site_id}/stat/device")
-        device = next((d for d in devices.get("data", []) if d.get("mac") == device_mac), None)
+        device = next(
+            (d for d in devices.get("data", []) if d.get("mac") == device_mac), None
+        )
         if not device:
             raise UniFiAPIError(f"Device with MAC {device_mac} not found")
 
@@ -1641,10 +1749,14 @@ class UniFiClient:
 
         # 2. Extract current overrides
         overrides = device.get("port_overrides", [])
-        existing_override = next((o for o in overrides if o.get("port_idx") == port_idx), None)
+        existing_override = next(
+            (o for o in overrides if o.get("port_idx") == port_idx), None
+        )
 
         # 3. Resolve Native VLAN if provided
-        new_override = existing_override.copy() if existing_override else {"port_idx": port_idx}
+        new_override = (
+            existing_override.copy() if existing_override else {"port_idx": port_idx}
+        )
 
         if "name" in port_config:
             new_override["name"] = port_config["name"]
@@ -1669,8 +1781,12 @@ class UniFiClient:
             new_override["forward"] = "customize"
 
         # Idempotency check: compare new_override vs existing_override
-        if existing_override and all(new_override.get(k) == existing_override.get(k) for k in new_override):
-            self._log_audit("port_config_idempotent_skip", {"mac": device_mac, "port": port_idx})
+        if existing_override and all(
+            new_override.get(k) == existing_override.get(k) for k in new_override
+        ):
+            self._log_audit(
+                "port_config_idempotent_skip", {"mac": device_mac, "port": port_idx}
+            )
             return {
                 "changed": False,
                 "msg": f"Port {port_idx} already matches desired configuration",
@@ -1684,7 +1800,9 @@ class UniFiClient:
 
         # 4. Merge and update
         if existing_override:
-            overrides = [new_override if o.get("port_idx") == port_idx else o for o in overrides]
+            overrides = [
+                new_override if o.get("port_idx") == port_idx else o for o in overrides
+            ]
         else:
             overrides.append(new_override)
 
@@ -1802,7 +1920,9 @@ def main() -> None:
             module.exit_json(changed=False, data=rules, audit_log=client.audit_log)
 
         elif action == "create_firewall_rule":
-            result = client.create_firewall_rule(module.params["rule_data"], check_mode=module.check_mode)
+            result = client.create_firewall_rule(
+                module.params["rule_data"], check_mode=module.check_mode
+            )
             module.exit_json(
                 changed=result.get("changed", True),
                 data=result.get("data"),
@@ -1815,7 +1935,9 @@ def main() -> None:
             module.exit_json(changed=False, data=zones, audit_log=client.audit_log)
 
         elif action == "create_zone":
-            result = client.create_zone(module.params["data"], check_mode=module.check_mode)
+            result = client.create_zone(
+                module.params["data"], check_mode=module.check_mode
+            )
             module.exit_json(
                 changed=result.get("changed", True),
                 data=result.get("data"),
@@ -1825,7 +1947,11 @@ def main() -> None:
 
         elif action == "delete_zone" or action == "delete_firewall_zone":
             # Support both direct 'data.name' and direct 'name' (for flexibility)
-            name = module.params["data"].get("name") if module.params.get("data") else module.params.get("name")
+            name = (
+                module.params["data"].get("name")
+                if module.params.get("data")
+                else module.params.get("name")
+            )
             result = client.delete_zone(name)
             module.exit_json(
                 changed=result.get("changed", True),
@@ -1848,16 +1974,22 @@ def main() -> None:
 
         elif action == "get_firewall_policies":
             # Pass query_params if provided in 'data'
-            result = client.get_firewall_policies(query_params=module.params.get("data"))
+            result = client.get_firewall_policies(
+                query_params=module.params.get("data")
+            )
             module.exit_json(changed=False, data=result, audit_log=client.audit_log)
 
         elif action == "create_firewall_policy":
-            result = client.create_firewall_policy(module.params["data"], check_mode=module.check_mode)
+            result = client.create_firewall_policy(
+                module.params["data"], check_mode=module.check_mode
+            )
             module.exit_json(**result, audit_log=client.audit_log)
 
         elif action == "delete_firewall_policy":
             # Support policy_id in params or in data
-            policy_id = module.params.get("policy_id") or (module.params.get("data") or {}).get("policy_id")
+            policy_id = module.params.get("policy_id") or (
+                module.params.get("data") or {}
+            ).get("policy_id")
             result = client.delete_firewall_policy(policy_id)  # type: ignore[arg-type]
             module.exit_json(**result, audit_log=client.audit_log)
 
@@ -1866,7 +1998,9 @@ def main() -> None:
             module.exit_json(changed=False, data=result, audit_log=client.audit_log)
 
         elif action == "create_network_members_group":
-            result = client.create_network_members_group(module.params["data"], check_mode=module.check_mode)
+            result = client.create_network_members_group(
+                module.params["data"], check_mode=module.check_mode
+            )
             module.exit_json(**result, audit_log=client.audit_log)
 
         elif action == "get_target_objects":
@@ -1874,7 +2008,9 @@ def main() -> None:
             module.exit_json(changed=False, data=objects, audit_log=client.audit_log)
 
         elif action == "create_target_object":
-            result = client.create_target_object(module.params["data"], check_mode=module.check_mode)
+            result = client.create_target_object(
+                module.params["data"], check_mode=module.check_mode
+            )
             module.exit_json(
                 changed=result.get("changed", True),
                 data=result.get("data"),
@@ -1919,7 +2055,9 @@ def main() -> None:
             module.exit_json(changed=False, data=settings, audit_log=client.audit_log)
 
         elif action == "update_setting":
-            result = client.update_setting(module.params["setting_key"], module.params["setting_data"])
+            result = client.update_setting(
+                module.params["setting_key"], module.params["setting_data"]
+            )
             module.exit_json(
                 changed=result.get("changed", True),
                 data=result.get("data"),
@@ -1931,7 +2069,9 @@ def main() -> None:
             module.exit_json(changed=False, data=result, audit_log=client.audit_log)
 
         elif action == "update_v2_setting":
-            result = client.update_v2_setting(module.params["path"], module.params["data"])
+            result = client.update_v2_setting(
+                module.params["path"], module.params["data"]
+            )
             module.exit_json(
                 changed=result.get("changed", True),
                 data=result.get("data"),
@@ -1939,7 +2079,9 @@ def main() -> None:
             )
 
         elif action == "create_network":
-            result = client.create_network(module.params["network_data"], check_mode=module.check_mode)
+            result = client.create_network(
+                module.params["network_data"], check_mode=module.check_mode
+            )
             module.exit_json(
                 changed=result.get("changed", True),
                 data=result.get("data"),
@@ -1960,7 +2102,9 @@ def main() -> None:
             module.exit_json(changed=False, data=configs, audit_log=client.audit_log)
 
         elif action == "create_wlan_config":
-            result = client.create_wlan_config(module.params["wlan_data"], check_mode=module.check_mode)
+            result = client.create_wlan_config(
+                module.params["wlan_data"], check_mode=module.check_mode
+            )
             module.exit_json(
                 changed=result.get("changed", True),
                 data=result.get("data"),
@@ -2002,7 +2146,9 @@ def main() -> None:
 
             # Bauer Check: Simulation or live
             if module.check_mode:
-                module.exit_json(changed=True, msg=f"Device {device_id} would be updated with {data}")
+                module.exit_json(
+                    changed=True, msg=f"Device {device_id} would be updated with {data}"
+                )
 
             result = client.api_call("update_device", device_id=device_id, data=data)
             module.exit_json(changed=True, data=result, audit_log=client.audit_log)
@@ -2021,7 +2167,9 @@ def main() -> None:
                     audit_log=client.audit_log,
                 )
             else:
-                module.exit_json(changed=False, validation=validation, audit_log=client.audit_log)
+                module.exit_json(
+                    changed=False, validation=validation, audit_log=client.audit_log
+                )
 
         elif action == "api_call":
             result = client.api_call(

@@ -1,11 +1,11 @@
 ---
 # roles/hardening_role/tasks/ssh_hardening.yml
 
-# Purpose: Enforce SSH security on network infrastructure using rylanlab.unifi.unifi_api
+# Purpose: Enforce SSH security on network infrastructure using rylanlabs.unifi.unifi_api
 # Guardian: Beale (Hardening)
 
 - name: "[Beale] Hardening SSH settings via UniFi API"
-  rylanlab.unifi.unifi_api:
+  rylanlabs.unifi.unifi_api:
     host: "{{ unifi_host }}"
     username: "{{ unifi_user | default(omit) }}"
     password: "{{ unifi_password | default(omit) }}"
