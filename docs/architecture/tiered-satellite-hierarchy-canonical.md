@@ -164,7 +164,7 @@ The RylanLabs infrastructure is transitioning from a symlink-fragile, geographic
 - `validate-rotation-readiness.sh` — Pre-rotation checks
 - `whitaker-scan.sh` — Adversarial testing
 - `sentinel-expiry.sh` — Key/cert expiration monitoring
-- `playbook-structure-linter.py` — Enforces Trinity workflow
+- `playbook_structure_linter.py` — Enforces Trinity workflow
 
 **Exception Handling & Observability**:
 

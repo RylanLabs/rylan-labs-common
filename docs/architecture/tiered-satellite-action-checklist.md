@@ -222,7 +222,7 @@
   - [ ] Copy from canon-lib to common/scripts/
   - [ ] Add cert/key expiry checks
 
-- [ ] **playbook-structure-linter.py**:
+- [ ] **playbook_structure_linter.py**:
   - [ ] Copy from canon-lib to common/scripts/
   - [ ] Add docstring + examples
 

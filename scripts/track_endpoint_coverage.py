@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script: track-endpoint-coverage.py
+Script: track_endpoint_coverage.py
 Purpose: Track and enforce API documentation coverage (P1 Discipline)
 Guardian: Bauer (Auditor)
 Maturity: v2.0.0

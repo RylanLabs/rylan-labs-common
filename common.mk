@@ -235,13 +235,13 @@ ml5-validate: ## Run ML5 scorecard validation drill (Whitaker) | Adversarial: In
 ml5-report: ## Generate ML5 compliance report | Observability: JSON output
 	@$(call log_info, ML5 Compliance Report)
 	@START=$$(date +%s%3N); \
-	if [ -f $(CANON_ROOT)/scripts/ml5-report-helper.py ]; then \
-		python3 $(CANON_ROOT)/scripts/ml5-report-helper.py .audit/maturity-level-5-scorecard.yml && STATUS="PASS" || STATUS="FAIL"; \
-	elif [ -f scripts/ml5-report-helper.py ]; then \
-		python3 scripts/ml5-report-helper.py .audit/maturity-level-5-scorecard.yml && STATUS="PASS" || STATUS="FAIL"; \
+	if [ -f $(CANON_ROOT)/scripts/ml5_report_helper.py ]; then \
+		python3 $(CANON_ROOT)/scripts/ml5_report_helper.py .audit/maturity-level-5-scorecard.yml && STATUS="PASS" || STATUS="FAIL"; \
+	elif [ -f scripts/ml5_report_helper.py ]; then \
+		python3 scripts/ml5_report_helper.py .audit/maturity-level-5-scorecard.yml && STATUS="PASS" || STATUS="FAIL"; \
 	else \
 		STATUS="FAIL"; \
-		$(call log_error, ml5-report-helper.py not found); \
+		$(call log_error, ml5_report_helper.py not found); \
 	fi; \
 	END=$$(date +%s%3N); \
 	$(call log_audit,ml5-report,Bauer,$$STATUS,$$((END-START)),Report generated); \

@@ -44,7 +44,7 @@ Invoked by pre-commit hooks to validate code.
 | `scripts/validate-ansible.sh` | shared-configs | Ansible |
 | `scripts/validate-python.sh` | shared-configs | Python |
 | `scripts/validate-yaml.sh` | shared-configs | YAML |
-| `scripts/playbook-structure-linter.py` | shared-configs | 3-Domain validation |
+| `scripts/playbook_structure_linter.py` | shared-configs | 3-Domain validation |
 | `scripts/validate-security-posture.sh` | shared-configs | Security audit |
 
 **Impact**: Pre-commit hooks now functional. Immediate validation feedback.
@@ -55,7 +55,7 @@ Enforce the sacred 3-Domain pattern and security requirements.
 
 | Enforcer | Source | Requirement |
 | --- | --- | --- |
-| `playbook-structure-linter.py` | shared-configs | 7-task 3-Domain structure |
+| `playbook_structure_linter.py` | shared-configs | 7-task 3-Domain structure |
 | `validate-security-posture.sh` | shared-configs | Production Standards compliance |
 
 **Impact**: Playbooks must follow 3-Domain. Prevents ad-hoc tasks.
@@ -130,7 +130,7 @@ git commit -m "feat(playbook): Add my-playbook"
 ```bash
 pre-commit run --all-files
 ./scripts/validate-ansible.sh
-python3 scripts/playbook-structure-linter.py playbooks/*.yml
+python3 scripts/playbook_structure_linter.py playbooks/*.yml
 ```
 
 ---

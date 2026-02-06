@@ -136,7 +136,7 @@ git clone git@github.com:RylanLabs/rylan-labs-shared-configs.git ../rylan-labs-s
 |----------|-------|---------|
 | Linting Configs | 3 | `.markdownlint.json`, `.yamllint`, `.pre-commit-config.yaml` |
 | Validator Scripts | 6 | `validate-bash.sh`, `validate-ansible.sh`, etc. |
-| 3-Domain Enforcers | 2 | `playbook-structure-linter.py`, `validate-security-posture.sh` |
+| 3-Domain Enforcers | 2 | `playbook_structure_linter.py`, `validate-security-posture.sh` |
 | Discipline Docs | 4 | `trinity-execution.md`, `security-posture-discipline.md`, etc. |
 
 **Impact**: Zero drift via declarative symlinks. Updates propagate automatically.

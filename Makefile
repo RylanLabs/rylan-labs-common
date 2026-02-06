@@ -8,5 +8,5 @@ CANON_ROOT := ..
 # Collection-specific targets
 extract-collection: ## Audit and extract logic from legacy paths (Grok Value Add)
 	@$(call log_info, Auditing logic for extraction opportunities)
-	@python3 scripts/three-domain-validator.py --workspace .
+	@python3 scripts/three_domain_validator.py --workspace .
 	@$(call log_success, Logic extraction coverage validated.)

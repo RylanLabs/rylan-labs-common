@@ -80,7 +80,7 @@ if [[ -d "scripts" && ! -f "canon-manifest.yaml" ]]; then
       "whitaker-scan.sh"
       "sentinel-expiry.sh"
       "warm-session.sh"
-      "playbook-structure-linter.py"
+      "playbook_structure_linter.py"
       "verify-workflows.sh"
     )
     

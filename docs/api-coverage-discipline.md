@@ -36,7 +36,7 @@ Coverage is tracked via `.audit/api/coverage.json`.
 }
 ```
 
-### Automation: `track-endpoint-coverage.py`
+### Automation: `track_endpoint_coverage.py`
 This script parses discovery logs and cross-references them with the documented endpoint list.
 - **Pre-commit**: Blocks merges if coverage drops below 80% without an explicit exemption.
 - **CI**: Fails if new endpoints are detected in discovery but missing from the manifest.

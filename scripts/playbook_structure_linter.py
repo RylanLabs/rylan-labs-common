@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script: playbook-structure-linter.py
+Script: playbook_structure_linter.py
 Purpose: Enforce 7-task Trinity workflow sequence (P2 Discipline)
 Guardian: Carter (Guardian)
 Maturity: v2.0.0
@@ -83,7 +83,7 @@ def lint_playbook(file_path: str | Path) -> bool:
 
 def main() -> None:
     if len(sys.argv) < 2:
-        print("Usage: playbook-structure-linter.py <playbook1.yml> ...")
+        print("Usage: playbook_structure_linter.py <playbook1.yml> ...")
         sys.exit(1)
 
     overall_success: bool = True

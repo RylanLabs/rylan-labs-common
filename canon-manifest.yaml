@@ -39,4 +39,4 @@ sync:
   patterns:
     - scripts/whitaker-scan.sh
     - scripts/sentinel-expiry.sh
-    - scripts/playbook-structure-linter.py
+    - scripts/playbook_structure_linter.py
