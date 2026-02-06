@@ -5,12 +5,7 @@ CANON_ROOT := ..
 
 -include common.mk
 
-# Collection build targets
-build: ## Build the galaxy collection
-	ansible-galaxy collection build --force
-
-publish: build ## Build and publish the collection to Galaxy
-	ansible-galaxy collection publish $$(ls rylanlabs-unifi-*.tar.gz | head -n 1)
+# Collection-specific targets
 extract-collection: ## Audit and extract logic from legacy paths (Grok Value Add)
 	@$(call log_info, Auditing logic for extraction opportunities)
 	@python3 scripts/three-domain-validator.py --workspace .

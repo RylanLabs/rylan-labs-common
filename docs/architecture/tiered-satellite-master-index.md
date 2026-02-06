@@ -10,19 +10,19 @@
 
 ## 📚 Documentation Set
 
-### 1. [TIERED_SATELLITE_HIERARCHY_CANONICAL.md](TIERED_SATELLITE_HIERARCHY_CANONICAL.md)
+### 1. [tiered-satellite-hierarchy-canonical.md](tiered-satellite-hierarchy-canonical.md)
 Technical "Source of Truth". Contains ML5 Scorecard, Tier 0-4 specifications, and naming conventions.
 
-### 2. [TIERED_SATELLITE_HIERARCHY_EXECUTIVE_SUMMARY.md](TIERED_SATELLITE_HIERARCHY_EXECUTIVE_SUMMARY.md)
+### 2. [tiered-satellite-hierarchy-executive-summary.md](tiered-satellite-hierarchy-executive-summary.md)
 Strategic overview for stakeholders. Contains ASCII architecture diagram and Seven Pillars summary.
 
-### 3. [TIERED_SATELLITE_ACTION_CHECKLIST.md](TIERED_SATELLITE_ACTION_CHECKLIST.md)
+### 3. [tiered-satellite-action-checklist.md](tiered-satellite-action-checklist.md)
 Engineering roadmap and task list. Contains Phase A-D tasks and Ghost Stub detection scripts.
 
-### 4. [TIERED_SATELLITE_QUICK_REFERENCE.md](TIERED_SATELLITE_QUICK_REFERENCE.md)
+### 4. [tiered-satellite-quick-reference.md](tiered-satellite-quick-reference.md)
 Developer "Cheat Sheet". Contains prefixes, dependency matrix, and terminal shortcuts.
 
-### 5. [TIERED_SATELLITE_SYNTHESIS_ANALYSIS.md](TIERED_SATELLITE_SYNTHESIS_ANALYSIS.md)
+### 5. [tiered-satellite-synthesis-analysis.md](tiered-satellite-synthesis-analysis.md)
 Rationale and risk mitigations. Contains detailed ingestion of Grok/Leo feedback.
 
 ---

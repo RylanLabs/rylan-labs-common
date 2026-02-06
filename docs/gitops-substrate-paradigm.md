@@ -50,7 +50,7 @@ while enabling frictionless velocity.
 
 ## 1. Philosophical Foundation: IRL-First Approach
 
-> *Absorbed from: TANDEM_WORKFLOW.md*
+> *Absorbed from: tandem-workflow.md*
 
 ### Human Understanding First
 
@@ -92,7 +92,7 @@ maintaining escape hatches via Lazarus rollback.
 
 ## 2. Substrate Architecture: Integration Layer
 
-> *Absorbed from: CANON-INTEGRATION.md*
+> *Absorbed from: canon-integration.md*
 
 ### Repository Hierarchy
 
@@ -228,7 +228,7 @@ is appropriate for code management; Pull-based for runtime infrastructure.
 
 ## 4. Seven Pillars Compliance Matrix
 
-> *Absorbed from: SEVEN_PILLARS.md*
+> *Absorbed from: seven-pillars.md*
 
 ### Pillar 1: Idempotency
 
@@ -333,7 +333,7 @@ git branch -D $BRANCH > /dev/null 2>&1
 
 ## 6. Emergency & Recovery Procedures
 
-> *Absorbed from: EMERGENCY_RESPONSE.md*
+> *Absorbed from: emergency-response.md*
 
 ### Lazarus Recovery Protocol
 
@@ -443,7 +443,7 @@ make publish-merge msg="fix(critical): resolve security issue"
 
 ## Appendix A: Integration Examples
 
-See [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md) for:
+See [integration-guide.md](integration-guide.md) for:
 - Example playbooks (bootstrap, validate, recovery)
 - ansible.cfg configuration
 - Domain repository setup
@@ -457,12 +457,12 @@ The following documents have been absorbed into this paradigm:
 
 | Document | Status | Absorption Location |
 |----------|--------|---------------------|
-| `SEVEN_PILLARS.md` | **Absorbed** | Section 4 |
-| `CANON-INTEGRATION.md` | **Absorbed** | Section 2 |
-| `TANDEM_WORKFLOW.md` | **Absorbed** | Section 1 |
-| `EMERGENCY_RESPONSE.md` | **Absorbed** | Section 6 |
-| `MIGRATION_v1_to_v2.md` | **Deprecated** | Historical reference only |
-| `EXTRACTION_ROADMAP.md` | **Deprecated** | Superseded by Section 5 |
+| `seven-pillars.md` | **Absorbed** | Section 4 |
+| `canon-integration.md` | **Absorbed** | Section 2 |
+| `tandem-workflow.md` | **Absorbed** | Section 1 |
+| `emergency-response.md` | **Absorbed** | Section 6 |
+| `migration-v1-to-v2.md` | **Deprecated** | Historical reference only |
+| `extraction-roadmap.md` | **Deprecated** | Superseded by Section 5 |
 
 ---
 

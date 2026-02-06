@@ -1,6 +1,6 @@
 # Canon Integration Architecture
 
-> **⚠️ ABSORBED**: This document has been absorbed into [GITOPS-SUBSTRATE-PARADIGM.md](GITOPS-SUBSTRATE-PARADIGM.md) Section 2.
+> **⚠️ ABSORBED**: This document has been absorbed into [gitops-substrate-paradigm.md](gitops-substrate-paradigm.md) Section 2.
 > This file is retained for historical reference and backward compatibility.
 > For canonical guidance, see the master paradigm document.
 
