@@ -1,10 +1,23 @@
 # rylan-labs-common/common.mk
 # Guardian: Bauer | Ministry: Oversight
 # Shared logic for the RylanLabs Mesh Substrate
+# Purpose: Provide DRY, idempotent targets for mesh reconciliation
+# Agent: Bauer (Verification)
+# Author: RylanLabs canonical
+# Date: 2026-02-05
+# Compliance: Hellodeolu v7, Seven Pillars (Idempotency, Audit Logging, Validation)
 
 SHELL := /usr/bin/bash
 .SHELLFLAGS := -euo pipefail -c
 .ONESHELL:
+
+# --- Global Mesh Gates (No-Bypass) ---
+# Check for unsigned commits and identity expiry on every invocation
+# Note: Silenced to keep help output clean, but will exit 1 on failure
+_GATES := $(shell bash scripts/whitaker-scan.sh >/dev/null 2>&1 && bash scripts/sentinel-expiry.sh >/dev/null 2>&1 || echo "FAIL")
+ifeq ($(_GATES),FAIL)
+  $(error [FAIL] Mesh Compliance Gates not met. Run 'make warm-session' or fix drift.)
+endif
 
 # --- Constants ---
 DOMAIN_NAME := rylanlabs.io
@@ -50,32 +63,40 @@ endef
 # --- Common Targets ---
 .PHONY: help-common validate publish cascade org-audit mesh-remediate resolve re-init refresh-readme test
 
-test: ## Run Bauer unit tests (Pytest)
+test: ## Run Bauer unit tests (Pytest) | guardian: Bauer | timing: 30s
 	@$(call log_info, Running Bauer unit tests)
-	@pytest tests/unit/ && STATUS="PASS" || STATUS="FAIL"; \
-	$(call log_audit,test,Bauer,$$STATUS,0,Pytest suite execution); \
+	@START=$$(date +%s%3N); \
+	pytest tests/unit/ && STATUS="PASS" || STATUS="FAIL"; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,test,Bauer,$$STATUS,$$((END-START)),Pytest suite execution); \
 	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
 
-help: ## Show shared targets
+help: ## Show shared targets | guardian: Bauer | timing: <5s
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(lastword $(MAKEFILE_LIST)) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-resolve: ## Materialize symlinks for Windows/WSL/CI compatibility (Agnosticism Pattern)
+resolve: ## Materialize symlinks for Windows/WSL/CI compatibility (Agnosticism Pattern) | guardian: Beale | timing: 15s
 	@$(call log_info, Materializing symlinks to literal files)
-	@find . -type l -not -path '*/.*' -exec bash -c ' \
+	@START=$$(date +%s%3N); \
+	find . -type l -not -path '*/.*' -exec bash -c ' \
 		target=$$(readlink -f "{}"); \
 		if [ -e "$$target" ]; then \
-			rm "{}"; \
-			cp -r "$$target" "{}"; \
-			chmod -R u+w "{}"; \
+			if ! [ -e "{}" ] || ! diff -qr "{}" "$$target" >/dev/null 2>&1; then \
+				rm -rf "{}"; \
+				cp -r "$$target" "{}"; \
+				chmod -R u+w "{}"; \
+			fi \
 		else \
 			echo "Warning: Broken symlink {} -> $$target"; \
-		fi' \;
-	@$(MAKE) refresh-readme
-	@$(call log_success, Symlinks materialized.)
+		fi' \; && STATUS="PASS" || STATUS="FAIL"; \
+	END=$$(date +%s%3N); \
+	$(MAKE) refresh-readme; \
+	$(call log_audit,resolve,Beale,$$STATUS,$$((END-START)),Symlinks materialized); \
+	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
 
-refresh-readme: ## Auto-generate README tier metadata from canon-manifest
+refresh-readme: ## Auto-generate README tier metadata from canon-manifest | guardian: Carter | timing: <10s
 	@$(call log_info, Refreshing README Metadata)
-	@if [ -f canon-manifest.yaml ]; then \
+	@START=$$(date +%s%3N); \
+	if [ -f canon-manifest.yaml ]; then \
 		RESULTS=$$(python3 -c "import yaml; d=yaml.safe_load(open('canon-manifest.yaml')); print(f\"{d.get('tier','0')}|{d.get('tier_name','UNKNOWN')}|{','.join(d.get('dependencies', []))}|{d.get('maturity_level','0')}|{d.get('guardian','UNKNOWN')}\")" 2>/dev/null || echo "0|UNKNOWN|None|0|UNKNOWN"); \
 		IFS='|' read -r TIER TIER_NAME DEPS MATURITY GUARDIAN <<< "$$RESULTS"; \
 		ML5_SCORE=$$([ -f .audit/maturity-level-5-scorecard.yml ] && python3 -c "import yaml; d=yaml.safe_load(open('.audit/maturity-level-5-scorecard.yml')); print(d.get('overall_score', '0.0/10'))" 2>/dev/null || echo "N/A"); \
@@ -83,98 +104,147 @@ refresh-readme: ## Auto-generate README tier metadata from canon-manifest
 			"$$TIER" "$$TIER_NAME" "$$DEPS" "$$MATURITY" "$$ML5_SCORE" "$$GUARDIAN" "$$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
 			> .audit/readme-metadata.tmp; \
 		if grep -q "<!-- METADATA_START -->" README.md; then \
-			python3 -c "import sys; content=open('.audit/readme-metadata.tmp').read(); readme=open('README.md').read(); start='<!-- METADATA_START -->'; end='<!-- METADATA_END -->'; import re; new_readme = re.sub(f'{start}.*?{end}', f'{start}\\n{content}\\n{end}', readme, flags=re.DOTALL); open('README.md', 'w').write(new_readme)" 2>/dev/null; \
+			python3 -c "import sys, re; content=open('.audit/readme-metadata.tmp').read(); readme=open('README.md').read(); start='<!-- METADATA_START -->'; end='<!-- METADATA_END -->'; new_readme = re.sub(f'{start}.*?{end}', f'{start}\\n{content}\\n{end}', readme, flags=re.DOTALL); open('README.md', 'w').write(new_readme)" 2>/dev/null; \
 			$(call log_success, README metadata refresh); \
 		fi; \
 		rm -f .audit/readme-metadata.tmp; \
-	fi
-	@$(call log_audit,refresh-readme,Carter,PASS,0,README metadata auto-generated)
+		STATUS="PASS"; \
+	else \
+		STATUS="FAIL"; \
+		$(call log_error, canon-manifest.yaml missing); \
+	fi; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,refresh-readme,Carter,$$STATUS,$$((END-START)),README metadata auto-generated)
 
-re-init: ## Re-sync repository with Canon Hub symlinks (Lazarus)
+re-init: ## Re-sync repository with Canon Hub symlinks (Lazarus) | guardian: Lazarus | timing: 20s
 	@$(call log_info, Re-syncing with Canon Hub)
-	@../rylan-canon-library/scripts/auto-migrate.sh
+	@START=$$(date +%s%3N); \
+	../rylan-canon-library/scripts/auto-migrate.sh && STATUS="PASS" || STATUS="FAIL"; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,re-init,Lazarus,$$STATUS,$$((END-START)),Re-sync completed); \
+	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
 
-validate: ## Run standard Whitaker gates (Validator Suite)
+validate: ## Run standard Whitaker gates (Validator Suite) | guardian: Whitaker | timing: 30s
 	@$(call log_info, Running Whitaker Compliance Gates...)
-	@if [ -x scripts/validate.sh ]; then \
-		./scripts/validate.sh; \
+	@START=$$(date +%s%3N); \
+	if [ -x scripts/validate.sh ]; then \
+		./scripts/validate.sh && STATUS="PASS" || STATUS="FAIL"; \
 	else \
 		$(call log_info, No scripts/validate.sh found, performing basic check...); \
 		for file in Makefile README.md .gitleaks.toml; do \
 			if [ ! -f "$$file" ]; then \
 				$(call log_error, Missing $$file); \
-				exit 1; \
+				STATUS="FAIL"; \
+				break; \
 			fi; \
 		done; \
-		$(call log_success, Basic scaffolding valid.); \
-	fi
+		if [ "$${STATUS:-}" != "FAIL" ]; then \
+			$(call log_success, Basic scaffolding valid.); \
+			STATUS="PASS"; \
+		fi; \
+	fi; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,validate,Whitaker,$$STATUS,$$((END-START)),Compliance gates executed); \
+	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
 
-publish: ## Sync state to mesh (Carter)
+publish: ## Sync state to mesh (Carter) | guardian: Carter | timing: 60s
 	@$(call log_info, Publishing state to mesh)
-	@./scripts/publish-cascade.sh
+	@START=$$(date +%s%3N); \
+	./scripts/publish-cascade.sh && STATUS="PASS" || STATUS="FAIL"; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,publish,Carter,$$STATUS,$$((END-START)),State synced); \
+	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
 
-cascade: ## Distribute secrets/state through mesh (Beale)
+cascade: ## Distribute secrets/state through mesh (Beale) | guardian: Beale | timing: 2m
 	@$(call log_info, Cascading mesh updates)
-	@./scripts/publish-cascade.sh --cascade
+	@START=$$(date +%s%3N); \
+	./scripts/publish-cascade.sh --cascade && STATUS="PASS" || STATUS="FAIL"; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,cascade,Beale,$$STATUS,$$((END-START)),Mesh updates cascaded); \
+	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
 
-org-audit: ## Multi-repo compliance scan (Whitaker)
+org-audit: ## Multi-repo compliance scan (Whitaker) | guardian: Whitaker | timing: 5m
 	@$(call log_info, Starting organizational audit)
-	@./scripts/org-audit.sh
+	@START=$$(date +%s%3N); \
+	./scripts/org-audit.sh && STATUS="PASS" || STATUS="FAIL"; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,org-audit,Whitaker,$$STATUS,$$((END-START)),Org audit completed); \
+	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
 
-mesh-remediate: ## Force drift back to green (Lazarus)
+mesh-remediate: ## Force drift back to green (Lazarus) | guardian: Lazarus | timing: 5m
 	@$(call log_info, Remediating mesh drift)
-	@./scripts/mesh-remediate.sh
+	@START=$$(date +%s%3N); \
+	./scripts/mesh-remediate.sh && STATUS="PASS" || STATUS="FAIL"; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,mesh-remediate,Lazarus,$$STATUS,$$((END-START)),Drift remediated); \
+	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
 ##@ Maturity Level 5 Validation
 
 .PHONY: ml5-validate ml5-init ml5-report inject-canon
 
-ml5-init: ## Initialize ML5 scorecard from Tier 0 template (Bauer)
+ml5-init: ## Initialize ML5 scorecard from Tier 0 template (Bauer) | Idempotent: Skips if exists
 	@$(call log_info, Initializing ML5 Scorecard from $(CANON_ROOT)/templates/ml5-scorecard.yml)
-	@mkdir -p .audit/
-	@if [ ! -f .audit/maturity-level-5-scorecard.yml ]; then \
+	@START=$$(date +%s%3N); \
+	mkdir -p .audit/; \
+	if [ ! -f .audit/maturity-level-5-scorecard.yml ]; then \
 		cp $(CANON_ROOT)/templates/ml5-scorecard.yml .audit/maturity-level-5-scorecard.yml; \
 		repo_name=$$(basename "$$(pwd)"); \
-		sed -i "s/repository: .*/repository: $$repo_name/" .audit/maturity-level-5-scorecard.yml 2>/dev/null || true; \
+		sed -i "s/repository: .*/repository: $$repo_name/" .audit/maturity-level-5-scorecard.yml; \
 		sed -i "s/date_assessed: .*/date_assessed: $$(date -u +%Y-%m-%dT%H:%M:%SZ)/" .audit/maturity-level-5-scorecard.yml; \
-		$(call log_success, Scorecard initialized at .audit/maturity-level-5-scorecard.yml); \
-		$(call log_audit,ml5-init,Bauer,PASS,0,Scorecard initialized from Tier 0); \
+		STATUS="PASS"; \
+		$(call log_success, Scorecard initialized); \
 	else \
-		$(call log_info, Scorecard already exists.); \
-	fi
+		STATUS="SKIP"; \
+		$(call log_info, Scorecard already exists); \
+	fi; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,ml5-init,Bauer,$$STATUS,$$((END-START)),Scorecard initialized from Tier 0)
 
-ml5-validate: ## Run ML5 scorecard validation drill (Whitaker)
+ml5-validate: ## Run ML5 scorecard validation drill (Whitaker) | Adversarial: Integrates simulation
 	@$(call log_info, Running ML5 Validation Drill)
 	@START=$$(date +%s%3N); \
 	$(CANON_ROOT)/scripts/validate-ml5-scorecard.sh .audit/maturity-level-5-scorecard.yml && STATUS="PASS" || STATUS="FAIL"; \
 	END=$$(date +%s%3N); \
-	$(call log_audit,ml5-validate,Bauer,$$STATUS,$$((END-START)),ML5 scorecard validation completion); \
+	$(call log_audit,ml5-validate,Whitaker,$$STATUS,$$((END-START)),ML5 scorecard validation completion); \
 	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
 
-ml5-report: ## Generate ML5 compliance report
+ml5-report: ## Generate ML5 compliance report | Observability: JSON output
 	@$(call log_info, ML5 Compliance Report)
-	@if [ -f $(CANON_ROOT)/scripts/ml5-report-helper.py ]; then \
-		python3 $(CANON_ROOT)/scripts/ml5-report-helper.py .audit/maturity-level-5-scorecard.yml; \
+	@START=$$(date +%s%3N); \
+	if [ -f $(CANON_ROOT)/scripts/ml5-report-helper.py ]; then \
+		python3 $(CANON_ROOT)/scripts/ml5-report-helper.py .audit/maturity-level-5-scorecard.yml && STATUS="PASS" || STATUS="FAIL"; \
 	elif [ -f scripts/ml5-report-helper.py ]; then \
-		python3 scripts/ml5-report-helper.py .audit/maturity-level-5-scorecard.yml; \
+		python3 scripts/ml5-report-helper.py .audit/maturity-level-5-scorecard.yml && STATUS="PASS" || STATUS="FAIL"; \
 	else \
+		STATUS="FAIL"; \
 		$(call log_error, ml5-report-helper.py not found); \
-	fi
+	fi; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,ml5-report,Bauer,$$STATUS,$$((END-START)),Report generated); \
+	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
 
-inject-canon: ## Inject Tier 0 Canon into satellite (Bootstrap)
+inject-canon: ## Inject Tier 0 Canon into satellite (Bootstrap) | Idempotent: Verifies before copy
 	@$(call log_info, Injecting Tier 0 Canon into satellite)
-	@mkdir -p .audit/
-	@cp $(CANON_ROOT)/common.mk .
-	@cp $(CANON_ROOT)/canon-manifest.yaml .
-	@$(MAKE) ml5-init
-	@$(MAKE) refresh-readme
-	@$(call log_audit,inject-canon,Bauer,PASS,0,Tier 0 injection into satellite complete)
-	@$(call log_success, Injection complete. Run 'make resolve' to materialize mesh logic)
+	@START=$$(date +%s%3N); \
+	mkdir -p .audit/; \
+	if ! diff -q $(CANON_ROOT)/common.mk common.mk >/dev/null 2>&1; then cp $(CANON_ROOT)/common.mk .; fi; \
+	if ! diff -q $(CANON_ROOT)/canon-manifest.yaml canon-manifest.yaml >/dev/null 2>&1; then cp $(CANON_ROOT)/canon-manifest.yaml .; fi; \
+	$(MAKE) ml5-init; \
+	$(MAKE) refresh-readme; \
+	STATUS="PASS"; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,inject-canon,Bauer,$$STATUS,$$((END-START)),Tier 0 injection complete); \
+	$(call log_success, Injection complete. Run 'make resolve' to materialize mesh logic)
 
 ##@ Resilience & Reversibility (Lazarus)
 
 .PHONY: rollback-canon
 
-rollback-canon: ## Revert Phase 0 injection (Emergency Only)
+rollback-canon: ## Revert Phase 0 injection (Emergency Only) | Reversibility: <15min RTO
 	@$(call log_info, Reverting Phase 0 TSH injection)
-	@git checkout main -- docs/architecture/ docs/seven-pillars.md docs/README.md canon-manifest.yaml Makefile common.mk
-	@$(call log_success, Phase 0 injection reverted to main state)
+	@START=$$(date +%s%3N); \
+	git checkout main -- docs/architecture/ docs/seven-pillars.md docs/README.md canon-manifest.yaml Makefile common.mk && STATUS="PASS" || STATUS="FAIL"; \
+	END=$$(date +%s%3N); \
+	$(call log_audit,rollback-canon,Lazarus,$$STATUS,$$((END-START)),Injection reverted); \
+	$(call log_success, Phase 0 injection reverted to main state); \
+	if [ "$$STATUS" = "FAIL" ]; then exit 1; fi
